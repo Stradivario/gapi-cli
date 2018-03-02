@@ -1,0 +1,10 @@
+{
+    "verbose": true,
+    "ignore": [
+      "test/*",
+      "docs/*"
+    ],
+    "execMap": {
+        "ts": "./node_modules/ts-node"
+    }
+}
