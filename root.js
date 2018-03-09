@@ -12,8 +12,8 @@ const configService = typedi_1.Container.get(config_service_1.ConfigService);
 let config;
 try {
     config = fs_1.readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+    configService.setCustomConfig(JSON.parse(config));
 }
 catch (e) { }
 argsService.setArguments(process.argv);
-configService.setCustomConfig(JSON.parse(config));
 rootService.runTask();

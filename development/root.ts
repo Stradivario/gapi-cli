@@ -12,7 +12,7 @@ const configService = Container.get(ConfigService);
 let config;
 try {
     config = readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+    configService.setCustomConfig(JSON.parse(config));
 } catch (e) {}
 argsService.setArguments(process.argv);
-configService.setCustomConfig(JSON.parse(config));
 rootService.runTask();
