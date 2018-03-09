@@ -1,6 +1,6 @@
 {
   "name": "gapi-cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Gapi command line interface",
   "main": "main.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "graphql"
   ],
   "bin": {
-    "gapi-cli": "main.js"
+    "gapi-cli": "root.js"
   },
   "author": "Kristiyan Tachev (@Stradivario)",
   "license": "MIT",
@@ -26,5 +26,13 @@
   },
   "dependencies": {
     "shelljs": "^0.8.1"
+  },
+  "devDependencies": {
+    "@types/shelljs": "^0.7.8",
+    "reflect-metadata": "^0.1.12",
+    "rxjs": "^5.5.6",
+    "ts-node": "5.0.1",
+    "typedi": "^0.7.1",
+    "typescript": "^2.7.1"
   }
 }
