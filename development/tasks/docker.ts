@@ -5,54 +5,34 @@ import { RootService } from '../core/services/root.service';
 import Container, { Service } from 'typedi';
 import { ArgsService } from '../core/services/args.service';
 import { Observable } from 'rxjs';
+import { ConfigService } from '../core/services/config.service';
 
 @Service()
 export class DockerTask {
 
-    private argsService = Container.get(ArgsService);
+    private argsService: ArgsService = Container.get(ArgsService);
+    private configService: ConfigService = Container.get(ConfigService);
     args: string;
 
     run() {
-        Observable.from(this.argsService.args)
-            .map(arg => {
-                this.args += arg;
-                if (arg === 'build') {
-                    this.build();
-                }
-                
-                if (arg === 'start') {
-                    this.start();
-                }
 
-                if (arg === 'stop') {
-                    this.stop();
-                }
-                return arg;
-            })
-            .subscribe()
+        if (this.argsService.args[3] === 'build') {
+            exec(this.configService.config.commands.docker.build)
+        }
+        
+        if (this.argsService.args[3] === 'start') {
+            console.log(this.configService.config.commands.docker)
+            exec(this.configService.config.commands.docker.start)
+        }
+
+        if (this.argsService.args[3] === 'stop') {
+            exec(this.configService.config.commands.docker.stop)
+        }
     }
 
-    exec() {
-        exec(`git clone https://github.com/Stradivario/gapi-starter.git ${process.argv[2]} && cd ./${process.argv[2]} && npm install`);
+    exec(command) {
+        exec(command);
     }
 
-
-    start() {
-        exec(
-            `docker-compose up --force-recreate`
-        );
-    }
-
-    stop() {
-        exec(
-            `docker stop ${process.argv[3]}`
-        );
-    }
-
-    build() {
-        exec(
-            `docker build -t ${process.argv[3]} ${process.cwd()}`
-        );
-    }
 }
 

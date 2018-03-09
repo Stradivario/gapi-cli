@@ -10,39 +10,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shelljs_1 = require("shelljs");
 const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
-const rxjs_1 = require("rxjs");
+const config_service_1 = require("../core/services/config.service");
 let DockerTask = class DockerTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
+        this.configService = typedi_1.default.get(config_service_1.ConfigService);
     }
     run() {
-        rxjs_1.Observable.from(this.argsService.args)
-            .map(arg => {
-            this.args += arg;
-            if (arg === 'build') {
-                this.build();
-            }
-            if (arg === 'start') {
-                this.start();
-            }
-            if (arg === 'stop') {
-                this.stop();
-            }
-            return arg;
-        })
-            .subscribe();
+        if (this.argsService.args[3] === 'build') {
+            shelljs_1.exec(this.configService.config.commands.docker.build);
+        }
+        if (this.argsService.args[3] === 'start') {
+            console.log(this.configService.config.commands.docker);
+            shelljs_1.exec(this.configService.config.commands.docker.start);
+        }
+        if (this.argsService.args[3] === 'stop') {
+            shelljs_1.exec(this.configService.config.commands.docker.stop);
+        }
     }
-    exec() {
-        shelljs_1.exec(`git clone https://github.com/Stradivario/gapi-starter.git ${process.argv[2]} && cd ./${process.argv[2]} && npm install`);
-    }
-    start() {
-        shelljs_1.exec(`docker-compose up --force-recreate`);
-    }
-    stop() {
-        shelljs_1.exec(`docker stop ${process.argv[3]}`);
-    }
-    build() {
-        shelljs_1.exec(`docker build -t ${process.argv[3]} ${process.cwd()}`);
+    exec(command) {
+        shelljs_1.exec(command);
     }
 };
 DockerTask = __decorate([

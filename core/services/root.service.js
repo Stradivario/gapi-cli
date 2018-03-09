@@ -19,24 +19,16 @@ let RootService = class RootService {
         this.dockerTask = typedi_1.Container.get(docker_1.DockerTask);
     }
     runTask() {
-        this.start();
-        this.newT();
-        this.docker();
-    }
-    iterateOverTasks() {
-        const descriptors = Object.getOwnPropertyDescriptors(this);
-        Object.keys(descriptors).forEach(desc => {
-            descriptors[desc];
-        });
-    }
-    start() {
-        argsService.findArgument('start').subscribe(() => this.startTask.run());
-    }
-    newT() {
-        argsService.findArgument('new').subscribe(() => this.newTask.run());
-    }
-    docker() {
-        argsService.findArgument('docker').subscribe(() => this.dockerTask.run());
+        if (argsService.args[2] === 'start') {
+            return this.startTask.run();
+        }
+        if (argsService.args[2] === 'new') {
+            return this.newTask.run();
+        }
+        if (argsService.args[2] === 'docker') {
+            return this.dockerTask.run();
+        }
+        console.log('There are no tasks related with your command!');
     }
 };
 RootService = __decorate([

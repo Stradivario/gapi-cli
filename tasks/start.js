@@ -15,10 +15,17 @@ let StartTask = class StartTask {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
     }
     run() {
-        this.exec();
-    }
-    exec() {
-        shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
+        if (this.argsService.args.toString().includes('--prod')) {
+            if (this.argsService.args.toString().includes('--docker')) {
+                shelljs_1.exec(`pm2-docker process.yml --only APP`);
+            }
+            else {
+                shelljs_1.exec(`pm2 start process.yml --only APP`);
+            }
+        }
+        else {
+            shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
+        }
     }
 };
 StartTask = __decorate([
