@@ -9,19 +9,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
 const start_1 = require("../../tasks/start");
 const args_service_1 = require("../services/args.service");
+const new_1 = require("../../tasks/new");
+const docker_1 = require("../../tasks/docker");
+const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
         this.startTask = typedi_1.Container.get(start_1.StartTask);
-        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
+        this.newTask = typedi_1.Container.get(new_1.NewTask);
+        this.dockerTask = typedi_1.Container.get(docker_1.DockerTask);
     }
     runTask() {
-        this.argsService.args
-            .forEach((val, index) => {
-            // console.log(`${index}: ${val}`);
-            if (val.includes('start')) {
-                this.startTask.run();
-            }
+        this.start();
+        this.newT();
+        this.docker();
+    }
+    iterateOverTasks() {
+        const descriptors = Object.getOwnPropertyDescriptors(this);
+        Object.keys(descriptors).forEach(desc => {
+            descriptors[desc];
         });
+    }
+    start() {
+        argsService.findArgument('start').subscribe(() => this.startTask.run());
+    }
+    newT() {
+        argsService.findArgument('new').subscribe(() => this.newTask.run());
+    }
+    docker() {
+        argsService.findArgument('docker').subscribe(() => this.dockerTask.run());
     }
 };
 RootService = __decorate([

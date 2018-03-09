@@ -12,14 +12,12 @@ export class StartTask {
     args: string;
 
     run() {
-        Observable.from(this.argsService.args)
-            .map(arg => this.args += arg)
-            .subscribe(() => this.exec());
+        this.exec();
     }
 
     exec() {
         exec(
-            `nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts ${this.args}`
+            `nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose` 
         )
     }
 

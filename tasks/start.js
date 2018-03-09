@@ -10,18 +10,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shelljs_1 = require("shelljs");
 const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
-const rxjs_1 = require("rxjs");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
     }
     run() {
-        rxjs_1.Observable.from(this.argsService.args)
-            .map(arg => this.args += arg)
-            .subscribe(() => this.exec());
+        this.exec();
     }
     exec() {
-        shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts ${this.args}`);
+        shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
     }
 };
 StartTask = __decorate([

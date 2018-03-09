@@ -7,12 +7,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
+const Observable_1 = require("rxjs/Observable");
 let ArgsService = class ArgsService {
     setArguments(args) {
         this.args = args;
     }
-    findArgument(name) {
-        return this.args.filter((arg) => arg === name)[0];
+    findArgument(arg) {
+        return Observable_1.Observable.from(this.args).filter((val) => val === arg);
     }
 };
 ArgsService = __decorate([

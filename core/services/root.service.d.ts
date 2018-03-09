@@ -1,6 +1,10 @@
 export declare class RootService {
-    args: string[];
     private startTask;
-    private argsService;
+    private newTask;
+    private dockerTask;
     runTask(): void;
+    iterateOverTasks(): void;
+    start(): void;
+    newT(): void;
+    docker(): void;
 }
