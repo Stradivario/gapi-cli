@@ -1,5 +1,4 @@
-export interface GapiConfig {
-    port: string;
+export interface Commands {
     commands: {
         docker: {
             start: string;
@@ -7,6 +6,9 @@ export interface GapiConfig {
             build: string;
         };
     };
+}
+export interface GapiConfig extends Commands {
+    port: string;
 }
 export declare class ConfigService {
     config: GapiConfig;

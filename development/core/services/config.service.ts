@@ -1,7 +1,6 @@
 import { Service } from 'typedi';
 
-export interface GapiConfig {
-    port: string;
+export interface Commands { 
     commands: {
         docker: {
             start: string;
@@ -9,6 +8,10 @@ export interface GapiConfig {
             build: string;
         }
     };
+}
+
+export interface GapiConfig extends Commands {
+    port: string;
 }
 
 @Service()

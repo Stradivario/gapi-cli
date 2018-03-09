@@ -14,7 +14,7 @@ let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
     }
-    run(stop) {
+    run(stop = {}) {
         if (this.argsService.args.toString().includes('--prod')) {
             if (this.argsService.args.toString().includes('--docker')) {
                 shelljs_1.exec(`pm2-docker process.yml --only APP`);

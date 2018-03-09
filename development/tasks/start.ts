@@ -11,7 +11,7 @@ export class StartTask {
     private argsService = Container.get(ArgsService);
     args: string;
 
-    run(stop?: {state: boolean}) {
+    run(stop: {state?: boolean} = {}) {
         if (this.argsService.args.toString().includes('--prod')) {
             if (this.argsService.args.toString().includes('--docker')) {
                 exec(`pm2-docker process.yml --only APP`)
