@@ -18,6 +18,10 @@ export class RootService {
 
     runTask() {
  
+        if (argsService.args[2] === 'stop') {
+            return this.startTask.run({state: false})
+        }
+
         if (argsService.args[2] === 'start') {
             return this.startTask.run()
         }

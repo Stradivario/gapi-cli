@@ -14,17 +14,22 @@ let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
     }
-    run() {
+    run(stop) {
         if (this.argsService.args.toString().includes('--prod')) {
             if (this.argsService.args.toString().includes('--docker')) {
                 shelljs_1.exec(`pm2-docker process.yml --only APP`);
             }
             else {
-                shelljs_1.exec(`pm2 start process.yml --only APP`);
+                if (!stop.state) {
+                    shelljs_1.exec(`pm2 stop process.yml`);
+                }
+                else {
+                    shelljs_1.exec(`pm2 start process.yml --only APP`);
+                }
             }
         }
         else {
-            shelljs_1.exec(`nodemon`);
+            shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
         }
     }
 };

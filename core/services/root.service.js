@@ -19,6 +19,9 @@ let RootService = class RootService {
         this.dockerTask = typedi_1.Container.get(docker_1.DockerTask);
     }
     runTask() {
+        if (argsService.args[2] === 'stop') {
+            return this.startTask.run({ state: false });
+        }
         if (argsService.args[2] === 'start') {
             return this.startTask.run();
         }
