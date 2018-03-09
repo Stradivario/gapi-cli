@@ -9,7 +9,10 @@ import { readFileSync } from 'fs';
 const rootService = Container.get(RootService);
 const argsService = Container.get(ArgsService);
 const configService = Container.get(ConfigService);
-const config = readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+let config;
+try {
+    config = readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+} catch (e) {}
 argsService.setArguments(process.argv);
 configService.setCustomConfig(JSON.parse(config));
 rootService.runTask();

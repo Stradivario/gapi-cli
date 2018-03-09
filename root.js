@@ -9,7 +9,11 @@ const fs_1 = require("fs");
 const rootService = typedi_1.Container.get(root_service_1.RootService);
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 const configService = typedi_1.Container.get(config_service_1.ConfigService);
-const config = fs_1.readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+let config;
+try {
+    config = fs_1.readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
+}
+catch (e) { }
 argsService.setArguments(process.argv);
 configService.setCustomConfig(JSON.parse(config));
 rootService.runTask();
