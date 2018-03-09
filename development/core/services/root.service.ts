@@ -25,6 +25,7 @@ export class RootService {
         if (argsService.args[2] === 'new') {
             return this.newTask.run()
         }
+
         if (argsService.args[2] === 'docker') {
             return this.dockerTask.run()
         }

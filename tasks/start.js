@@ -24,7 +24,7 @@ let StartTask = class StartTask {
             }
         }
         else {
-            shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
+            shelljs_1.exec(`nodemon`);
         }
     }
 };

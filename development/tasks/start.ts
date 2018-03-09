@@ -19,7 +19,7 @@ export class StartTask {
                 exec(`pm2 start process.yml --only APP`);
             }
         } else {
-            exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`)
+            exec(`nodemon`)
         }
     }
 
