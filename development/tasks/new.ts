@@ -8,15 +8,22 @@ import { Observable } from 'rxjs';
 @Service()
 export class NewTask {
 
-    private argsService = Container.get(ArgsService);
+    private argsService: ArgsService = Container.get(ArgsService);
     args: string;
-
+    repoLinks = {
+        basic: 'https://github.com/Stradivario/gapi-starter',
+        advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize'
+    };
     run() {
-        this.exec();
+        if(this.argsService.args.toString().includes('--advanced')) {
+            this.exec(this.repoLinks.advanced);
+        } else {
+            this.exec(this.repoLinks.basic);
+        }
     }
 
-    exec() {
-        exec(`git clone https://github.com/Stradivario/gapi-starter.git ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
+    exec(repoLink: string) {
+        exec(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
     }
 
 }

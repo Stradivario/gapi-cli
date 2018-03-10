@@ -13,12 +13,21 @@ const args_service_1 = require("../core/services/args.service");
 let NewTask = class NewTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
+        this.repoLinks = {
+            basic: 'https://github.com/Stradivario/gapi-starter',
+            advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize'
+        };
     }
     run() {
-        this.exec();
+        if (this.argsService.args.toString().includes('--advanced')) {
+            this.exec(this.repoLinks.advanced);
+        }
+        else {
+            this.exec(this.repoLinks.basic);
+        }
     }
-    exec() {
-        shelljs_1.exec(`git clone https://github.com/Stradivario/gapi-starter.git ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
+    exec(repoLink) {
+        shelljs_1.exec(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
     }
 };
 NewTask = __decorate([
