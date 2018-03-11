@@ -5,14 +5,15 @@ import { RootService } from './core/services/root.service';
 import { ArgsService } from './core/services/args.service';
 import { ConfigService } from './core/services/config.service';
 import { readFileSync } from 'fs';
+import { load } from 'yamljs';
 
 const rootService = Container.get(RootService);
 const argsService = Container.get(ArgsService);
 const configService = Container.get(ConfigService);
 let config;
 try {
-    config = readFileSync(`${process.cwd()}/gapi-cli.conf.json`, 'utf8');
-    configService.setCustomConfig(JSON.parse(config));
+    config = load('gapi-cli.conf.yml');
+    configService.setCustomConfig(config);
 } catch (e) {}
 argsService.setArguments(process.argv);
 rootService.runTask();
