@@ -9,6 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
 let ConfigService = class ConfigService {
     setCustomConfig(config) {
+        if (config.commands['test']) {
+            throw new Error('You cannot define command "test" they are restricted!');
+        }
+        if (config.commands['new']) {
+            throw new Error('You cannot define command "new" they are restricted!');
+        }
         this.config = config;
     }
 };

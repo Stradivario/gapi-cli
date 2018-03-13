@@ -21,7 +21,6 @@ let DockerTask = class DockerTask {
             shelljs_1.exec(this.configService.config.commands.docker.build);
         }
         if (this.argsService.args[3] === 'start') {
-            console.log(this.configService.config.commands.docker);
             shelljs_1.exec(this.configService.config.commands.docker.start);
         }
         if (this.argsService.args[3] === 'stop') {

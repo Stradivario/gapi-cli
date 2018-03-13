@@ -12,8 +12,8 @@ const configService = typedi_1.Container.get(config_service_1.ConfigService);
 let config;
 try {
     config = yamljs_1.load('gapi-cli.conf.yml');
-    configService.setCustomConfig(config);
 }
 catch (e) { }
+configService.setCustomConfig(config || null);
 argsService.setArguments(process.argv);
 rootService.runTask();

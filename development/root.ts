@@ -13,7 +13,7 @@ const configService = Container.get(ConfigService);
 let config;
 try {
     config = load('gapi-cli.conf.yml');
-    configService.setCustomConfig(config);
 } catch (e) {}
+configService.setCustomConfig(config || null);
 argsService.setArguments(process.argv);
 rootService.runTask();

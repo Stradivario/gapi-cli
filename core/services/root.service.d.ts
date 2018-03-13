@@ -1,9 +1,8 @@
-import { Observable } from 'rxjs';
 export declare class RootService {
     private startTask;
     private newTask;
-    private dockerTask;
+    private testTask;
     private configService;
-    checkForCustomTasks(): Observable<any>;
-    runTask(): void;
+    checkForCustomTasks(): Promise<any>;
+    runTask(): Promise<void>;
 }

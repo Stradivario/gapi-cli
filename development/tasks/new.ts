@@ -15,7 +15,7 @@ export class NewTask {
         advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize'
     };
     run() {
-        if(this.argsService.args.toString().includes('--advanced')) {
+        if (this.argsService.args.toString().includes('--advanced')) {
             this.exec(this.repoLinks.advanced);
         } else {
             this.exec(this.repoLinks.basic);
