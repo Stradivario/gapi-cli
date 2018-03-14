@@ -36,15 +36,8 @@ export class TestTask {
     config: string;
     async run() {
         this.args = this.argsService.args.toString();
-        this.validateConfig('local');
-        this.validateConfig('worker');
         this.setConfig();
         this.setSleep();
-        if (this.args.includes('--worker')) {
-            this.setWorkerEnvironments();
-        } else {
-            this.setLocalEnvironments();
-        }
         if (this.args.includes('--before')) {
             this.config += `&& export BEFORE_HOOK=true`;
             try {
@@ -80,20 +73,26 @@ export class TestTask {
         this.config += ` && sleep 0 `;
     }
 
-    setWorkerEnvironments() {
-        this.config += `&& export ENDPOINT_TESTING=${this.configService.config.config.test.worker.endpoint}`;
+    setVariables(config) {
+        this.config = ``;
+        const conf = Object.keys(config);
+        let count = 0;
+        conf.forEach((key) => {
+            count++;
+            if (conf.length === count) {
+                this.config += `export ${key}=${config[key]}`;
+            } else {
+                this.config += `export ${key}=${config[key]} && `;
+            }
+        });
     }
-
-    setLocalEnvironments() {
-        this.config += `&& export ENDPOINT_TESTING=${this.configService.config.config.test.local.endpoint}`;
-    }
-
     setConfig() {
         if (this.args.includes('--worker')) {
-            this.config = `export DB_HOST_TESTING=${this.configService.config.config.test.worker.db_host} && export DB_PORT_TESTING=${this.configService.config.config.test.worker.db_port} && export DB_USERNAME_TESTING=${this.configService.config.config.test.worker.db_user} && export DB_PASSWORD_TESTING=${this.configService.config.config.test.worker.db_pass} && export DB_NAME_TESTING=${this.configService.config.config.test.worker.db_name} && export TOKEN=${this.configService.config.config.test.local.token}`;
+            this.setVariables(this.configService.config.config.test.worker);
         } else {
-            this.config = `export DB_HOST_TESTING=${this.configService.config.config.test.local.db_host} && export DB_PORT_TESTING=${this.configService.config.config.test.local.db_port} && export DB_USERNAME_TESTING=${this.configService.config.config.test.local.db_user} && export DB_PASSWORD_TESTING=${this.configService.config.config.test.local.db_pass} && export DB_NAME_TESTING=${this.configService.config.config.test.local.db_name} && export TOKEN=${this.configService.config.config.test.local.token}`;
+            this.setVariables(this.configService.config.config.test.local);
         }
+        console.log(this.config);
     }
     validateConfig(key: string) {
         if (!this.configService.config.config.test[key]) {

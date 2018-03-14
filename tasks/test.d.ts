@@ -9,8 +9,7 @@ export declare class TestTask {
     config: string;
     run(): Promise<void>;
     setSleep(): void;
-    setWorkerEnvironments(): void;
-    setLocalEnvironments(): void;
+    setVariables(config: any): void;
     setConfig(): void;
     validateConfig(key: string): void;
 }

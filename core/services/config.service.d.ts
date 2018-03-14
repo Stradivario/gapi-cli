@@ -1,11 +1,15 @@
-export interface TestConfig {
-    db_port: string;
-    db_host: string;
-    db_user: string;
-    db_pass: string;
-    db_name: string;
-    token: string;
-    endpoint: string;
+export interface MainConfig {
+    API_PORT?: number | string;
+    DB_PORT?: string;
+    DB_HOST?: string;
+    DB_USERNAME?: string;
+    DB_PASSWORD?: string;
+    API_CERT?: string;
+    DB_NAME?: string;
+    TESTS_TOKEN?: string;
+    GRAPHIQL_TOKEN?: string;
+    ENDPOINT_TESTING?: string;
+    NODE_ENV?: string;
 }
 export interface Commands {
     commands: {
@@ -16,9 +20,13 @@ export interface Commands {
         };
     };
     config: {
+        app: {
+            local: MainConfig;
+            prod: MainConfig;
+        };
         test: {
-            local: TestConfig;
-            worker: TestConfig;
+            local: MainConfig;
+            worker: MainConfig;
         };
     };
 }

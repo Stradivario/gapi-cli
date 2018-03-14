@@ -10,27 +10,45 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shelljs_1 = require("shelljs");
 const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
+const config_service_1 = require("../core/services/config.service");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.default.get(args_service_1.ArgsService);
+        this.configService = typedi_1.default.get(config_service_1.ConfigService);
     }
     run(stop = {}) {
         if (this.argsService.args.toString().includes('--prod')) {
+            this.setVariables(this.configService.config.config.app.prod);
             if (this.argsService.args.toString().includes('--docker')) {
-                shelljs_1.exec(`pm2-docker process.yml --only APP`);
+                shelljs_1.exec(`${this.config} && pm2-docker process.yml --only APP`);
             }
             else {
                 if (!stop.state) {
-                    shelljs_1.exec(`pm2 stop process.yml`);
+                    shelljs_1.exec(`${this.config} && pm2 stop process.yml`);
                 }
                 else {
-                    shelljs_1.exec(`pm2 start process.yml --only APP`);
+                    shelljs_1.exec(`${this.config} && pm2 start process.yml --only APP`);
                 }
             }
         }
         else {
-            shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec 'ts-node' ${process.cwd()}/src/main.ts --verbose`);
+            this.setVariables(this.configService.config.config.app.local);
+            shelljs_1.exec(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts --verbose`);
         }
+    }
+    setVariables(config) {
+        this.config = ``;
+        const conf = Object.keys(config);
+        let count = 0;
+        conf.forEach((key) => {
+            count++;
+            if (conf.length === count) {
+                this.config += `export ${key}=${config[key]}`;
+            }
+            else {
+                this.config += `export ${key}=${config[key]} && `;
+            }
+        });
     }
 };
 StartTask = __decorate([
