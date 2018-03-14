@@ -24,7 +24,23 @@ export class RootService {
                 .filter(cmd => {
                     if (cmd === argsService.args[2]) {
                         if (commands[cmd][argsService.args[3]]) {
-                            resolve(exec(commands[cmd][argsService.args[3]]));
+                            if (commands[cmd][argsService.args[3]].constructor === Array) {
+                                let count = 0;
+                                const commandsArray = commands[cmd][argsService.args[3]];
+                                const commandsToExecute = commandsArray.map((res) =>  {
+                                    count++;
+                                    let item;
+                                    if (count === commandsArray.length) {
+                                        return item = res;
+                                    } else {
+                                        return res + ' && ';
+                                    }
+                                });
+                                const finalCommand = commandsToExecute.toString().replace(/[, ]+/g, ' ').trim();
+                                resolve(exec(finalCommand));
+                            } else {
+                                resolve(exec(commands[cmd][argsService.args[3]]));
+                            }
                             return true;
                         } else {
                             reject(`Missing custom command ${argsService.args[3]}`);

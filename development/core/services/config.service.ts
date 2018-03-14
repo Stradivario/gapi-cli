@@ -43,6 +43,9 @@ export class ConfigService {
     config: GapiConfig;
 
     setCustomConfig(config: GapiConfig) {
+        if (!config) {
+            return;
+        }
         if (config.commands['test']) {
             throw new Error('You cannot define command "test" they are restricted!');
         }

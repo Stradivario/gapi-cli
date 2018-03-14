@@ -36,7 +36,25 @@ let RootService = class RootService {
                 .filter(cmd => {
                 if (cmd === argsService.args[2]) {
                     if (commands[cmd][argsService.args[3]]) {
-                        resolve(shelljs_1.exec(commands[cmd][argsService.args[3]]));
+                        if (commands[cmd][argsService.args[3]].constructor === Array) {
+                            let count = 0;
+                            const commandsArray = commands[cmd][argsService.args[3]];
+                            const commandsToExecute = commandsArray.map((res) => {
+                                count++;
+                                let item;
+                                if (count === commandsArray.length) {
+                                    return item = res;
+                                }
+                                else {
+                                    return res + ' && ';
+                                }
+                            });
+                            const finalCommand = commandsToExecute.toString().replace(/[, ]+/g, ' ').trim();
+                            resolve(shelljs_1.exec(finalCommand));
+                        }
+                        else {
+                            resolve(shelljs_1.exec(commands[cmd][argsService.args[3]]));
+                        }
                         return true;
                     }
                     else {
