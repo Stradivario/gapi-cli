@@ -1,10 +1,10 @@
 export declare class StartTask {
     private argsService;
     private configService;
-    args: string;
-    config: string;
+    private environmentService;
+    private execService;
+    private config;
     run(stop?: {
         state?: boolean;
-    }): void;
-    setVariables(config: any): void;
+    }): Promise<void>;
 }

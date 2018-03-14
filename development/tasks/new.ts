@@ -1,29 +1,31 @@
 #! /usr/bin/env node
 import { exec } from 'shelljs';
 import { RootService } from '../core/services/root.service';
-import Container, { Service } from 'typedi';
+import { Service, Container } from 'typedi';
 import { ArgsService } from '../core/services/args.service';
 import { Observable } from 'rxjs';
+import { ExecService } from '../core/services/exec.service';
 
 @Service()
 export class NewTask {
 
+    private execService: ExecService = Container.get(ExecService);
     private argsService: ArgsService = Container.get(ArgsService);
-    args: string;
-    repoLinks = {
+    private repoLinks = {
         basic: 'https://github.com/Stradivario/gapi-starter',
         advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize'
     };
-    run() {
+
+    async run() {
         if (this.argsService.args.toString().includes('--advanced')) {
-            this.exec(this.repoLinks.advanced);
+            await this.exec(this.repoLinks.advanced);
         } else {
-            this.exec(this.repoLinks.basic);
+            await this.exec(this.repoLinks.basic);
         }
     }
 
-    exec(repoLink: string) {
-        exec(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
+    async exec(repoLink: string) {
+        await this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
     }
 
 }

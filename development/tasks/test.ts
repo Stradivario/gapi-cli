@@ -1,39 +1,24 @@
 #! /usr/bin/env node
 import { exec } from 'shelljs';
 import { RootService } from '../core/services/root.service';
-import Container, { Service } from 'typedi';
+import { Container, Service } from 'typedi';
 import { ArgsService } from '../core/services/args.service';
 import { Observable } from 'rxjs';
 import { ConfigService } from '../core/services/config.service';
 import { StartTask } from './start';
-
-
-@Service()
-export class ExecService {
-    call(command: string, options?) {
-        return new Promise((resolve, reject) => {
-            exec(command, options, (e) => {
-                if (e) {
-                    reject(e);
-                }
-                resolve();
-            });
-        });
-    }
-}
-
-const execService = Container.get(ExecService);
-
+import { ExecService } from '../core/services/exec.service';
+import { EnvironmentVariableService } from '../core/services/environment.service';
 
 @Service()
 export class TestTask {
 
+    private execService: ExecService = Container.get(ExecService);
     private argsService: ArgsService = Container.get(ArgsService);
     private configService: ConfigService = Container.get(ConfigService);
     private startTask: StartTask = Container.get(StartTask);
-
-    args: string;
-    config: string;
+    private environmentService: EnvironmentVariableService = Container.get(EnvironmentVariableService);
+    private args: string;
+    private config: string = ``;
     async run() {
         this.args = this.argsService.args.toString();
         this.setConfig();
@@ -41,17 +26,18 @@ export class TestTask {
         if (this.args.includes('--before')) {
             this.config += `&& export BEFORE_HOOK=true`;
             try {
-                await execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
+                await this.execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
             } catch (e) {
                 console.error(`ERROR: Terminal exited with STATUS ${e} tests will not be runned check src/test.ts, appropriate exit code is 0`);
                 process.exit(1);
             }
-            await execService.call(`${this.config} && jest`);
+            await this.execService.call(`${this.config} && jest`);
             console.log('SUCCESS');
         } else {
             if (this.args.includes('--watch')) {
                 try {
-                    await execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
+    
+                    await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
                     // this.startTask.run();
                     // await execService.call(`${this.config} && jest --watchAll`);
                 } catch (e) {
@@ -59,9 +45,9 @@ export class TestTask {
                 }
             } else {
                 try {
-                    await execService.call(`${this.config} && npm run lint && jest`);
+                    await this.execService.call(`${this.config} && npm run lint && jest`);
                 } catch (e) {
-                    process.exit(1);
+                    return process.exit(1);
                 }
             }
             console.log('SUCCESS');
@@ -73,27 +59,17 @@ export class TestTask {
         this.config += ` && sleep 0 `;
     }
 
-    setVariables(config) {
-        this.config = ``;
-        const conf = Object.keys(config);
-        let count = 0;
-        conf.forEach((key) => {
-            count++;
-            if (conf.length === count) {
-                this.config += `export ${key}=${config[key]}`;
-            } else {
-                this.config += `export ${key}=${config[key]} && `;
-            }
-        });
-    }
+
     setConfig() {
         if (this.args.includes('--worker')) {
-            this.setVariables(this.configService.config.config.test.worker);
+            this.config = this.environmentService.setVariables(this.configService.config.config.test.worker);
+        } else if (this.args.includes('--prod')) {
+            this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
         } else {
-            this.setVariables(this.configService.config.config.test.local);
+            this.config = this.environmentService.setVariables(this.configService.config.config.test.local);
         }
-        console.log(this.config);
     }
+
     validateConfig(key: string) {
         if (!this.configService.config.config.test[key]) {
             throw new Error('Missing test config inside gapi-cli.conf.yml');
@@ -126,4 +102,5 @@ export class TestTask {
             throw new Error('Missing variable token inside gapi-cli.conf.yml');
         }
     }
+
 }

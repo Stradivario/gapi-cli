@@ -1,15 +1,13 @@
-export declare class ExecService {
-    call(command: string, options?: any): Promise<{}>;
-}
 export declare class TestTask {
+    private execService;
     private argsService;
     private configService;
     private startTask;
-    args: string;
-    config: string;
-    run(): Promise<void>;
+    private environmentService;
+    private args;
+    private config;
+    run(): Promise<never>;
     setSleep(): void;
-    setVariables(config: any): void;
     setConfig(): void;
     validateConfig(key: string): void;
 }

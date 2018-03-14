@@ -15,33 +15,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const shelljs_1 = require("shelljs");
 const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
 const config_service_1 = require("../core/services/config.service");
 const start_1 = require("./start");
-let ExecService = class ExecService {
-    call(command, options) {
-        return new Promise((resolve, reject) => {
-            shelljs_1.exec(command, options, (e) => {
-                if (e) {
-                    reject(e);
-                }
-                resolve();
-            });
-        });
-    }
-};
-ExecService = __decorate([
-    typedi_1.Service()
-], ExecService);
-exports.ExecService = ExecService;
-const execService = typedi_1.default.get(ExecService);
+const exec_service_1 = require("../core/services/exec.service");
+const environment_service_1 = require("../core/services/environment.service");
 let TestTask = class TestTask {
     constructor() {
-        this.argsService = typedi_1.default.get(args_service_1.ArgsService);
-        this.configService = typedi_1.default.get(config_service_1.ConfigService);
-        this.startTask = typedi_1.default.get(start_1.StartTask);
+        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
+        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
+        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
+        this.startTask = typedi_1.Container.get(start_1.StartTask);
+        this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
+        this.config = ``;
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,19 +38,19 @@ let TestTask = class TestTask {
             if (this.args.includes('--before')) {
                 this.config += `&& export BEFORE_HOOK=true`;
                 try {
-                    yield execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
+                    yield this.execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
                 }
                 catch (e) {
                     console.error(`ERROR: Terminal exited with STATUS ${e} tests will not be runned check src/test.ts, appropriate exit code is 0`);
                     process.exit(1);
                 }
-                yield execService.call(`${this.config} && jest`);
+                yield this.execService.call(`${this.config} && jest`);
                 console.log('SUCCESS');
             }
             else {
                 if (this.args.includes('--watch')) {
                     try {
-                        yield execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
+                        yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
                         // this.startTask.run();
                         // await execService.call(`${this.config} && jest --watchAll`);
                     }
@@ -73,10 +60,10 @@ let TestTask = class TestTask {
                 }
                 else {
                     try {
-                        yield execService.call(`${this.config} && npm run lint && jest`);
+                        yield this.execService.call(`${this.config} && npm run lint && jest`);
                     }
                     catch (e) {
-                        process.exit(1);
+                        return process.exit(1);
                     }
                 }
                 console.log('SUCCESS');
@@ -86,28 +73,16 @@ let TestTask = class TestTask {
     setSleep() {
         this.config += ` && sleep 0 `;
     }
-    setVariables(config) {
-        this.config = ``;
-        const conf = Object.keys(config);
-        let count = 0;
-        conf.forEach((key) => {
-            count++;
-            if (conf.length === count) {
-                this.config += `export ${key}=${config[key]}`;
-            }
-            else {
-                this.config += `export ${key}=${config[key]} && `;
-            }
-        });
-    }
     setConfig() {
         if (this.args.includes('--worker')) {
-            this.setVariables(this.configService.config.config.test.worker);
+            this.config = this.environmentService.setVariables(this.configService.config.config.test.worker);
+        }
+        else if (this.args.includes('--prod')) {
+            this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
         }
         else {
-            this.setVariables(this.configService.config.config.test.local);
+            this.config = this.environmentService.setVariables(this.configService.config.config.test.local);
         }
-        console.log(this.config);
     }
     validateConfig(key) {
         if (!this.configService.config.config.test[key]) {

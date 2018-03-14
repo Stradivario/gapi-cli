@@ -13,7 +13,9 @@ let config;
 try {
     config = yamljs_1.load('gapi-cli.conf.yml');
 }
-catch (e) { }
-configService.setCustomConfig(config || null);
+catch (e) {
+    throw new Error('Missing gapi-cli.conf.yml cli cannot work without it.');
+}
+configService.setCustomConfig(config);
 argsService.setArguments(process.argv);
 rootService.runTask();

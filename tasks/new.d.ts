@@ -1,10 +1,7 @@
 export declare class NewTask {
+    private execService;
     private argsService;
-    args: string;
-    repoLinks: {
-        basic: string;
-        advanced: string;
-    };
-    run(): void;
-    exec(repoLink: string): void;
+    private repoLinks;
+    run(): Promise<void>;
+    exec(repoLink: string): Promise<void>;
 }
