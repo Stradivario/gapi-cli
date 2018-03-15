@@ -6,6 +6,7 @@ export declare class TestTask {
     private environmentService;
     private args;
     private config;
+    private verbose;
     run(): Promise<never>;
     setSleep(): void;
     setConfig(): void;

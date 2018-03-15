@@ -29,12 +29,16 @@ let TestTask = class TestTask {
         this.startTask = typedi_1.Container.get(start_1.StartTask);
         this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
         this.config = ``;
+        this.verbose = '';
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             this.args = this.argsService.args.toString();
             this.setConfig();
             this.setSleep();
+            if (this.args.includes('--verbose')) {
+                this.verbose = ' --verbose';
+            }
             if (this.args.includes('--before')) {
                 this.config += `&& export BEFORE_HOOK=true`;
                 try {
@@ -50,7 +54,7 @@ let TestTask = class TestTask {
             else {
                 if (this.args.includes('--watch')) {
                     try {
-                        yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
+                        yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --exec '${this.config} && npm run lint && jest' ${this.verbose}`, { async: true });
                         // this.startTask.run();
                         // await execService.call(`${this.config} && jest --watchAll`);
                     }

@@ -26,9 +26,13 @@ let StartTask = class StartTask {
         this.configService = typedi_1.Container.get(config_service_1.ConfigService);
         this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
         this.execService = typedi_1.Container.get(exec_service_1.ExecService);
+        this.verbose = '';
     }
     run(stop = {}) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.argsService.args.includes('--verbose')) {
+                this.verbose = ' --verbose';
+            }
             if (this.argsService.args.toString().includes('--prod')) {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
                 if (this.argsService.args.toString().includes('--docker')) {
@@ -45,8 +49,7 @@ let StartTask = class StartTask {
             }
             else {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                ;
-                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts --verbose`);
+                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
             }
         });
     }

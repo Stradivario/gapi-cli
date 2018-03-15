@@ -46,7 +46,7 @@ const run = (schemaInput, optionsInput) => {
     const wrapWithDescription = (declaration, description) => `  ${generateDescription(description)}
   ${declaration}`;
     const generateTypeDeclaration = (description, name, possibleTypes) => wrapWithDescription(addSemicolon(typeBuilder(name, possibleTypes)) + '\n\n', description);
-    const typeNameDeclaration = name => addSemicolon(`__typename: "${name}"`);
+    const typeNameDeclaration = name => addSemicolon(`__typename?: "${name}"`);
     const generateInterfaceDeclaration = ({ name, description }, declaration, fields, additionalInfo, isInput) => {
         if (!isInput && !optionsInput.ignoreTypeNameDeclaration) {
             fields = [typeNameDeclaration(name), ...fields];

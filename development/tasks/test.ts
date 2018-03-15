@@ -19,10 +19,15 @@ export class TestTask {
     private environmentService: EnvironmentVariableService = Container.get(EnvironmentVariableService);
     private args: string;
     private config: string = ``;
+    private verbose: string = '';
+
     async run() {
         this.args = this.argsService.args.toString();
         this.setConfig();
         this.setSleep();
+        if (this.args.includes('--verbose')) {
+            this.verbose = ' --verbose';
+        }
         if (this.args.includes('--before')) {
             this.config += `&& export BEFORE_HOOK=true`;
             try {
@@ -36,7 +41,7 @@ export class TestTask {
         } else {
             if (this.args.includes('--watch')) {
                 try {
-                    await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
+                    await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --exec '${this.config} && npm run lint && jest' ${this.verbose}`, { async: true });
                     // this.startTask.run();
                     // await execService.call(`${this.config} && jest --watchAll`);
                 } catch (e) {

@@ -16,8 +16,12 @@ export class StartTask {
     private environmentService: EnvironmentVariableService = Container.get(EnvironmentVariableService);
     private execService: ExecService = Container.get(ExecService);
     private config: string;
+    private verbose: string = '';
 
     async run(stop: { state?: boolean } = {}) {
+        if (this.argsService.args.includes('--verbose')) {
+            this.verbose = ' --verbose';
+        }
         if (this.argsService.args.toString().includes('--prod')) {
             this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
             if (this.argsService.args.toString().includes('--docker')) {
@@ -31,8 +35,7 @@ export class StartTask {
             }
         } else {
             this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-            ;
-            await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts --verbose`);
+            await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
         }
     }
 
