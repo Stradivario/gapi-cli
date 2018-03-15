@@ -1,9 +1,11 @@
 {
   "name": "gapi-cli",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "description": "Gapi command line interface",
   "main": "main.js",
   "scripts": {
+    "postinstall": "cp -r ./bash/lib/* ./node_modules/@gql2ts/",
+    "generate:schema": "apollo-codegen introspect-schema http://localhost:9000/graphql --output ./api-types/schema.json",
     "test": "test"
   },
   "repository": {
@@ -25,6 +27,8 @@
     "ts-node": "5.0.1"
   },
   "dependencies": {
+    "apollo-codegen": "^0.19.0",
+    "gql2ts": "^1.7.0",
     "rxjs": "^5.5.6",
     "shelljs": "^0.8.1",
     "typedi": "^0.7.1",

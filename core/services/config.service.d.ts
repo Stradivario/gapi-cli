@@ -28,6 +28,10 @@ export interface Commands {
             local: MainConfig;
             worker: MainConfig;
         };
+        schema: {
+            introspectionEndpoint: string;
+            introspectionOutputFolder: string;
+        };
     };
 }
 export interface GapiConfig extends Commands {

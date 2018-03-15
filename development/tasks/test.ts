@@ -36,7 +36,7 @@ export class TestTask {
         } else {
             if (this.args.includes('--watch')) {
                 try {
-                    await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
+                    await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --exec '${this.config} && npm run lint && jest' --verbose`, { async: true });
                     // this.startTask.run();
                     // await execService.call(`${this.config} && jest --watchAll`);
                 } catch (e) {

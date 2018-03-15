@@ -30,6 +30,10 @@ export interface Commands {
         test: {
             local: MainConfig;
             worker: MainConfig;
+        },
+        schema: {
+            introspectionEndpoint: string;
+            introspectionOutputFolder: string;
         }
     };
 }

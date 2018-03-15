@@ -3,6 +3,7 @@ export declare class RootService {
     private newTask;
     private testTask;
     private configService;
+    private schemaTask;
     checkForCustomTasks(): Promise<any>;
     runTask(): Promise<void>;
 }

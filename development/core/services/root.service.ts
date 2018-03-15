@@ -6,6 +6,7 @@ import { NewTask } from '../../tasks/new';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { TestTask } from '../../tasks/test';
+import { SchemaTask } from '../../tasks/schema';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -16,6 +17,7 @@ export class RootService {
     private newTask: NewTask = Container.get(NewTask);
     private testTask: TestTask = Container.get(TestTask);
     private configService: ConfigService = Container.get(ConfigService);
+    private schemaTask: SchemaTask = Container.get(SchemaTask);
 
     checkForCustomTasks(): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -69,6 +71,10 @@ export class RootService {
 
         if (argsService.args[2] === 'test') {
             return await this.testTask.run();
+        }
+
+        if (argsService.args[2] === 'schema') {
+            return await this.schemaTask.run();
         }
 
         try {

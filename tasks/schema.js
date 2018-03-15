@@ -17,41 +17,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
-const config_service_1 = require("../core/services/config.service");
-const environment_service_1 = require("../core/services/environment.service");
 const exec_service_1 = require("../core/services/exec.service");
-let StartTask = class StartTask {
+const config_service_1 = require("../core/services/config.service");
+const fs_1 = require("fs");
+let SchemaTask = class SchemaTask {
     constructor() {
+        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
         this.configService = typedi_1.Container.get(config_service_1.ConfigService);
-        this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
-        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
     }
-    run(stop = {}) {
+    run() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.argsService.args.toString().includes('--prod')) {
-                this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
-                if (this.argsService.args.toString().includes('--docker')) {
-                    yield this.execService.call(`${this.config} && pm2-docker process.yml --only APP`);
+            this.folder = this.configService.config.config.schema.introspectionOutputFolder;
+            this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
+            this.node_modules = __dirname.replace('tasks', 'node_modules');
+            if (process.argv[3] === 'introspect') {
+                if (!fs_1.existsSync(this.folder)) {
+                    fs_1.mkdirSync(this.folder);
                 }
-                else {
-                    if (!stop.state) {
-                        yield this.execService.call(`${this.config} && pm2 stop process.yml`);
-                    }
-                    else {
-                        yield this.execService.call(`${this.config} && pm2 start process.yml --only APP`);
-                    }
-                }
-            }
-            else {
-                this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                ;
-                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts --verbose`);
+                yield this.generateSchema();
             }
         });
     }
+    generateSchema() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.execService.call(`node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
+            yield this.execService.call(`node  ${this.node_modules}/gql2ts/dist/index.js ${this.folder}/schema.json -o ${this.folder}/graphql.d.ts`, { async: true });
+        });
+    }
 };
-StartTask = __decorate([
+SchemaTask = __decorate([
     typedi_1.Service()
-], StartTask);
-exports.StartTask = StartTask;
+], SchemaTask);
+exports.SchemaTask = SchemaTask;
