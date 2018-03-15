@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
-const util_1 = require("@gql2ts/util");
-const language_typescript_1 = require("@gql2ts/language-typescript");
+const util_1 = require("../../util/dist");
+const language_typescript_1 = require("../../language-typescript/dist");
 const run = (schemaInput, optionsInput) => {
     const { generateEnumName, generateInterfaceName, generateTypeName, printType, formatInput, wrapList, formatEnum, typeBuilder, generateInterfaceDeclaration: gID, interfaceBuilder, addSemicolon, } = optionsInput.formats;
     const TYPE_MAP = Object.assign({}, language_typescript_1.DEFAULT_TYPE_MAP);

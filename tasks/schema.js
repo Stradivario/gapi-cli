@@ -31,6 +31,7 @@ let SchemaTask = class SchemaTask {
             this.folder = this.configService.config.config.schema.introspectionOutputFolder;
             this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
             this.node_modules = __dirname.replace('tasks', 'node_modules');
+            this.bashFolder = __dirname.replace('tasks', 'bash');
             if (process.argv[3] === 'introspect') {
                 if (!fs_1.existsSync(this.folder)) {
                     fs_1.mkdirSync(this.folder);
@@ -42,7 +43,7 @@ let SchemaTask = class SchemaTask {
     generateSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.execService.call(`node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
-            yield this.execService.call(`node  ${this.node_modules}/gql2ts/dist/index.js ${this.folder}/schema.json -o ${this.folder}/graphql.d.ts`, { async: true });
+            yield this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/graphql.d.ts`, { async: true });
         });
     }
 };
