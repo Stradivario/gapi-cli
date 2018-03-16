@@ -61,9 +61,9 @@ gapi start --prod --docker
 ```
 
 
-
 #### Start testing
 ##### Run single test iteration
+##### Will take config > test > local configuration inside gapi-cli.conf.yml
 ```bash
 gapi test
 ```
@@ -74,27 +74,43 @@ gapi test
 gapi test --watch
 ```
 
+
 ##### Run tests with different environment
 ###### It will take configuration from gapi-cli.conf.yml 
+###### You can extend configurations from APP when you write after environment "extends app/my-environment"
+
+#### Custom testing environments
 ```yml
 config:
+  app:
+    local: 
+      API_PORT: 9000
+      API_CERT: ./cert.key
+      NODE_ENV: development
+      AMQP_HOST: 182.10.0.5
+      AMQP_PORT: 5672
+      ENDPOINT_TESTING: http://localhost:9000/graphql
+      TOKEN_TESTING: ''
+    prod: 
+      API_PORT: 9000
+      API_CERT: ./cert.key
+      NODE_ENV: production
+      AMQP_HOST: 182.10.0.5
+      AMQP_PORT: 5672
+      ENDPOINT_TESTING: http://182.10.0.101:9000/graphql
+      TOKEN_TESTING: ''
+    my-environment: 
+      API_PORT: 9000
+      API_CERT: ./cert.key
+      NODE_ENV: development
+      AMQP_HOST: 182.10.0.5
+      AMQP_PORT: 5672
+      ENDPOINT_TESTING: http://localhost:9000/graphql
+      TOKEN_TESTING: ''
   test:
-    my-environment:
-      API_PORT: 9000
-      API_CERT: ./cert.key
-      NODE_ENV: development
-      AMQP_HOST: 182.10.0.5
-      AMQP_PORT: 5672
-      ENDPOINT_TESTING: http://localhost:9000/graphql
-      TOKEN_TESTING: ''
-    local:
-      API_PORT: 9000
-      API_CERT: ./cert.key
-      NODE_ENV: development
-      AMQP_HOST: 182.10.0.5
-      AMQP_PORT: 5672
-      ENDPOINT_TESTING: http://localhost:9000/graphql
-      TOKEN_TESTING: ''
+    my-environment: extends app/my-environment
+    local: extends app/local
+    prod: extends app/prod
     worker:
       API_PORT: 9000
       API_CERT: ./cert.key
@@ -104,6 +120,7 @@ config:
       ENDPOINT_TESTING: http://182.10.0.101:9000/graphql
       TOKEN_TESTING: ''
 ```
+
 ##### Running with Testing worker environment
 ```bash
 gapi test --worker
@@ -114,16 +131,10 @@ gapi test --worker
 gapi test --prod
 ```
 
-##### Running with custome enviroment
+##### Running with custom enviroment
 ```bash
 gapi test --my-enviroment
 ```
-
-##### Running tests in watch mode locally
-```bash
-gapi test --watch
-```
-
 
 #### Schema
 
