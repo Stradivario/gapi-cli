@@ -37,12 +37,8 @@ export class StartTask {
             if (this.argsService.args[3]) {
                 const currentConfigKey = this.argsService.args[3].replace('--', '');
                 const currentConfiguration = this.configService.config.config.app[currentConfigKey];
-                if (currentConfiguration) {
-                    if (currentConfiguration.includes('extends')) {
-                        this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
-                    } else {
-                        this.config = this.environmentService.setVariables(currentConfiguration);
-                    }
+                if (currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                    this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                     console.log(`"${currentConfigKey}" configuration loaded!`);
                 } else {
                     console.log(`"local" configuration loaded!`);
@@ -50,10 +46,10 @@ export class StartTask {
                 }
             } else {
                 const currentConfiguration = <any>this.configService.config.config.app.local;
-                if (currentConfiguration.includes('extends')) {
+                if (currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                 } else {
-                    this.config = this.environmentService.setVariables(currentConfiguration);
+                    this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
                 }
                 console.log(`"local" configuration loaded!`);
             }
