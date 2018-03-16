@@ -1,5 +1,10 @@
 ## This is CLI project related with GAPI graphQL api with typescript Decorators
 
+#### [GAPI](https://github.com/Stradivario/gapi)
+
+#### [Gapi project starter](https://github.com/Stradivario/gapi-starter)
+#### [Gapi project starter-advanced](https://github.com/Stradivario/gapi-starter-postgres-sequelize-rabbitmq)
+
 #### To install gapi utility type following command:
 
 ```bash
@@ -139,7 +144,3 @@ gapi schema introspect
 
 ##### Available shared commands are: 
 ###### --verbose - Show better logging
-
-#### [GAPI](https://github.com/Stradivario/gapi)
-
-#### [Gapi project starter](https://github.com/Stradivario/gapi-starter)

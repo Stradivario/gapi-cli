@@ -24,13 +24,13 @@ export interface Commands {
     };
     config: {
         app: {
-            local: MainConfig;
-            prod: MainConfig;
+            local: MainConfig | string;
+            prod: MainConfig | string;
         }
         test: {
-            prod: MainConfig;
-            local: MainConfig;
-            worker: MainConfig;
+            prod: MainConfig | string;
+            local: MainConfig | string;
+            worker: MainConfig | string;
         },
         schema: {
             introspectionEndpoint: string;
@@ -52,11 +52,24 @@ export class ConfigService {
             return;
         }
         if (config.commands['test']) {
-            throw new Error('You cannot define command "test" they are restricted!');
+            this.genericError('test');
         }
         if (config.commands['new']) {
-            throw new Error('You cannot define command "new" they are restricted!');
+            this.genericError('new');
+        }
+        if (config.commands['schema']) {
+            this.genericError('schema');
+        }
+        if (config.commands['start']) {
+            this.genericError('start');
+        }
+        if (config.commands['stop']) {
+            this.genericError('stop');
         }
         this.config = config;
+    }
+
+    genericError(command: string) {
+        throw new Error(`You cannot define command "${command}" they are restricted!`);
     }
 }

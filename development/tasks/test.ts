@@ -67,23 +67,41 @@ export class TestTask {
     setConfig() {
         if (this.argsService.args[3]) {
             const currentConfigKey = this.argsService.args[3].replace('--', '');
-            if (this.configService.config.config.test[currentConfigKey]) {
+            const currentConfiguration = this.configService.config.config.test[currentConfigKey];
+            if (currentConfiguration) {
+                if (currentConfiguration.includes('extends')) {
+                    this.config = this.extendConfig(currentConfiguration);
+                } else {
+                    this.config = this.environmentService.setVariables(currentConfiguration);
+                }
                 console.log(`"${currentConfigKey}" configuration loaded!`);
-                return this.config = this.environmentService.setVariables(this.configService.config.config.test[currentConfigKey]);
             } else {
-                if (currentConfigKey !== 'watch') {
+                if (currentConfigKey !== 'watch' && currentConfigKey !== 'before') {
                     console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
                 }
             }
         }
         if (this.configService.config.config.test.local) {
+            const currentConfiguration = <any>this.configService.config.config.test.local;
+            if (currentConfiguration.includes('extends')) {
+                this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+            } else {
+                this.config = this.environmentService.setVariables(currentConfiguration);
+            }
             console.log('"local" configuration loaded!');
-            return this.config = this.environmentService.setVariables(this.configService.config.config.test.local);
         } else {
             throw new Error('Missing "local" configuration inside gapi-cli.conf.yml > config > test > local! no test will be runned!');
         }
     }
-
+    extendConfig(config) {
+        const splitted = config.split(' ');
+        const argum = splitted[1].split('/');
+        const extendedConfiguration = this.configService.config.config[argum[0]][argum[1]];
+        if (!extendedConfiguration) {
+            throw new Error(`Cannot extend current configuration ${config}`);
+        }
+        return extendedConfiguration;
+    }
     validateConfig(key: string) {
         if (!this.configService.config.config.test[key]) {
             throw new Error('Missing test config inside gapi-cli.conf.yml');
