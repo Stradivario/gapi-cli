@@ -39,10 +39,13 @@ let StartTask = class StartTask {
                     yield this.execService.call(`${this.config} && pm2-docker process.yml --only APP`);
                 }
                 else {
+                    console.log(stop.state, 'dada');
                     if (!stop.state) {
+                        console.log('1');
                         yield this.execService.call(`${this.config} && pm2 stop process.yml`);
                     }
                     else {
+                        console.log('2');
                         yield this.execService.call(`${this.config} && pm2 start process.yml --only APP`);
                     }
                 }

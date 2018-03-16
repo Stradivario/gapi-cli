@@ -91,7 +91,7 @@ let TestTask = class TestTask {
                 console.log(`"${currentConfigKey}" configuration loaded!`);
             }
             else {
-                if (currentConfigKey !== 'watch') {
+                if (currentConfigKey !== 'watch' && currentConfigKey !== 'before') {
                     console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
                 }
             }

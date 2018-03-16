@@ -62,7 +62,7 @@ export class RootService {
         }
 
         if (argsService.args[2] === 'start') {
-            return await this.startTask.run();
+            return await this.startTask.run({ state: true });
         }
 
         if (argsService.args[2] === 'new') {

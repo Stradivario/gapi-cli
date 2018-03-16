@@ -75,7 +75,7 @@ let RootService = class RootService {
                 return yield this.startTask.run({ state: false });
             }
             if (argsService.args[2] === 'start') {
-                return yield this.startTask.run();
+                return yield this.startTask.run({ state: true });
             }
             if (argsService.args[2] === 'new') {
                 return yield this.newTask.run();
