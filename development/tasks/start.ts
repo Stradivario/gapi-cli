@@ -27,17 +27,29 @@ export class StartTask {
             if (this.argsService.args.toString().includes('--docker')) {
                 await this.execService.call(`${this.config} && pm2-docker process.yml --only APP`);
             } else {
-                console.log(stop.state, 'dada');
                 if (!stop.state) {
-                    console.log('1');
                     await this.execService.call(`${this.config} && pm2 stop process.yml`);
                 } else {
-                    console.log('2');
                     await this.execService.call(`${this.config} && pm2 start process.yml --only APP`);
                 }
             }
         } else {
-            this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+            console.log(this.argsService.args[3]);
+            if (this.argsService.args[3]) {
+                const currentConfigKey = this.argsService.args[3].replace('--', '');
+                const currentConfiguration = this.configService.config.config.app[currentConfigKey];
+                if (currentConfiguration) {
+                    this.config = this.environmentService.setVariables(currentConfiguration);
+                    console.log(`"${currentConfigKey}" configuration loaded!`);
+                } else {
+                    console.log(`"local" configuration loaded!`);
+                    this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                }
+            } else {
+                console.log(`"local" configuration loaded!`);
+                this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+            }
+
             await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
         }
     }
