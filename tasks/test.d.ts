@@ -9,6 +9,7 @@ export declare class TestTask {
     private verbose;
     run(): Promise<never>;
     setSleep(): void;
-    setConfig(): string;
+    setConfig(): void;
+    extendConfig(config: any): any;
     validateConfig(key: string): void;
 }

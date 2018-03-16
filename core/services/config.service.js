@@ -13,12 +13,24 @@ let ConfigService = class ConfigService {
             return;
         }
         if (config.commands['test']) {
-            throw new Error('You cannot define command "test" they are restricted!');
+            this.genericError('test');
         }
         if (config.commands['new']) {
-            throw new Error('You cannot define command "new" they are restricted!');
+            this.genericError('new');
+        }
+        if (config.commands['schema']) {
+            this.genericError('schema');
+        }
+        if (config.commands['start']) {
+            this.genericError('start');
+        }
+        if (config.commands['stop']) {
+            this.genericError('stop');
         }
         this.config = config;
+    }
+    genericError(command) {
+        throw new Error(`You cannot define command "${command}" they are restricted!`);
     }
 };
 ConfigService = __decorate([

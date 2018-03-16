@@ -21,13 +21,13 @@ export interface Commands {
     };
     config: {
         app: {
-            local: MainConfig;
-            prod: MainConfig;
+            local: MainConfig | string;
+            prod: MainConfig | string;
         };
         test: {
-            prod: MainConfig;
-            local: MainConfig;
-            worker: MainConfig;
+            prod: MainConfig | string;
+            local: MainConfig | string;
+            worker: MainConfig | string;
         };
         schema: {
             introspectionEndpoint: string;
@@ -41,4 +41,5 @@ export interface GapiConfig extends Commands {
 export declare class ConfigService {
     config: GapiConfig;
     setCustomConfig(config: GapiConfig): void;
+    genericError(command: string): void;
 }
