@@ -8,4 +8,5 @@ export declare class StartTask {
     run(stop?: {
         state?: boolean;
     }): Promise<void>;
+    extendConfig(config: any): any;
 }

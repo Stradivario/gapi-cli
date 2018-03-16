@@ -48,12 +48,16 @@ let StartTask = class StartTask {
                 }
             }
             else {
-                console.log(this.argsService.args[3]);
                 if (this.argsService.args[3]) {
                     const currentConfigKey = this.argsService.args[3].replace('--', '');
                     const currentConfiguration = this.configService.config.config.app[currentConfigKey];
                     if (currentConfiguration) {
-                        this.config = this.environmentService.setVariables(currentConfiguration);
+                        if (currentConfiguration.includes('extends')) {
+                            this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                        }
+                        else {
+                            this.config = this.environmentService.setVariables(currentConfiguration);
+                        }
                         console.log(`"${currentConfigKey}" configuration loaded!`);
                     }
                     else {
@@ -62,12 +66,27 @@ let StartTask = class StartTask {
                     }
                 }
                 else {
+                    const currentConfiguration = this.configService.config.config.app.local;
+                    if (currentConfiguration.includes('extends')) {
+                        this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                    }
+                    else {
+                        this.config = this.environmentService.setVariables(currentConfiguration);
+                    }
                     console.log(`"local" configuration loaded!`);
-                    this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
                 }
                 yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
             }
         });
+    }
+    extendConfig(config) {
+        const splitted = config.split(' ');
+        const argum = splitted[1].split('/');
+        const extendedConfiguration = this.configService.config.config[argum[0]][argum[1]];
+        if (!extendedConfiguration) {
+            throw new Error(`Cannot extend current configuration ${config}`);
+        }
+        return extendedConfiguration;
     }
 };
 StartTask = __decorate([
