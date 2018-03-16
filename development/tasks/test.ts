@@ -65,12 +65,22 @@ export class TestTask {
 
 
     setConfig() {
-        if (this.args.includes('--worker')) {
-            this.config = this.environmentService.setVariables(this.configService.config.config.test.worker);
-        } else if (this.args.includes('--prod')) {
-            this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
+        if (this.argsService.args[3]) {
+            const currentConfigKey = this.argsService.args[3].replace('--', '');
+            if (this.configService.config.config.test[currentConfigKey]) {
+                console.log(`"${currentConfigKey}" configuration loaded!`);
+                return this.config = this.environmentService.setVariables(this.configService.config.config.test[currentConfigKey]);
+            } else {
+                if (currentConfigKey !== 'watch') {
+                    console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
+                }
+            }
+        }
+        if (this.configService.config.config.test.local) {
+            console.log('"local" configuration loaded!');
+            return this.config = this.environmentService.setVariables(this.configService.config.config.test.local);
         } else {
-            this.config = this.environmentService.setVariables(this.configService.config.config.test.local);
+            throw new Error('Missing "local" configuration inside gapi-cli.conf.yml > config > test > local! no test will be runned!');
         }
     }
 

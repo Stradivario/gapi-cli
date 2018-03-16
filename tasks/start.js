@@ -49,7 +49,7 @@ let StartTask = class StartTask {
             }
             else {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
             }
         });
     }

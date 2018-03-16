@@ -25,6 +25,7 @@ export interface Commands {
             prod: MainConfig;
         };
         test: {
+            prod: MainConfig;
             local: MainConfig;
             worker: MainConfig;
         };

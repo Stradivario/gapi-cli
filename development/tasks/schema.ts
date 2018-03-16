@@ -36,7 +36,7 @@ export class SchemaTask {
 
     public async generateSchema() {
         await this.execService.call(`node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
-        await this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/graphql.d.ts`, { async: true });
+        await this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.d.ts`, { async: true });
     }
 
 }

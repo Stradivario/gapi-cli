@@ -43,7 +43,7 @@ let SchemaTask = class SchemaTask {
     generateSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.execService.call(`node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
-            yield this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/graphql.d.ts`, { async: true });
+            yield this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.d.ts`, { async: true });
         });
     }
 };
