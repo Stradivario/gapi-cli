@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1"
+	 id="svg2" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" inkscape:export-ydpi="900.38605" inkscape:export-xdpi="900.38605" sodipodi:docname="cli-logo.svg" inkscape:export-filename="/usr/local/google/home/stephenfluin/cli.png" inkscape:version="0.48.4 r9939"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="-127 283 356 227"
+	 style="enable-background:new -127 283 356 227;" xml:space="preserve">
+<style type="text/css">
+	.st0{filter:url(#filter-2);}
+	.st1{fill:#1E1E1E;}
+	.st2{fill:#D5D5D5;}
+	.st3{filter:url(#filter-4);}
+	.st4{fill:#FF6057;}
+	.st5{filter:url(#filter-6);}
+	.st6{fill:#FFC22E;}
+	.st7{filter:url(#filter-8);}
+	.st8{fill:#28CA40;}
+	.st9{fill:#FFFFFF;}
+	.st10{font-family:'MyriadPro-Regular';}
+	.st11{font-size:14px;}
+</style>
+<filter  id="filter-8" x="-50%" y="-50%" height="200%" width="200%" filterUnits="objectBoundingBox">
+	<feOffset  id="feOffset36" dy="1" result="shadowOffsetOuter1" in="SourceAlpha" dx="0"></feOffset>
+	<feGaussianBlur  id="feGaussianBlur38" result="shadowBlurOuter1" stdDeviation="0.5" in="shadowOffsetOuter1"></feGaussianBlur>
+	
+		<feColorMatrix  type="matrix" id="feColorMatrix40" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.15 0" in="shadowBlurOuter1">
+		</feColorMatrix>
+</filter>
+<filter  id="filter-6" x="-50%" y="-50%" height="200%" width="200%" filterUnits="objectBoundingBox">
+	<feOffset  id="feOffset28" dy="1" result="shadowOffsetOuter1" in="SourceAlpha" dx="0"></feOffset>
+	<feGaussianBlur  id="feGaussianBlur30" result="shadowBlurOuter1" stdDeviation="0.5" in="shadowOffsetOuter1"></feGaussianBlur>
+	
+		<feColorMatrix  type="matrix" id="feColorMatrix32" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.15 0" in="shadowBlurOuter1">
+		</feColorMatrix>
+</filter>
+<filter  id="filter-4" x="-50%" y="-50%" height="200%" width="200%" filterUnits="objectBoundingBox">
+	<feOffset  id="feOffset20" dy="1" result="shadowOffsetOuter1" in="SourceAlpha" dx="0"></feOffset>
+	<feGaussianBlur  id="feGaussianBlur22" result="shadowBlurOuter1" stdDeviation="0.5" in="shadowOffsetOuter1"></feGaussianBlur>
+	
+		<feColorMatrix  type="matrix" id="feColorMatrix24" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.15 0" in="shadowBlurOuter1">
+		</feColorMatrix>
+</filter>
+<filter  id="filter-2" x="-50%" y="-50%" height="200%" width="200%" filterUnits="objectBoundingBox">
+	<feOffset  id="feOffset12" dy="5" result="shadowOffsetOuter1" in="SourceAlpha" dx="0"></feOffset>
+	<feGaussianBlur  id="feGaussianBlur14" result="shadowBlurOuter1" stdDeviation="2.5" in="shadowOffsetOuter1"></feGaussianBlur>
+	
+		<feColorMatrix  type="matrix" id="feColorMatrix16" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.25 0" in="shadowBlurOuter1">
+		</feColorMatrix>
+</filter>
+<sodipodi:namedview  id="namedview69" bordercolor="#666666" objecttolerance="10" pagecolor="#ffffff" borderopacity="1" showgrid="false" inkscape:zoom="2.3437809" guidetolerance="10" gridtolerance="10" inkscape:cy="180.4997" inkscape:cx="346.45503" inkscape:current-layer="svg2" inkscape:window-maximized="0" inkscape:window-y="0" inkscape:window-x="0" inkscape:window-height="960" inkscape:window-width="1918" inkscape:pageshadow="2" inkscape:pageopacity="0">
+	</sodipodi:namedview>
+<title  id="title4">CLI Copy 2</title>
+<desc  id="desc6">Created with Sketch.</desc>
+<g id="Screem">
+	<g id="use45" class="st0">
+		<path id="path-1_2_" d="M-117,312h336c2.2,0,4,1.8,4,4v176c0,2.2-1.8,4-4,4h-336c-2.2,0-4-1.8-4-4V316
+			C-121,313.8-119.2,312-117,312z"/>
+	</g>
+	<g id="use47">
+		<path id="path-1_1_" class="st1" d="M-117,312h336c2.2,0,4,1.8,4,4v176c0,2.2-1.8,4-4,4h-336c-2.2,0-4-1.8-4-4V316
+			C-121,313.8-119.2,312-117,312z"/>
+	</g>
+</g>
+<rect id="Header" x="-121" y="288" class="st2" width="344" height="28"/>
+<g id="IDE" transform="translate(20,13)">
+	<g id="Oval-1">
+		<g id="use52" class="st3">
+			<circle id="path-3_2_" cx="-121" cy="289" r="6"/>
+		</g>
+		<g id="use54">
+			<circle id="path-3_1_" class="st4" cx="-121" cy="289" r="6"/>
+		</g>
+	</g>
+	<g id="g56">
+		<g id="use58" class="st5">
+			<circle id="path-5_2_" cx="-102" cy="289" r="6"/>
+		</g>
+		<g id="use60">
+			<circle id="path-5_1_" class="st6" cx="-102" cy="289" r="6"/>
+		</g>
+	</g>
+	<g id="g62">
+		<g id="use64" class="st7">
+			<circle id="path-7_2_" cx="-82" cy="289" r="6"/>
+		</g>
+		<g id="use66">
+			<circle id="path-7_1_" class="st8" cx="-82" cy="289" r="6"/>
+		</g>
+	</g>
+</g>
+<path id="_x3E_--npm-install--g-an" sodipodi:nodetypes="cccccccccccssssscccccsssccccccccssssssscccssssssscccssssccsssssccssssscccccssscccccccccccccccccccccssssscccccsssscccsssscccsssssccsssscccsssssccccccccscsccssscccccccssscsscccccccssssssccsssccsscccccscsccsssccccsscsccsssccccsccccccsssscssccssssccsscsccssssssccccscccccccccccssscscccccssscccsssssssccssssccsssscccssssssccccscccssscscccccsssccccccssccccssssssccccsssccccccccccccccccccssssccscscsccscscsccccccscccccccsccsscccccccccccccccccccsssssccccsssssssccccsssccccccssccccccssccccssssssccccsssccccscscssccccccccsssssccsscccssccccccssssccssscsccscscscccccsscccccccccssscssccccccccsssssccsscccssscccccccccccssssscccccscsssccccccccccssssscccccscscscccccccccccccssssscccsssssscccccccccssssssccccssssssscccssssccssscsccsssssccccccscccccccsccsccccccccccccccccccccssssscccccssscscccccssscccccsscccccccssscccssssssccccsssccccssscscccccccccsssssccssccccscccccccsssccscscsccscscscccccsscccccccccscscssccccccccsssssccssccccsccccccccccccssscsccccsscsssscccccccccsssssccccsscsssscccccccccccccssscscccccssscccsssssssccssssccsssscccssssscccccsccsscssccssssccccssscccssssccccccccssscccssssssccccssscccccssscccccsscccccccccccccccssscccssssssccccsssccc" inkscape:connector-curvature="0" class="st9" d="
+	M-101.4,351.4v-1.2l7.2,2.9v1.1l-7.2,2.9v-1.3l5.8-2.2L-101.4,351.4z M-101.4,383.4v-1.2l7.2,2.9v1.1l-7.2,2.9v-1.3l5.8-2.2
+	L-101.4,383.4z M-101.4,415.4v-1.2l7.2,2.9v1.1l-7.2,2.9v-1.3l5.8-2.2L-101.4,415.4z M-101.4,447.4v-1.2l7.2,2.9v1.1l-7.2,2.9v-1.3
+	l5.8-2.2L-101.4,447.4z"/>
+<text transform="matrix(1 0 0 1 -78 356.3335)" class="st9 st10 st11">npm install -g Stradivario/gapi-cli</text>
+<text transform="matrix(1 0 0 1 -78 388.3335)" class="st9 st10 st11">gapi new my-project</text>
+<text transform="matrix(1 0 0 1 -78 421.3335)" class="st9 st10 st11">cd my-project</text>
+<text transform="matrix(1 0 0 1 -78 453.3335)" class="st9 st10 st11">gapi start</text>
+</svg>

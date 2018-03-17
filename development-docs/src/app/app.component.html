@@ -1,0 +1,85 @@
+<mat-toolbar color="primary" class="mat-elevation-z3">
+    <mat-toolbar-row>
+        <span style="margin-right:15px;">Gapi</span>
+        <span *ngIf="(responsive.width$ | async) < 600" class="spacer"></span>
+
+        <span *ngIf="(responsive.width$ | async) < 600">
+            <button style="right:0px;font-size:17px;;height: 100%;position: static;" [matMenuTriggerFor]="menu" color="primary" class="mat-elevation-z0"
+                mat-raised-button>SITE MENU</button>
+            <mat-menu [style.width]="100" #menu="matMenu" xPosition="before">
+                <button class="hover " (click)="goToUrl('https://github.com/Stradivario/gapi-cli/wiki')" mat-menu-item>
+                   DOCUMENTATION
+                </button>
+                <button class="hover " (click)="goToUrl('https://github.com/Stradivario/gapi-cli')" mat-menu-item>
+                    GITHUB
+                </button>
+                <button class="hover " (click)="goToUrl('https://github.com/Stradivario/gapi-cli')" mat-menu-item>
+                   GET STARTED
+                </button>
+            </mat-menu>
+        </span>
+
+        <button (click)="goToUrl('https://github.com/Stradivario/gapi-cli/wiki')" *ngIf="(responsive.width$ | async) > 600" color="primary" class="hover mat-elevation-z0" style="height: 100%;" mat-raised-button>
+                DOCUMENTATION
+        </button>
+        <button (click)="goToUrl('https://github.com/Stradivario/gapi-cli')"  *ngIf="(responsive.width$ | async) > 600" color="primary" class="hover mat-elevation-z0" style="height: 100%;" mat-raised-button>
+               GITHUB
+        </button>
+        <span class="spacer"></span>
+        <span class="spacer"></span>
+        <button (click)="goToUrl('https://github.com/Stradivario/gapi-cli')" *ngIf="(responsive.width$ | async) > 600" color="primary" class="hover mat-elevation-z0" style="font-size:17px;;height: 100%;"
+            mat-raised-button>
+            GET STARTED
+        </button>
+
+    </mat-toolbar-row>
+</mat-toolbar>
+
+
+
+<mat-grid-list cols="{{(responsive.width$ | async) < 600 ? 1 : 2}}" rowHeight="300px" class="container color">
+    <div style="padding-top:50px;padding-bottom:30px;background-color:#2f3d86">
+        <mat-grid-tile>
+            <img style="width: 360px;" src="https://stradivario.github.io/gapi-cli/assets/images/cli-logo.svg">
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div>
+                <div>
+                    <h4 style="color:white;font-size: 30px;font-weight: 400;margin-bottom:0px;">Gapi CLI</h4>
+                </div>
+                <div>
+                    <h5 style="font-size: 16px;color:white;font-weight: 400"> A command line interface for Gapi</h5>
+                </div>
+                <div>
+                    <button (click)="goToUrl('https://github.com/Stradivario/gapi-cli')" color="accent" class="mat-elevation-z0" style=" width: 250px;font-size:17px;;height: 50px;" mat-raised-button>
+                            GET STARTED
+                    </button>
+                </div>
+            </div>
+        </mat-grid-tile>
+    </div>
+</mat-grid-list>
+
+
+<mat-card>
+    <div class="container">
+        <h1>gapi new</h1>
+        <p>The Gapi CLI makes it easy to create an application that already works, right out of the box.</p>
+        <div style="padding-top:30px;"></div>
+        <h1>gapi start</h1>
+        <p>Start the bootstraped application automatically with watch mode</p>
+        <div style="padding-top:30px;"></div>
+        <h1>gapi schema</h1>
+        <p>Generate schema based on current Graphql Types</p>
+        <div style="padding-top:30px;"></div>
+        <h1>gapi test</h1>
+        <p>Easily test your app locally while developing.</p>
+        <div style="padding-top:30px;"></div>
+        <div style="margin:50px auto;width: 250px;">
+            <button (click)="goToUrl('https://github.com/Stradivario/gapi-cli')" color="accent" class="mat-elevation-z0" style=" width: 250px;font-size:17px;;height: 50px;" mat-raised-button>
+                    GET STARTED
+            </button>
+        </div>
+
+    </div>
+</mat-card>
