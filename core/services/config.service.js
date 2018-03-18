@@ -12,20 +12,25 @@ let ConfigService = class ConfigService {
         if (!config) {
             return;
         }
-        if (config.commands['test']) {
-            this.genericError('test');
+        if (!config.commands) {
+            config.commands = {};
         }
-        if (config.commands['new']) {
-            this.genericError('new');
-        }
-        if (config.commands['schema']) {
-            this.genericError('schema');
-        }
-        if (config.commands['start']) {
-            this.genericError('start');
-        }
-        if (config.commands['stop']) {
-            this.genericError('stop');
+        else {
+            if (config.commands['test']) {
+                this.genericError('test');
+            }
+            if (config.commands['new']) {
+                this.genericError('new');
+            }
+            if (config.commands['schema']) {
+                this.genericError('schema');
+            }
+            if (config.commands['start']) {
+                this.genericError('start');
+            }
+            if (config.commands['stop']) {
+                this.genericError('stop');
+            }
         }
         this.config = config;
     }

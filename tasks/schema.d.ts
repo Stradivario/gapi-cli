@@ -7,5 +7,6 @@ export declare class SchemaTask {
     private argsService;
     private configService;
     run(): Promise<void>;
+    collectQueries(): Promise<void>;
     generateSchema(): Promise<void>;
 }

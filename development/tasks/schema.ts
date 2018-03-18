@@ -6,7 +6,7 @@ import { ArgsService } from '../core/services/args.service';
 import { Observable } from 'rxjs';
 import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlink, unlinkSync } from 'fs';
 
 @Service()
 export class SchemaTask {
@@ -30,8 +30,25 @@ export class SchemaTask {
                 mkdirSync(this.folder);
             }
             await this.generateSchema();
+            console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
         }
 
+        if (process.argv[3] === 'collect' || this.argsService.args.includes('--collect-documents')) {
+            if (!existsSync(this.folder)) {
+                mkdirSync(this.folder);
+            }
+            await this.collectQueries();
+            console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
+        }
+        console.log(`To change export folder for this command you need to check this link https://github.com/Stradivario/gapi-cli/wiki/schema`);
+    }
+
+    public async collectQueries() {
+        await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
+        const readDocumentsTemp = readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
+        unlinkSync(`${this.folder}/documents-temp.json`);
+        const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${JSON.stringify(readDocumentsTemp)}`;
+        writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
     }
 
     public async generateSchema() {

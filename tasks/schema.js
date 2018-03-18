@@ -37,7 +37,25 @@ let SchemaTask = class SchemaTask {
                     fs_1.mkdirSync(this.folder);
                 }
                 yield this.generateSchema();
+                console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
             }
+            if (process.argv[3] === 'collect' || this.argsService.args.includes('--collect-documents')) {
+                if (!fs_1.existsSync(this.folder)) {
+                    fs_1.mkdirSync(this.folder);
+                }
+                yield this.collectQueries();
+                console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
+            }
+            console.log(`To change export folder for this command you need to check this link https://github.com/Stradivario/gapi-cli/wiki/schema`);
+        });
+    }
+    collectQueries() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
+            const readDocumentsTemp = fs_1.readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
+            fs_1.unlinkSync(`${this.folder}/documents-temp.json`);
+            const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${JSON.stringify(readDocumentsTemp)}`;
+            fs_1.writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
         });
     }
     generateSchema() {
