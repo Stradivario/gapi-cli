@@ -70,7 +70,12 @@ let StartTask = class StartTask {
                     }
                     console.log(`"local" configuration loaded!`);
                 }
-                yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                if (process.env.HEROKU) {
+                    yield this.execService.call(`ts-node ${process.cwd()}/src/main.ts`);
+                }
+                else {
+                    yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                }
             }
         });
     }
