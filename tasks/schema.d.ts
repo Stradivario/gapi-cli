@@ -3,6 +3,7 @@ export declare class SchemaTask {
     private endpoint;
     private node_modules;
     private bashFolder;
+    private pattern;
     private execService;
     private argsService;
     private configService;

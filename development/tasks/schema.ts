@@ -15,6 +15,7 @@ export class SchemaTask {
     private endpoint: string;
     private node_modules: string;
     private bashFolder: string;
+    private pattern: string;
     private execService: ExecService = Container.get(ExecService);
     private argsService: ArgsService = Container.get(ArgsService);
     private configService: ConfigService = Container.get(ConfigService);
@@ -22,6 +23,7 @@ export class SchemaTask {
     async run() {
         this.folder = this.configService.config.config.schema.introspectionOutputFolder;
         this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
+        this.pattern = this.configService.config.config.schema.pattern;
         this.node_modules = __dirname.replace('tasks', 'node_modules');
         this.bashFolder = __dirname.replace('tasks', 'bash');
 
@@ -44,7 +46,7 @@ export class SchemaTask {
     }
 
     public async collectQueries() {
-        await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
+        await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.folder}/documents-temp.json`);
         const readDocumentsTemp = readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
         if (this.argsService.args.includes('--collect-types')) {
             this.generateTypes(readDocumentsTemp);

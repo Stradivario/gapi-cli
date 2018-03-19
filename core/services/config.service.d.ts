@@ -32,6 +32,7 @@ export interface Commands {
         schema: {
             introspectionEndpoint: string;
             introspectionOutputFolder: string;
+            pattern: string;
         };
     };
 }
