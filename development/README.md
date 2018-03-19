@@ -1,9 +1,10 @@
 ## This is CLI project related with GAPI graphQL api with typescript Decorators
+#### [WIKI](https://github.com/Stradivario/gapi-cli/wiki) 
 
-#### [GAPI](https://github.com/Stradivario/gapi)
-
-#### [Gapi project starter](https://github.com/Stradivario/gapi-starter)
-#### [Gapi project starter-advanced](https://github.com/Stradivario/gapi-starter-postgres-sequelize-rabbitmq)
+#### [Gapi](https://github.com/Stradivario/gapi) - Advanced graphql server with typescript decorators
+#### [Starter](https://github.com/Stradivario/gapi-starter) - Basic starter project
+#### [Starter-advanced](https://github.com/Stradivario/gapi-starter-postgres-sequelize-rabbitmq) - Advanced starter project
+#### [Gapi-angular-client](https://github.com/Stradivario/gapi-starter-postgres-sequelize-rabbitmq) - Gapi Apollo Angular client
 
 #### To install gapi utility type following command:
 

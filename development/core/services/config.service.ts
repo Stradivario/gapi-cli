@@ -49,7 +49,7 @@ export class ConfigService {
 
     setCustomConfig(config: GapiConfig) {
         if (!config) {
-            return;
+            config = <any>{};
         }
         if (!config.commands) {
             config.commands = <any>{};

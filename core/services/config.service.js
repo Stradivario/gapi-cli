@@ -10,7 +10,7 @@ const typedi_1 = require("typedi");
 let ConfigService = class ConfigService {
     setCustomConfig(config) {
         if (!config) {
-            return;
+            config = {};
         }
         if (!config.commands) {
             config.commands = {};

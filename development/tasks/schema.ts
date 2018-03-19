@@ -47,7 +47,7 @@ export class SchemaTask {
         await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
         const readDocumentsTemp = readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
         unlinkSync(`${this.folder}/documents-temp.json`);
-        const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${JSON.stringify(readDocumentsTemp)}`;
+        const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = JSON.parse(${JSON.stringify(readDocumentsTemp)})`;
         writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
     }
 

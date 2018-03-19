@@ -54,7 +54,7 @@ let SchemaTask = class SchemaTask {
             yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
             const readDocumentsTemp = fs_1.readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
             fs_1.unlinkSync(`${this.folder}/documents-temp.json`);
-            const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${JSON.stringify(readDocumentsTemp)}`;
+            const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = JSON.parse(${JSON.stringify(readDocumentsTemp)})`;
             fs_1.writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
         });
     }
