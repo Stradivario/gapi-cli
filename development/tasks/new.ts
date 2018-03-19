@@ -20,12 +20,12 @@ export class NewTask {
         if (this.argsService.args.toString().includes('--advanced')) {
             await this.exec(this.repoLinks.advanced);
         } else {
-            await this.exec(this.repoLinks.basic);
+            await this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. \n To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');
         }
     }
 
-    async exec(repoLink: string) {
-        await this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
+    async exec(repoLink: string, args = '') {
+        await this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install ${args ? `&& ${args}` : ''}`);
     }
 
 }

@@ -33,13 +33,13 @@ let NewTask = class NewTask {
                 yield this.exec(this.repoLinks.advanced);
             }
             else {
-                yield this.exec(this.repoLinks.basic);
+                yield this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. \n To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');
             }
         });
     }
-    exec(repoLink) {
+    exec(repoLink, args = '') {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install`);
+            yield this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install ${args ? `&& ${args}` : ''}`);
         });
     }
 };
