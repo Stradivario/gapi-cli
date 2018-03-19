@@ -9,4 +9,5 @@ export declare class SchemaTask {
     run(): Promise<void>;
     collectQueries(): Promise<void>;
     generateSchema(): Promise<void>;
+    generateTypes(readDocumentsTemp: any): Promise<void>;
 }

@@ -46,8 +46,11 @@ export class SchemaTask {
     public async collectQueries() {
         await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '**/*.graphql' > ${this.folder}/documents-temp.json`);
         const readDocumentsTemp = readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
+        if (this.argsService.args.includes('--collect-types')) {
+            this.generateTypes(readDocumentsTemp);
+        }
         unlinkSync(`${this.folder}/documents-temp.json`);
-        const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = JSON.parse(${JSON.stringify(readDocumentsTemp)})`;
+        const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp}`;
         writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
     }
 
@@ -56,4 +59,28 @@ export class SchemaTask {
         await this.execService.call(`node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.d.ts`, { async: true });
     }
 
+    public async generateTypes(readDocumentsTemp) {
+        let types = 'export type DocumentTypes =\n | ';
+        const documents = Object.keys(JSON.parse(readDocumentsTemp));
+        let count = 3;
+        documents.forEach(key => {
+            count ++;
+            const n = key.lastIndexOf('/');
+            const result = key.substring(n + 1);
+
+            if (result === 'Place.graphql' || result === 'Movie.graphql' || result === 'ListMovies.graphql') {
+                return;
+            }
+
+            if (documents.length === count) {
+                types += `'${result}';`;
+            } else {
+                types += `'${result}'\n | `;
+            }
+        });
+        console.log(types);
+        writeFileSync(`${this.folder}/documentTypes.ts`, types, 'utf8');
+    }
 }
+
+type test = '';
