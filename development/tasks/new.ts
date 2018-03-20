@@ -20,7 +20,7 @@ export class NewTask {
         if (this.argsService.args.toString().includes('--advanced')) {
             await this.exec(this.repoLinks.advanced);
         } else {
-            await this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. \n To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');
+            await this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');
         }
     }
 

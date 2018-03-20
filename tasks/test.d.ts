@@ -7,7 +7,7 @@ export declare class TestTask {
     private args;
     private config;
     private verbose;
-    run(): Promise<never>;
+    run(): Promise<any>;
     setSleep(): void;
     setConfig(): void;
     extendConfig(config: any): any;
