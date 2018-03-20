@@ -81,7 +81,6 @@ let TestTask = class TestTask {
         if (this.argsService.args[3]) {
             const currentConfigKey = this.argsService.args[3].replace('--', '');
             const currentConfiguration = this.configService.config.config.test[currentConfigKey];
-            console.log('1', currentConfiguration);
             if (currentConfiguration) {
                 if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                     this.config = this.extendConfig(currentConfiguration);
@@ -99,8 +98,7 @@ let TestTask = class TestTask {
         }
         if (this.configService.config.config.test.local) {
             const currentConfiguration = this.configService.config.config.test.local;
-            console.log('2');
-            if (currentConfiguration && currentConfiguration.includes('extends')) {
+            if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
             }
             else {
