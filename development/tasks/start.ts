@@ -53,7 +53,7 @@ export class StartTask {
                 }
                 console.log(`"local" configuration loaded!`);
             }
-            if (process.env.HEROKU) {
+            if (process.env.DEPLOY_PLATFORM === 'heroku') {
                 await this.execService.call(`ts-node ${process.cwd()}/src/main.ts`);
             } else {
                 await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);

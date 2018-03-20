@@ -70,7 +70,7 @@ let StartTask = class StartTask {
                     }
                     console.log(`"local" configuration loaded!`);
                 }
-                if (process.env.HEROKU) {
+                if (process.env.DEPLOY_PLATFORM === 'heroku') {
                     yield this.execService.call(`ts-node ${process.cwd()}/src/main.ts`);
                 }
                 else {
