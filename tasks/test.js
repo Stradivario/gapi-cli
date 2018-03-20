@@ -75,40 +75,30 @@ let TestTask = class TestTask {
         });
     }
     setSleep() {
-        this.config += `sleep 0 `;
+        this.config += `&&sleep 0 `;
     }
     setConfig() {
-        const testConfig = this.configService.config.config.test;
         if (this.argsService.args[3]) {
             const currentConfigKey = this.argsService.args[3].replace('--', '');
-            const currentConfiguration = testConfig[currentConfigKey];
+            const currentConfiguration = this.configService.config.config.test[currentConfigKey];
             if (currentConfiguration) {
-                if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
-                    this.config = this.extendConfig(currentConfiguration);
-                }
-                else {
-                    this.config = this.environmentService.setVariables(currentConfiguration);
-                }
+                this.extendOrDefault(currentConfiguration);
                 console.log(`"${currentConfigKey}" configuration loaded!`);
             }
             else {
                 if (currentConfigKey !== 'watch' && currentConfigKey !== 'before') {
                     console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
                 }
+                this.extendOrDefault(this.configService.config.config.test.local);
             }
         }
-        else if (testConfig.local) {
-            const currentConfiguration = testConfig.local;
-            if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
-                this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
-            }
-            else {
-                this.config = this.environmentService.setVariables(currentConfiguration);
-            }
-            console.log('"local" configuration loaded!');
+    }
+    extendOrDefault(currentConfiguration) {
+        if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
+            this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
         }
         else {
-            throw new Error('Missing "local" configuration inside gapi-cli.conf.yml > config > test > local! no test will be runned!');
+            this.config = this.environmentService.setVariables(currentConfiguration);
         }
     }
     extendConfig(config) {

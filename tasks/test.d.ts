@@ -10,6 +10,7 @@ export declare class TestTask {
     run(): Promise<never>;
     setSleep(): void;
     setConfig(): void;
+    extendOrDefault(currentConfiguration: any): void;
     extendConfig(config: any): any;
     validateConfig(key: string): void;
 }
