@@ -96,7 +96,7 @@ let TestTask = class TestTask {
                 }
             }
         }
-        if (this.configService.config.config.test.local) {
+        else if (this.configService.config.config.test.local) {
             const currentConfiguration = this.configService.config.config.test.local;
             if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));

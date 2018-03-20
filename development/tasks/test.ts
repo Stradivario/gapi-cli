@@ -80,8 +80,7 @@ export class TestTask {
                     console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
                 }
             }
-        }
-        if (this.configService.config.config.test.local) {
+        } else if (this.configService.config.config.test.local) {
             const currentConfiguration = <any>this.configService.config.config.test.local;
             if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
