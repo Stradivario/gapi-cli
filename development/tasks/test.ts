@@ -31,9 +31,9 @@ export class TestTask {
         if (this.args.includes('--before')) {
             this.config += `&& export BEFORE_HOOK=true`;
             try {
-                await this.execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
+                await this.execService.call(`${this.config} && ts-node ${process.cwd()}${process.argv[4] ? process.argv[4] : '/src/test.ts'}`);
             } catch (e) {
-                console.error(`ERROR: Terminal exited with STATUS ${e} tests will not be runned check src/test.ts, appropriate exit code is 0`);
+                console.error(`ERROR: Terminal exited with STATUS ${e} tests will not be runned check ${process.argv[4] ? process.argv[4] : '/src/test.ts'}, appropriate exit code is 0`);
                 process.exit(1);
             }
             await this.execService.call(`${this.config} && jest`);
@@ -60,14 +60,15 @@ export class TestTask {
     }
 
     setSleep() {
-        this.config += ` && sleep 0 `;
+        this.config += `sleep 0 `;
     }
 
 
     setConfig() {
+        const testConfig = this.configService.config.config.test;
         if (this.argsService.args[3]) {
             const currentConfigKey = this.argsService.args[3].replace('--', '');
-            const currentConfiguration = this.configService.config.config.test[currentConfigKey];
+            const currentConfiguration = testConfig[currentConfigKey];
             if (currentConfiguration) {
                 if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                     this.config = this.extendConfig(currentConfiguration);
@@ -80,8 +81,8 @@ export class TestTask {
                     console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
                 }
             }
-        } else if (this.configService.config.config.test.local) {
-            const currentConfiguration = <any>this.configService.config.config.test.local;
+        } else if (testConfig.local) {
+            const currentConfiguration = <any>testConfig.local;
             if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
             } else {

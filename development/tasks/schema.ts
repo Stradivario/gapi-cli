@@ -28,23 +28,23 @@ export class SchemaTask {
         this.bashFolder = __dirname.replace('tasks', 'bash');
 
         if (process.argv[3] === 'introspect') {
-            if (!existsSync(this.folder)) {
-                mkdirSync(this.folder);
-            }
+            this.createDir();
             await this.generateSchema();
             console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
         }
 
         if (process.argv[3] === 'collect' || this.argsService.args.includes('--collect-documents')) {
-            if (!existsSync(this.folder)) {
-                mkdirSync(this.folder);
-            }
+            this.createDir();
             await this.collectQueries();
             console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
         }
         console.log(`To change export folder for this command you need to check this link https://github.com/Stradivario/gapi-cli/wiki/schema`);
     }
-
+    private createDir() {
+        if (!existsSync(this.folder)) {
+            mkdirSync(this.folder);
+        }
+    }
     public async collectQueries() {
         await this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.folder}/documents-temp.json`);
         const readDocumentsTemp = readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');

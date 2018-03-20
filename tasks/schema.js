@@ -34,21 +34,22 @@ let SchemaTask = class SchemaTask {
             this.node_modules = __dirname.replace('tasks', 'node_modules');
             this.bashFolder = __dirname.replace('tasks', 'bash');
             if (process.argv[3] === 'introspect') {
-                if (!fs_1.existsSync(this.folder)) {
-                    fs_1.mkdirSync(this.folder);
-                }
+                this.createDir();
                 yield this.generateSchema();
                 console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
             }
             if (process.argv[3] === 'collect' || this.argsService.args.includes('--collect-documents')) {
-                if (!fs_1.existsSync(this.folder)) {
-                    fs_1.mkdirSync(this.folder);
-                }
+                this.createDir();
                 yield this.collectQueries();
                 console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
             }
             console.log(`To change export folder for this command you need to check this link https://github.com/Stradivario/gapi-cli/wiki/schema`);
         });
+    }
+    createDir() {
+        if (!fs_1.existsSync(this.folder)) {
+            fs_1.mkdirSync(this.folder);
+        }
     }
     collectQueries() {
         return __awaiter(this, void 0, void 0, function* () {
