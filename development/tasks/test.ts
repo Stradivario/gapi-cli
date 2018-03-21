@@ -28,6 +28,7 @@ export class TestTask {
         if (this.args.includes('--verbose')) {
             this.verbose = ' --verbose';
         }
+        console.log(this.config);
         if (this.args.includes('--before')) {
             this.config += `&& export BEFORE_HOOK=true`;
             try {
@@ -60,7 +61,7 @@ export class TestTask {
     }
 
     setSleep() {
-        this.config += `&&sleep 0 `;
+        this.config += `&& sleep 0`;
     }
 
 
@@ -77,6 +78,8 @@ export class TestTask {
                 }
                 this.extendOrDefault(this.configService.config.config.test.local);
             }
+        } else {
+            this.extendOrDefault(this.configService.config.config.test.local);
         }
     }
 
@@ -87,6 +90,7 @@ export class TestTask {
             this.config = this.environmentService.setVariables(currentConfiguration);
         }
     }
+
     extendConfig(config) {
         const splitted = config.split(' ');
         const argum = splitted[1].split('/');
