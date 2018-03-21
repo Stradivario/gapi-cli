@@ -58,15 +58,15 @@ let SchemaTask = class SchemaTask {
             if (this.argsService.args.includes('--collect-types')) {
                 this.generateTypes(readDocumentsTemp);
             }
-            fs_1.unlinkSync(`${this.folder}/documents-temp.json`);
             const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp}`;
             fs_1.writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
+            fs_1.unlinkSync(`${this.folder}/documents-temp.json`);
         });
     }
     generateSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
-            yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.d.ts`, { async: true });
+            yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.ts`, { async: true });
         });
     }
     generateTypes(readDocumentsTemp) {
