@@ -6,6 +6,8 @@ import { ArgsService } from './core/services/args.service';
 import { ConfigService } from './core/services/config.service';
 import { readFileSync } from 'fs';
 import { load } from 'yamljs';
+const chalk = require('chalk');
+import * as figlet from 'figlet';
 
 const rootService = Container.get(RootService);
 const argsService = Container.get(ArgsService);
@@ -18,4 +20,9 @@ try {
 }
 configService.setCustomConfig(config);
 argsService.setArguments(process.argv);
-rootService.runTask();
+rootService.runTask()
+.then()
+.catch(e => console.error(e));
+console.log(chalk.yellow(
+    figlet.textSync('Gapi', { horizontalLayout: 'full' })
+  ));

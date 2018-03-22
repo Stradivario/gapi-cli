@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { TestTask } from '../../tasks/test';
 import { SchemaTask } from '../../tasks/schema';
+import { DeployTask } from '../../tasks/deploy';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -18,6 +19,7 @@ export class RootService {
     private testTask: TestTask = Container.get(TestTask);
     private configService: ConfigService = Container.get(ConfigService);
     private schemaTask: SchemaTask = Container.get(SchemaTask);
+    private deployTask: DeployTask = Container.get(DeployTask);
 
     checkForCustomTasks(): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -75,6 +77,10 @@ export class RootService {
 
         if (argsService.args[2] === 'schema') {
             return await this.schemaTask.run();
+        }
+
+        if (argsService.args[2] === 'deploy') {
+            return await this.deployTask.run();
         }
 
         try {

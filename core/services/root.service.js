@@ -22,6 +22,7 @@ const new_1 = require("../../tasks/new");
 const config_service_1 = require("./config.service");
 const test_1 = require("../../tasks/test");
 const schema_1 = require("../../tasks/schema");
+const deploy_1 = require("../../tasks/deploy");
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
@@ -30,6 +31,7 @@ let RootService = class RootService {
         this.testTask = typedi_1.Container.get(test_1.TestTask);
         this.configService = typedi_1.Container.get(config_service_1.ConfigService);
         this.schemaTask = typedi_1.Container.get(schema_1.SchemaTask);
+        this.deployTask = typedi_1.Container.get(deploy_1.DeployTask);
     }
     checkForCustomTasks() {
         return new Promise((resolve, reject) => {
@@ -85,6 +87,9 @@ let RootService = class RootService {
             }
             if (argsService.args[2] === 'schema') {
                 return yield this.schemaTask.run();
+            }
+            if (argsService.args[2] === 'deploy') {
+                return yield this.deployTask.run();
             }
             try {
                 yield this.checkForCustomTasks();

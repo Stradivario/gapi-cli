@@ -20,6 +20,9 @@ export interface Commands {
         };
     };
     config: {
+        deploy: {
+            app_name: string;
+        };
         app: {
             local: MainConfig | string;
             prod: MainConfig | string;
