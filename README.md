@@ -1,5 +1,5 @@
 ## This is CLI project related with GAPI graphQL api with typescript Decorators
-#### [WIKI](https://github.com/Stradivario/@gapi/cli/wiki) 
+#### [WIKI](https://github.com/Stradivario/gapi-cli/wiki) 
 
 #### [Gapi](https://github.com/Stradivario/gapi) - Advanced graphql server with typescript decorators
 #### [Starter](https://github.com/Stradivario/gapi-starter) - Basic starter project
