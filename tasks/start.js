@@ -27,11 +27,13 @@ let StartTask = class StartTask {
         this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
         this.execService = typedi_1.Container.get(exec_service_1.ExecService);
         this.verbose = '';
+        this.quiet = true;
     }
     run(stop = {}) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.argsService.args.includes('--verbose')) {
                 this.verbose = ' --verbose';
+                this.quiet = false;
             }
             if (this.argsService.args.toString().includes('--prod')) {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
@@ -74,7 +76,7 @@ let StartTask = class StartTask {
                     yield this.execService.call(`ts-node ${process.cwd()}/src/main.ts`);
                 }
                 else {
-                    yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                    yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
                 }
             }
         });

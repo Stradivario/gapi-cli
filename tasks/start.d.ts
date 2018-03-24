@@ -5,6 +5,7 @@ export declare class StartTask {
     private execService;
     private config;
     private verbose;
+    private quiet;
     run(stop?: {
         state?: boolean;
     }): Promise<void>;

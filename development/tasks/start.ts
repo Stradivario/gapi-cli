@@ -17,10 +17,11 @@ export class StartTask {
     private execService: ExecService = Container.get(ExecService);
     private config: string;
     private verbose: string = '';
-
+    private quiet: boolean = true;
     async run(stop: { state?: boolean } = {}) {
         if (this.argsService.args.includes('--verbose')) {
             this.verbose = ' --verbose';
+            this.quiet = false;
         }
         if (this.argsService.args.toString().includes('--prod')) {
             this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
@@ -56,7 +57,7 @@ export class StartTask {
             if (process.env.DEPLOY_PLATFORM === 'heroku') {
                 await this.execService.call(`ts-node ${process.cwd()}/src/main.ts`);
             } else {
-                await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
             }
         }
     }
