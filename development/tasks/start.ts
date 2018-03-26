@@ -38,7 +38,7 @@ export class StartTask {
             if (this.argsService.args[3]) {
                 const currentConfigKey = this.argsService.args[3].replace('--', '');
                 const currentConfiguration = this.configService.config.config.app[currentConfigKey];
-                if (currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                if (currentConfiguration && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                     console.log(`"${currentConfigKey}" configuration loaded!`);
                 } else {
@@ -47,7 +47,7 @@ export class StartTask {
                 }
             } else {
                 const currentConfiguration = <any>this.configService.config.config.app.local;
-                if (currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                if (currentConfiguration && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                 } else {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
