@@ -1,10 +1,10 @@
 {
   "name": "@gapi/cli",
-  "version": "0.7.15",
+  "version": "0.7.16",
   "description": "Gapi command line interface",
   "main": "main.js",
   "scripts": {
-    "postpublish":"git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git",
+    "postpublish": "git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git",
     "test": "test"
   },
   "repository": {
