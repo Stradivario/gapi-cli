@@ -4,7 +4,7 @@
   "description": "Gapi command line interface",
   "main": "main.js",
   "scripts": {
-    "postpublish":"git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git",
+    "postpublish":"git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git",
     "test": "test"
   },
   "repository": {
