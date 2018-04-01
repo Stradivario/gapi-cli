@@ -124,7 +124,7 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
         return res;
     }, Object.create(null));
 }
-const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
+export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
     writeFileSync(`${this.folder}/documentTypes.ts`, types, 'utf8');
   }
