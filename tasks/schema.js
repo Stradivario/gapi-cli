@@ -38,7 +38,8 @@ let SchemaTask = class SchemaTask {
                 yield this.generateSchema();
                 console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
             }
-            if (process.argv[3] === 'collect' || this.argsService.args.includes('--collect-documents')) {
+            if (process.argv[3] === 'collect' ||
+                this.argsService.args.includes('--collect-documents')) {
                 this.createDir();
                 yield this.collectQueries();
                 console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
@@ -71,11 +72,8 @@ let SchemaTask = class SchemaTask {
     }
     generateTypes(readDocumentsTemp) {
         return __awaiter(this, void 0, void 0, function* () {
-            let types = 'export type DocumentTypes =\n | ';
-            const documents = Object.keys(JSON.parse(readDocumentsTemp));
-            let count = 0;
-            documents.forEach(key => {
-                count++;
+            const savedDocuments = [];
+            Object.keys(JSON.parse(readDocumentsTemp)).forEach(key => {
                 const n = key.lastIndexOf('/');
                 const result = key.substring(n + 1);
                 if (result === 'ListMovies.graphql') {
@@ -87,14 +85,17 @@ let SchemaTask = class SchemaTask {
                 if (result === 'Movie.graphql') {
                     return;
                 }
-                if (documents.length === count) {
-                    types += `'${result}';`;
-                }
-                else {
-                    types += `'${result}'\n | `;
-                }
+                savedDocuments.push(result);
             });
-            console.log(types);
+            const types = `
+function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
+    return o.reduce((res, key) => {
+        res[key] = key;
+        return res;
+    }, Object.create(null));
+}
+const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
+export type DocumentTypes = keyof typeof DocumentTypes;`;
             fs_1.writeFileSync(`${this.folder}/documentTypes.ts`, types, 'utf8');
         });
     }
