@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { ConfigService } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';
 import { ExecService } from '../core/services/exec.service';
+import { existsSync } from 'fs';
 
 @Service()
 export class StartTask {
@@ -55,10 +56,17 @@ export class StartTask {
                 console.log(`"local" configuration loaded!`);
             }
             const sleep = process.argv[4] ? `${process.argv[4]} &&` : '';
+            const cwd = process.cwd();
+            const mainExists = existsSync(`${cwd}/src/main.ts`);
             if (process.env.DEPLOY_PLATFORM === 'heroku') {
-                await this.execService.call(`${sleep} ts-node ${process.cwd()}/src/main.ts`);
+                if (mainExists) {
+                    await this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
+                } else {
+                    await this.execService.call(`${sleep} ts-node ${cwd}/index.ts`);
+                }
+
             } else {
-                await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${mainExists ? `${cwd}/src/main.ts` : `${cwd}/index.ts` }  ${this.verbose}`);
             }
         }
     }

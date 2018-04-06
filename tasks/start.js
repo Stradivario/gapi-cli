@@ -20,6 +20,7 @@ const args_service_1 = require("../core/services/args.service");
 const config_service_1 = require("../core/services/config.service");
 const environment_service_1 = require("../core/services/environment.service");
 const exec_service_1 = require("../core/services/exec.service");
+const fs_1 = require("fs");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
@@ -73,11 +74,18 @@ let StartTask = class StartTask {
                     console.log(`"local" configuration loaded!`);
                 }
                 const sleep = process.argv[4] ? `${process.argv[4]} &&` : '';
+                const cwd = process.cwd();
+                const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
                 if (process.env.DEPLOY_PLATFORM === 'heroku') {
-                    yield this.execService.call(`${sleep} ts-node ${process.cwd()}/src/main.ts`);
+                    if (mainExists) {
+                        yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
+                    }
+                    else {
+                        yield this.execService.call(`${sleep} ts-node ${cwd}/index.ts`);
+                    }
                 }
                 else {
-                    yield this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
+                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${mainExists ? `${cwd}/src/main.ts` : `${cwd}/index.ts`}  ${this.verbose}`);
                 }
             }
         });
