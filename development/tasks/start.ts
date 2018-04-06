@@ -56,9 +56,9 @@ export class StartTask {
             }
             const sleep = process.argv[4] ? `${process.argv[4]} &&` : '';
             if (process.env.DEPLOY_PLATFORM === 'heroku') {
-                await this.execService.call(`${sleep} ts-node ${process.cwd()}/${process.argv[3] || '/src/main.ts'}`);
+                await this.execService.call(`${sleep} ts-node ${process.cwd()}/src/main.ts`);
             } else {
-                await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${process.cwd()}/${process.argv[3] || '/src/main.ts'} ${this.verbose}`);
+                await this.execService.call(`nodemon --watch '${process.cwd()}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${process.cwd()}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${process.cwd()}/src/main.ts ${this.verbose}`);
             }
         }
     }
