@@ -24,13 +24,17 @@ let NewTask = class NewTask {
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
         this.repoLinks = {
             basic: 'https://github.com/Stradivario/gapi-starter',
-            advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize'
+            advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
+            microservices: 'https://github.com/Stradivario/gapi-starter-microservices'
         };
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.argsService.args.toString().includes('--advanced')) {
                 yield this.exec(this.repoLinks.advanced);
+            }
+            else if (this.argsService.args.toString().includes('--microservices')) {
+                yield this.exec(this.repoLinks.microservices);
             }
             else {
                 yield this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');

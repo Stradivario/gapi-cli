@@ -24,6 +24,12 @@ gapi new my-project
 gapi new my-project --advanced
 ```
 
+#### To create new basic project with microservices from scratch via CLI type:
+
+```bash
+gapi new my-project --microservices
+```
+
 
 ### Available commands
 
