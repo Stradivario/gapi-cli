@@ -63,7 +63,7 @@ export class StartTask {
             const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
             const cwd = process.cwd();
             const mainExists = existsSync(`${cwd}/src/main.ts`);
-            const customPath = process.argv[4].split('--path=')[1];
+            const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
             const customPathExists = existsSync(`${cwd}/${customPath}`);
 
             if (process.env.DEPLOY_PLATFORM === 'heroku') {
