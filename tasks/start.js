@@ -50,7 +50,7 @@ let StartTask = class StartTask {
                 }
             }
             else {
-                if (this.argsService.args[3]) {
+                if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
                     const currentConfigKey = this.argsService.args[3].replace('--', '');
                     const currentConfiguration = this.configService.config.config.app[currentConfigKey];
                     if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
