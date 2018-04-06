@@ -51,16 +51,22 @@ let StartTask = class StartTask {
                 }
             }
             else {
+                console.log(this.argsService.args[3]);
                 if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
                     const currentConfigKey = this.argsService.args[3].replace('--', '');
+                    console.log(currentConfigKey);
                     const currentConfiguration = this.configService.config.config.app[currentConfigKey];
                     if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                         this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                         console.log(`"${currentConfigKey}" configuration loaded!`);
                     }
+                    else if (currentConfiguration) {
+                        this.config = this.environmentService.setVariables(currentConfiguration);
+                        console.log(`"${currentConfigKey}" configuration loaded!`);
+                    }
                     else {
-                        console.log(`"local" configuration loaded!`);
                         this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                        console.log(`"local" configuration loaded!`);
                     }
                 }
                 else {
@@ -73,19 +79,21 @@ let StartTask = class StartTask {
                     }
                     console.log(`"local" configuration loaded!`);
                 }
-                const sleep = process.argv[4] ? `${process.argv[4]} &&` : '';
+                const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
                 const cwd = process.cwd();
                 const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
+                const customPath = process.argv[4].split('--path=')[1];
+                const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
                 if (process.env.DEPLOY_PLATFORM === 'heroku') {
                     if (mainExists) {
                         yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
                     }
                     else {
-                        yield this.execService.call(`${sleep} ts-node ${cwd}/index.ts`);
+                        yield this.execService.call(`${sleep} ts-node ${cwd}/${customPathExists ? customPath : 'index.ts'}`);
                     }
                 }
                 else {
-                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${mainExists ? `${cwd}/src/main.ts` : `${cwd}/index.ts`}  ${this.verbose}`);
+                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${mainExists ? `${cwd}/src/main.ts` : `${cwd}/${customPathExists ? customPath : 'index.ts'}`}  ${this.verbose}`);
                 }
             }
         });
