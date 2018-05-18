@@ -43,7 +43,7 @@ let TestTask = class TestTask {
             if (this.args.includes('--before')) {
                 this.config += `&& export BEFORE_HOOK=true`;
                 try {
-                    yield this.execService.call(`${this.config} && ts-node ${process.cwd()}${process.argv[4] ? process.argv[4] : '/src/test.ts'}`);
+                    yield this.execService.call(`${this.config} && ts-node ${process.cwd()}/src/test.ts`);
                 }
                 catch (e) {
                     console.error(`ERROR: Terminal exited with STATUS ${e} tests will not be runned check ${process.argv[4] ? process.argv[4] : '/src/test.ts'}, appropriate exit code is 0`);

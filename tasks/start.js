@@ -85,15 +85,15 @@ let StartTask = class StartTask {
                 const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
                 const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
                 if (process.env.DEPLOY_PLATFORM === 'heroku') {
-                    if (mainExists) {
-                        yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
+                    if (customPathExists) {
+                        yield this.execService.call(`${sleep} ts-node ${cwd}/${customPathExists ? customPath : 'index.ts'}`);
                     }
                     else {
-                        yield this.execService.call(`${sleep} ts-node ${cwd}/${customPathExists ? customPath : 'index.ts'}`);
+                        yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
                     }
                 }
                 else {
-                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${mainExists ? `${cwd}/src/main.ts` : `${cwd}/${customPathExists ? customPath : 'index.ts'}`}  ${this.verbose}`);
+                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
                 }
             }
         });
