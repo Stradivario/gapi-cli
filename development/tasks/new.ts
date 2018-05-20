@@ -14,13 +14,19 @@ export class NewTask {
     private repoLinks = {
         basic: 'https://github.com/Stradivario/gapi-starter',
         advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
-        microservices: 'https://github.com/Stradivario/gapi-starter-microservices'
+        microservices: 'https://github.com/Stradivario/gapi-starter-microservices',
+        serverless: 'https://github.com/Stradivario/gapi-starter-serverless',
+        serverlessSequelize: 'https://github.com/Stradivario/gapi-starter-serverless-sequelize'
     };
 
     async run() {
         if (this.argsService.args.toString().includes('--advanced')) {
             await this.exec(this.repoLinks.advanced);
         } else if (this.argsService.args.toString().includes('--microservices')) {
+            await this.exec(this.repoLinks.microservices);
+        } else if (this.argsService.args.toString().includes('--serverless-sequelize')) {
+            await this.exec(this.repoLinks.microservices);
+        } else if (this.argsService.args.toString().includes('--serverless')) {
             await this.exec(this.repoLinks.microservices);
         } else {
             await this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');

@@ -25,7 +25,9 @@ let NewTask = class NewTask {
         this.repoLinks = {
             basic: 'https://github.com/Stradivario/gapi-starter',
             advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
-            microservices: 'https://github.com/Stradivario/gapi-starter-microservices'
+            microservices: 'https://github.com/Stradivario/gapi-starter-microservices',
+            serverless: 'https://github.com/Stradivario/gapi-starter-serverless',
+            serverlessSequelize: 'https://github.com/Stradivario/gapi-starter-serverless-sequelize'
         };
     }
     run() {
@@ -34,6 +36,12 @@ let NewTask = class NewTask {
                 yield this.exec(this.repoLinks.advanced);
             }
             else if (this.argsService.args.toString().includes('--microservices')) {
+                yield this.exec(this.repoLinks.microservices);
+            }
+            else if (this.argsService.args.toString().includes('--serverless-sequelize')) {
+                yield this.exec(this.repoLinks.microservices);
+            }
+            else if (this.argsService.args.toString().includes('--serverless')) {
                 yield this.exec(this.repoLinks.microservices);
             }
             else {
