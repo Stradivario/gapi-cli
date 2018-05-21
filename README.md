@@ -58,7 +58,7 @@ gapi start
 
 ##### Start production (it will start pm2 and will use process.yml file inside working directory)
 ```bash
-gapi start --prod
+gapi start --prod --pm2
 ```
 
 

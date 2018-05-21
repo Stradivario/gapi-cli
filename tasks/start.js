@@ -36,65 +36,58 @@ let StartTask = class StartTask {
                 this.verbose = ' --verbose';
                 this.quiet = false;
             }
-            if (this.argsService.args.toString().includes('--prod')) {
-                this.config = this.environmentService.setVariables(this.configService.config.config.app.prod);
-                if (this.argsService.args.toString().includes('--docker')) {
-                    yield this.execService.call(`${this.config} && pm2-docker process.yml --only APP`);
+            if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
+                const currentConfigKey = this.argsService.args[3].replace('--', '');
+                const currentConfiguration = this.configService.config.config.app[currentConfigKey];
+                if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                    this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                    console.log(`"${currentConfigKey}" configuration loaded!`);
+                }
+                else if (currentConfiguration) {
+                    this.config = this.environmentService.setVariables(currentConfiguration);
                 }
                 else {
-                    if (!stop.state) {
-                        yield this.execService.call(`${this.config} && pm2 stop process.yml`);
-                    }
-                    else {
-                        yield this.execService.call(`${this.config} && pm2 start process.yml --only APP`);
-                    }
+                    this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                    console.log(`"local" configuration loaded!`);
+                }
+                console.log(`"${currentConfigKey}" configuration loaded!`);
+            }
+            else {
+                const currentConfiguration = this.configService.config.config.app.local;
+                if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                    this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                }
+                else {
+                    this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                }
+                console.log(`"local" configuration loaded!`);
+            }
+            const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
+            const cwd = process.cwd();
+            const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
+            const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
+            const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
+            if (this.argsService.args.toString().includes('--docker')) {
+                return yield this.execService.call(`${this.config} && pm2-docker process.yml --only APP`);
+            }
+            else if (this.argsService.args.toString().includes('--pm2')) {
+                if (!stop.state) {
+                    return yield this.execService.call(`${this.config} && pm2 stop process.yml`);
+                }
+                else {
+                    return yield this.execService.call(`${this.config} && pm2 start process.yml --only APP`);
+                }
+            }
+            if (process.env.DEPLOY_PLATFORM === 'heroku') {
+                if (customPathExists) {
+                    return yield this.execService.call(`${sleep} ts-node ${cwd}/${customPathExists ? customPath : 'index.ts'}`);
+                }
+                else {
+                    return yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
                 }
             }
             else {
-                console.log(this.argsService.args[3]);
-                if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
-                    const currentConfigKey = this.argsService.args[3].replace('--', '');
-                    console.log(currentConfigKey);
-                    const currentConfiguration = this.configService.config.config.app[currentConfigKey];
-                    if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
-                        this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
-                        console.log(`"${currentConfigKey}" configuration loaded!`);
-                    }
-                    else if (currentConfiguration) {
-                        this.config = this.environmentService.setVariables(currentConfiguration);
-                        console.log(`"${currentConfigKey}" configuration loaded!`);
-                    }
-                    else {
-                        this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                        console.log(`"local" configuration loaded!`);
-                    }
-                }
-                else {
-                    const currentConfiguration = this.configService.config.config.app.local;
-                    if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
-                        this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
-                    }
-                    else {
-                        this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                    }
-                    console.log(`"local" configuration loaded!`);
-                }
-                const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
-                const cwd = process.cwd();
-                const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
-                const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
-                const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
-                if (process.env.DEPLOY_PLATFORM === 'heroku') {
-                    if (customPathExists) {
-                        yield this.execService.call(`${sleep} ts-node ${cwd}/${customPathExists ? customPath : 'index.ts'}`);
-                    }
-                    else {
-                        yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
-                    }
-                }
-                else {
-                    yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
-                }
+                return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
         });
     }
