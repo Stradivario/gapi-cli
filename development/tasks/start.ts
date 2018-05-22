@@ -54,12 +54,12 @@ export class StartTask {
         const customPathExists = existsSync(`${cwd}/${customPath}`);
 
         if (this.argsService.args.toString().includes('--docker')) {
-            return await this.execService.call(`${this.config} && pm2-docker ${customPathExists ? customPath : 'process.yml'} --only APP`);
+            return await this.execService.call(`${this.config} && pm2-docker ${cwd}/${customPathExists ? customPath : 'process.yml'} --only APP`);
         } else if (this.argsService.args.toString().includes('--pm2')) {
             if (!stop.state) {
-                return await this.execService.call(`${this.config} && pm2 stop ${customPathExists ? customPath : 'process.yml'}`);
+                return await this.execService.call(`${this.config} && pm2 stop ${cwd}/${customPathExists ? customPath : 'process.yml'}`);
             } else {
-                return await this.execService.call(`${this.config} && pm2 start ${customPathExists ? customPath : 'process.yml'} --only APP`);
+                return await this.execService.call(`${this.config} && pm2 start ${cwd}/${customPathExists ? customPath : 'process.yml'} --only APP`);
             }
         }
         if (process.env.DEPLOY_PLATFORM === 'heroku') {
