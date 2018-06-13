@@ -45,7 +45,7 @@ let NewTask = class NewTask {
                 yield this.exec(this.repoLinks.serverless);
             }
             else {
-                yield this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and gapi-cli installed internally because of Heroku easy deployment button. To uninstall ts-node and gapi-cli type "npm uninstall ts-node gapi-cli"');
+                yield this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and @gapi/cli installed internally because of Heroku easy deployment button. To uninstall ts-node and @gapi/cli type "npm uninstall ts-node @gapi/cli"');
             }
         });
     }
