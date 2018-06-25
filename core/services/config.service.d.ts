@@ -1,4 +1,4 @@
-export interface MainConfig {
+export declare class MainConfig {
     API_PORT?: number | string;
     DB_PORT?: string;
     DB_HOST?: string;
@@ -11,7 +11,7 @@ export interface MainConfig {
     ENDPOINT_TESTING?: string;
     NODE_ENV?: string;
 }
-export interface Commands {
+export declare class Commands {
     commands: {
         docker: {
             start: string;
@@ -39,7 +39,7 @@ export interface Commands {
         };
     };
 }
-export interface GapiConfig extends Commands {
+export declare class GapiConfig extends Commands {
     port: string;
 }
 export declare class ConfigService {

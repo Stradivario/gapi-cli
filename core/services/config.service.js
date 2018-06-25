@@ -7,8 +7,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
+class MainConfig {
+}
+exports.MainConfig = MainConfig;
+class Commands {
+}
+exports.Commands = Commands;
+class GapiConfig extends Commands {
+}
+exports.GapiConfig = GapiConfig;
 let ConfigService = class ConfigService {
+    constructor() {
+        this.config = new GapiConfig();
+    }
     setCustomConfig(config) {
+        Object.assign(this.config, config);
         if (!config) {
             config = {};
         }

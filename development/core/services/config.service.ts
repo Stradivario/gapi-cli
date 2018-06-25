@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 
-export interface MainConfig {
+export class MainConfig {
     API_PORT?: number | string;
     DB_PORT?: string;
     DB_HOST?: string;
@@ -14,7 +14,7 @@ export interface MainConfig {
     NODE_ENV?: string;
 }
 
-export interface Commands {
+export class Commands {
     commands: {
         docker: {
             start: string;
@@ -43,15 +43,16 @@ export interface Commands {
     };
 }
 
-export interface GapiConfig extends Commands {
+export class GapiConfig extends Commands {
     port: string;
 }
 
 @Service()
 export class ConfigService {
-    config: GapiConfig;
+    config: GapiConfig = new GapiConfig();
 
     setCustomConfig(config: GapiConfig) {
+        Object.assign(this.config, config);
         if (!config) {
             config = <any>{};
         }
