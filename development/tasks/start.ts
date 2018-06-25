@@ -69,7 +69,9 @@ export class StartTask {
                 return await this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
             }
         } else {
-            return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts` }  ${this.verbose}`);
+            const schema = this.configService.config.config.schema;
+
+            return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${schema ? schema.introspectionOutputFolder : ''}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts` }  ${this.verbose}`);
         }
     }
     extendConfig(config) {
