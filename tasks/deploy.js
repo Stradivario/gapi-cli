@@ -15,10 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
-const args_service_1 = require("../core/services/args.service");
-const exec_service_1 = require("../core/services/exec.service");
-const config_service_1 = require("../core/services/config.service");
+const core_1 = require("@rxdi/core");
 const readline_service_1 = require("../core/services/readline.service");
 const chalk = require('chalk');
 const Spinner = require('cli-spinner').Spinner;
@@ -37,10 +34,7 @@ class UserConfig {
 }
 let DeployTask = class DeployTask {
     constructor() {
-        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
-        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
-        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
-        this.readlineService = typedi_1.Container.get(readline_service_1.ReadlineService);
+        this.readlineService = core_1.Container.get(readline_service_1.ReadlineService);
         this.deploy_config = new UserConfig();
         this.spinner = new Spinner();
     }
@@ -99,6 +93,6 @@ let DeployTask = class DeployTask {
     }
 };
 DeployTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], DeployTask);
 exports.DeployTask = DeployTask;

@@ -1,8 +1,4 @@
-import { Container, Service } from 'typedi';
-import { exec } from 'shelljs';
-import { StartTask } from '../../tasks/start';
-import { Observable } from 'rxjs/Observable';
-import { RootTypeTasks } from '../../core/types/root.type';
+import { Service } from '@rxdi/core';
 
 @Service()
 export class ArgsService {
@@ -12,8 +8,5 @@ export class ArgsService {
         this.args = args;
     }
 
-    findArgument(arg: RootTypeTasks): Observable<string> {
-        return Observable.from(this.args).filter((val) => val === arg);
-    }
 
 }

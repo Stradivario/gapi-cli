@@ -1,9 +1,6 @@
 #! /usr/bin/env node
-import { exec } from 'shelljs';
-import { RootService } from '../core/services/root.service';
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
-import { Observable } from 'rxjs';
 import { ConfigService } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';
 import { ExecService } from '../core/services/exec.service';
@@ -19,6 +16,7 @@ export class StartTask {
     private config: string;
     private verbose: string = '';
     private quiet: boolean = true;
+
     async run(stop: { state?: boolean } = {}) {
         if (this.argsService.args.includes('--verbose')) {
             this.verbose = ' --verbose';
@@ -32,7 +30,7 @@ export class StartTask {
                 console.log(`"${currentConfigKey}" configuration loaded!`);
             } else if (currentConfiguration) {
                 this.config = this.environmentService.setVariables(currentConfiguration);
-         
+
             } else {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
                 console.log(`"local" configuration loaded!`);
@@ -69,7 +67,7 @@ export class StartTask {
                 return await this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
             }
         } else {
-            return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts` }  ${this.verbose}`);
+            return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
         }
     }
     extendConfig(config) {

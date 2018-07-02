@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import { Service } from '@rxdi/core';
 import { exec } from 'shelljs';
 
 @Service()

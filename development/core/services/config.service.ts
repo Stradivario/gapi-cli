@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import { Service } from '@rxdi/core';
 
 export class MainConfig {
     API_PORT?: number | string;
@@ -76,6 +76,12 @@ export class ConfigService {
             }
         }
         this.config = config;
+        this.config.config = this.config.config || <any>{};
+        this.config.config.schema = this.config.config.schema || {
+            introspectionEndpoint: '',
+            introspectionOutputFolder: '',
+            pattern: ''
+        }
     }
 
     genericError(command: string) {

@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import { exec } from 'shelljs';
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { RootService } from './core/services/root.service';
 import { ArgsService } from './core/services/args.service';
 import { ConfigService } from './core/services/config.service';

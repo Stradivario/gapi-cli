@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const readline_1 = require("readline");
 let ReadlineService = class ReadlineService {
     createReadlineInterface() {
@@ -47,6 +47,6 @@ let ReadlineService = class ReadlineService {
     }
 };
 ReadlineService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], ReadlineService);
 exports.ReadlineService = ReadlineService;

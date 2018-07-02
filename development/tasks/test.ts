@@ -1,9 +1,6 @@
 #! /usr/bin/env node
-import { exec } from 'shelljs';
-import { RootService } from '../core/services/root.service';
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
-import { Observable } from 'rxjs';
 import { ConfigService } from '../core/services/config.service';
 import { StartTask } from './start';
 import { ExecService } from '../core/services/exec.service';
@@ -15,7 +12,6 @@ export class TestTask {
     private execService: ExecService = Container.get(ExecService);
     private argsService: ArgsService = Container.get(ArgsService);
     private configService: ConfigService = Container.get(ConfigService);
-    private startTask: StartTask = Container.get(StartTask);
     private environmentService: EnvironmentVariableService = Container.get(EnvironmentVariableService);
     private args: string;
     private config: string = ``;

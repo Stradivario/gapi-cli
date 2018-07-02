@@ -1,9 +1,6 @@
 #! /usr/bin/env node
-import { exec } from 'shelljs';
-import { RootService } from '../core/services/root.service';
-import { Service, Container } from 'typedi';
+import { Service, Container } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
-import { Observable } from 'rxjs';
 import { ExecService } from '../core/services/exec.service';
 
 @Service()

@@ -1,15 +1,11 @@
 #! /usr/bin/env node
-import { exec } from 'shelljs';
-import { Service, Container } from 'typedi';
+import { Service, Container } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
-import * as inquirer from 'inquirer';
 import { ConfigService } from '../core/services/config.service';
 import { ReadlineService } from '../core/services/readline.service';
-import { clearScreenDown } from 'readline';
 
 const chalk = require('chalk');
-import * as figlet from 'figlet';
 const Spinner = require('cli-spinner').Spinner;
 
 function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
@@ -48,9 +44,6 @@ export interface Tasks {
 @Service()
 export class DeployTask implements Tasks, Questions {
 
-    private execService: ExecService = Container.get(ExecService);
-    private argsService: ArgsService = Container.get(ArgsService);
-    private configService: ConfigService = Container.get(ConfigService);
     private readlineService: ReadlineService = Container.get(ReadlineService);
     private deploy_config: UserConfig = new UserConfig();
 

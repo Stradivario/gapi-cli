@@ -1,9 +1,8 @@
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { exec } from 'shelljs';
 import { StartTask } from '../../tasks/start';
 import { ArgsService } from '../services/args.service';
 import { NewTask } from '../../tasks/new';
-import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { TestTask } from '../../tasks/test';
 import { SchemaTask } from '../../tasks/schema';

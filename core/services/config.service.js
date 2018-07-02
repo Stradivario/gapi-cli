@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 class MainConfig {
 }
 exports.MainConfig = MainConfig;
@@ -46,12 +46,18 @@ let ConfigService = class ConfigService {
             }
         }
         this.config = config;
+        this.config.config = this.config.config || {};
+        this.config.config.schema = this.config.config.schema || {
+            introspectionEndpoint: '',
+            introspectionOutputFolder: '',
+            pattern: ''
+        };
     }
     genericError(command) {
         throw new Error(`You cannot define command "${command}" they are restricted!`);
     }
 };
 ConfigService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], ConfigService);
 exports.ConfigService = ConfigService;

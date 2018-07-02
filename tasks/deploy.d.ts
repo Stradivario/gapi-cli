@@ -15,9 +15,6 @@ export interface Tasks {
     passwordTask(password: string): void;
 }
 export declare class DeployTask implements Tasks, Questions {
-    private execService;
-    private argsService;
-    private configService;
     private readlineService;
     private deploy_config;
     spinner: any;

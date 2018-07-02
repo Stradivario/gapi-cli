@@ -1,5 +1,4 @@
-import { Service } from 'typedi';
-import { exec } from 'shelljs';
+import { Service } from '@rxdi/core';
 import { createInterface, ReadLine, clearScreenDown } from 'readline';
 
 @Service()

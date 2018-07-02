@@ -15,7 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const args_service_1 = require("../core/services/args.service");
 const config_service_1 = require("../core/services/config.service");
 const environment_service_1 = require("../core/services/environment.service");
@@ -23,10 +23,10 @@ const exec_service_1 = require("../core/services/exec.service");
 const fs_1 = require("fs");
 let StartTask = class StartTask {
     constructor() {
-        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
-        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
-        this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
-        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
+        this.argsService = core_1.Container.get(args_service_1.ArgsService);
+        this.configService = core_1.Container.get(config_service_1.ConfigService);
+        this.environmentService = core_1.Container.get(environment_service_1.EnvironmentVariableService);
+        this.execService = core_1.Container.get(exec_service_1.ExecService);
         this.verbose = '';
         this.quiet = true;
     }
@@ -102,6 +102,6 @@ let StartTask = class StartTask {
     }
 };
 StartTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], StartTask);
 exports.StartTask = StartTask;

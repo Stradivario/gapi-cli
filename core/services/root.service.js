@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const shelljs_1 = require("shelljs");
 const start_1 = require("../../tasks/start");
 const args_service_1 = require("../services/args.service");
@@ -23,15 +23,15 @@ const config_service_1 = require("./config.service");
 const test_1 = require("../../tasks/test");
 const schema_1 = require("../../tasks/schema");
 const deploy_1 = require("../../tasks/deploy");
-const argsService = typedi_1.Container.get(args_service_1.ArgsService);
+const argsService = core_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
-        this.startTask = typedi_1.Container.get(start_1.StartTask);
-        this.newTask = typedi_1.Container.get(new_1.NewTask);
-        this.testTask = typedi_1.Container.get(test_1.TestTask);
-        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
-        this.schemaTask = typedi_1.Container.get(schema_1.SchemaTask);
-        this.deployTask = typedi_1.Container.get(deploy_1.DeployTask);
+        this.startTask = core_1.Container.get(start_1.StartTask);
+        this.newTask = core_1.Container.get(new_1.NewTask);
+        this.testTask = core_1.Container.get(test_1.TestTask);
+        this.configService = core_1.Container.get(config_service_1.ConfigService);
+        this.schemaTask = core_1.Container.get(schema_1.SchemaTask);
+        this.deployTask = core_1.Container.get(deploy_1.DeployTask);
     }
     checkForCustomTasks() {
         return new Promise((resolve, reject) => {
@@ -101,6 +101,6 @@ let RootService = class RootService {
     }
 };
 RootService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], RootService);
 exports.RootService = RootService;
