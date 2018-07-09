@@ -21,7 +21,6 @@ export class NewTask {
     };
 
     async run() {
-        console.log(this.argsService.args.toString())
         if (this.argsService.args.toString().includes('--advanced')) {
             await this.exec(this.repoLinks.advanced);
         } else if (this.argsService.args.toString().includes('--microservices')) {

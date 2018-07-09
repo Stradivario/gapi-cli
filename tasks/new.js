@@ -35,7 +35,6 @@ let NewTask = class NewTask {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(this.argsService.args.toString());
             if (this.argsService.args.toString().includes('--advanced')) {
                 yield this.exec(this.repoLinks.advanced);
             }
