@@ -27,11 +27,15 @@ let NewTask = class NewTask {
             advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
             microservices: 'https://github.com/Stradivario/gapi-starter-microservices',
             serverless: 'https://github.com/Stradivario/gapi-starter-serverless',
-            serverlessSequelize: 'https://github.com/Stradivario/gapi-starter-serverless-sequelize'
+            serverlessSequelize: 'https://github.com/Stradivario/gapi-starter-serverless-sequelize',
+            rxdiServer: 'https://github.com/rxdi/starter-server-side',
+            rxdiClient: 'https://github.com/rxdi/starter-client-side',
+            rxdiClientAdvanced: 'https://github.com/rxdi/starter-client-side-advanced',
         };
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(this.argsService.args.toString());
             if (this.argsService.args.toString().includes('--advanced')) {
                 yield this.exec(this.repoLinks.advanced);
             }
@@ -43,6 +47,15 @@ let NewTask = class NewTask {
             }
             else if (this.argsService.args.toString().includes('--serverless')) {
                 yield this.exec(this.repoLinks.serverless);
+            }
+            else if (this.argsService.args.toString().includes('--rxdi-server')) {
+                yield this.exec(this.repoLinks.rxdiServer);
+            }
+            else if (this.argsService.args.toString().includes('--rxdi-client')) {
+                yield this.exec(this.repoLinks.rxdiClient);
+            }
+            else if (this.argsService.args.toString().includes('--rxdi-client-advanced')) {
+                yield this.exec(this.repoLinks.rxdiClientAdvanced);
             }
             else {
                 yield this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and @gapi/cli installed internally because of Heroku easy deployment button. To uninstall ts-node and @gapi/cli type "npm uninstall ts-node @gapi/cli"');
