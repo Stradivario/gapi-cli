@@ -15,13 +15,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@rxdi/core");
+const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
 const exec_service_1 = require("../core/services/exec.service");
 let NewTask = class NewTask {
     constructor() {
-        this.execService = core_1.Container.get(exec_service_1.ExecService);
-        this.argsService = core_1.Container.get(args_service_1.ArgsService);
+        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
+        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
         this.repoLinks = {
             basic: 'https://github.com/Stradivario/gapi-starter',
             advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
@@ -68,6 +68,6 @@ let NewTask = class NewTask {
     }
 };
 NewTask = __decorate([
-    core_1.Service()
+    typedi_1.Service()
 ], NewTask);
 exports.NewTask = NewTask;

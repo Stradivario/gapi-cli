@@ -1,4 +1,4 @@
-import { Container, Service } from '@rxdi/core';
+import { Container, Service } from 'typedi';
 import { exec } from 'shelljs';
 import { StartTask } from '../../tasks/start';
 import { ArgsService } from '../services/args.service';
@@ -7,6 +7,7 @@ import { ConfigService } from './config.service';
 import { TestTask } from '../../tasks/test';
 import { SchemaTask } from '../../tasks/schema';
 import { DeployTask } from '../../tasks/deploy';
+import { BuildTask } from '../../tasks/build';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -19,6 +20,7 @@ export class RootService {
     private configService: ConfigService = Container.get(ConfigService);
     private schemaTask: SchemaTask = Container.get(SchemaTask);
     private deployTask: DeployTask = Container.get(DeployTask);
+    private buildTask: BuildTask = Container.get(BuildTask);
 
     checkForCustomTasks(): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -64,6 +66,10 @@ export class RootService {
 
         if (argsService.args[2] === 'start') {
             return await this.startTask.run({ state: true });
+        }
+
+        if (argsService.args[2] === 'build') {
+            return await this.buildTask.run();
         }
 
         if (argsService.args[2] === 'new') {

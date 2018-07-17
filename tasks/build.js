@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,38 +16,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
-const readline_1 = require("readline");
-let ReadlineService = class ReadlineService {
-    createReadlineInterface() {
-        return readline_1.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
+const config_service_1 = require("../core/services/config.service");
+const fs_1 = require("fs");
+const start_1 = require("./start");
+let BuildTask = class BuildTask {
+    constructor() {
+        this.startTask = typedi_1.Container.get(start_1.StartTask);
+        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
     }
-    clearScreenDown() {
+    run() {
         return __awaiter(this, void 0, void 0, function* () {
-            return readline_1.clearScreenDown(process.stdin);
-        });
-    }
-    createQuestion(question, task) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve) => {
-                this.readline = this.createReadlineInterface();
-                this.readline.question(question, (answer) => {
-                    try {
-                        task(answer);
-                    }
-                    catch (e) {
-                        console.error('Missing question internal library error!');
-                    }
-                    this.readline.close();
-                    resolve();
-                });
-            });
+            const cwd = process.cwd();
+            const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
+            const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
+            this.startTask.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local);
         });
     }
 };
-ReadlineService = __decorate([
+BuildTask = __decorate([
     typedi_1.Service()
-], ReadlineService);
-exports.ReadlineService = ReadlineService;
+], BuildTask);
+exports.BuildTask = BuildTask;

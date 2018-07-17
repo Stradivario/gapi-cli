@@ -1,10 +1,12 @@
 #! /usr/bin/env node
-import { Container, Service } from '@rxdi/core';
+import { Container, Service } from 'typedi';
 import { ArgsService } from '../core/services/args.service';
-import { ConfigService } from '../core/services/config.service';
+import { ConfigService, MainConfig } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';
 import { ExecService } from '../core/services/exec.service';
 import { existsSync } from 'fs';
+import Bundler = require('parcel-bundler');
+import childProcess = require('child_process');
 
 @Service()
 export class StartTask {
@@ -14,6 +16,7 @@ export class StartTask {
     private environmentService: EnvironmentVariableService = Container.get(EnvironmentVariableService);
     private execService: ExecService = Container.get(ExecService);
     private config: string;
+    private configOriginal: string | MainConfig;
     private verbose: string = '';
     private quiet: boolean = true;
 
@@ -27,9 +30,11 @@ export class StartTask {
             const currentConfiguration = this.configService.config.config.app[currentConfigKey];
             if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                this.configOriginal = this.extendConfig(currentConfiguration);
                 console.log(`"${currentConfigKey}" configuration loaded!`);
             } else if (currentConfiguration) {
                 this.config = this.environmentService.setVariables(currentConfiguration);
+                this.configOriginal = currentConfiguration;
 
             } else {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
@@ -40,8 +45,10 @@ export class StartTask {
             const currentConfiguration = <any>this.configService.config.config.app.local;
             if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                 this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                this.configOriginal = this.extendConfig(currentConfiguration);
             } else {
                 this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                this.configOriginal = this.configService.config.config.app.local;
             }
             console.log(`"local" configuration loaded!`);
         }
@@ -67,9 +74,57 @@ export class StartTask {
                 return await this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
             }
         } else {
-            return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
+            this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true);
+            // return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
         }
     }
+
+    prepareBundler(file, argv, start?) {
+
+        const options = {
+            target: 'node'
+        };
+
+        const bundler = new Bundler(file, options);
+
+        let bundle = null;
+        let child = null;
+
+        bundler.on('bundled', (compiledBundle) => {
+            bundle = compiledBundle;
+        });
+
+        bundler.on('buildEnd', () => {
+            if (start && bundle !== null) {
+                if (child) {
+                    child.stdout.removeAllListeners('data');
+                    child.stderr.removeAllListeners('data');
+                    child.removeAllListeners('exit');
+                    child.kill();
+                }
+                process.env = Object.assign(process.env, argv);
+                child = childProcess.spawn('node', [bundle.name]);
+
+                child.stdout.on('data', (data) => {
+                    process.stdout.write(data);
+                });
+
+                child.stderr.on('data', (data) => {
+                    process.stdout.write(data);
+                });
+
+                child.on('exit', (code) => {
+                    console.log(`Child process exited with code ${code}`);
+                    child = null;
+                });
+            }
+
+            bundle = null;
+        });
+
+        bundler.bundle();
+    }
+
     extendConfig(config) {
         const splitted = config.split(' ');
         const argum = splitted[1].split('/');

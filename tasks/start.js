@@ -15,18 +15,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@rxdi/core");
+const typedi_1 = require("typedi");
 const args_service_1 = require("../core/services/args.service");
 const config_service_1 = require("../core/services/config.service");
 const environment_service_1 = require("../core/services/environment.service");
 const exec_service_1 = require("../core/services/exec.service");
 const fs_1 = require("fs");
+const Bundler = require("parcel-bundler");
+const childProcess = require("child_process");
 let StartTask = class StartTask {
     constructor() {
-        this.argsService = core_1.Container.get(args_service_1.ArgsService);
-        this.configService = core_1.Container.get(config_service_1.ConfigService);
-        this.environmentService = core_1.Container.get(environment_service_1.EnvironmentVariableService);
-        this.execService = core_1.Container.get(exec_service_1.ExecService);
+        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
+        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
+        this.environmentService = typedi_1.Container.get(environment_service_1.EnvironmentVariableService);
+        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
         this.verbose = '';
         this.quiet = true;
     }
@@ -41,10 +43,12 @@ let StartTask = class StartTask {
                 const currentConfiguration = this.configService.config.config.app[currentConfigKey];
                 if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                    this.configOriginal = this.extendConfig(currentConfiguration);
                     console.log(`"${currentConfigKey}" configuration loaded!`);
                 }
                 else if (currentConfiguration) {
                     this.config = this.environmentService.setVariables(currentConfiguration);
+                    this.configOriginal = currentConfiguration;
                 }
                 else {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
@@ -56,9 +60,11 @@ let StartTask = class StartTask {
                 const currentConfiguration = this.configService.config.config.app.local;
                 if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
+                    this.configOriginal = this.extendConfig(currentConfiguration);
                 }
                 else {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
+                    this.configOriginal = this.configService.config.config.app.local;
                 }
                 console.log(`"local" configuration loaded!`);
             }
@@ -87,9 +93,45 @@ let StartTask = class StartTask {
                 }
             }
             else {
-                return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
+                this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true);
+                // return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
         });
+    }
+    prepareBundler(file, argv, start) {
+        const options = {
+            target: 'node'
+        };
+        const bundler = new Bundler(file, options);
+        let bundle = null;
+        let child = null;
+        bundler.on('bundled', (compiledBundle) => {
+            bundle = compiledBundle;
+        });
+        bundler.on('buildEnd', () => {
+            if (start && bundle !== null) {
+                if (child) {
+                    child.stdout.removeAllListeners('data');
+                    child.stderr.removeAllListeners('data');
+                    child.removeAllListeners('exit');
+                    child.kill();
+                }
+                process.env = Object.assign(process.env, argv);
+                child = childProcess.spawn('node', [bundle.name]);
+                child.stdout.on('data', (data) => {
+                    process.stdout.write(data);
+                });
+                child.stderr.on('data', (data) => {
+                    process.stdout.write(data);
+                });
+                child.on('exit', (code) => {
+                    console.log(`Child process exited with code ${code}`);
+                    child = null;
+                });
+            }
+            bundle = null;
+        });
+        bundler.bundle();
     }
     extendConfig(config) {
         const splitted = config.split(' ');
@@ -102,6 +144,6 @@ let StartTask = class StartTask {
     }
 };
 StartTask = __decorate([
-    core_1.Service()
+    typedi_1.Service()
 ], StartTask);
 exports.StartTask = StartTask;

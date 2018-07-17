@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@rxdi/core");
+const typedi_1 = require("typedi");
 let EnvironmentVariableService = class EnvironmentVariableService {
     setVariables(config) {
         let buildedEnvironments = ``;
@@ -25,6 +25,6 @@ let EnvironmentVariableService = class EnvironmentVariableService {
     }
 };
 EnvironmentVariableService = __decorate([
-    core_1.Service()
+    typedi_1.Service()
 ], EnvironmentVariableService);
 exports.EnvironmentVariableService = EnvironmentVariableService;

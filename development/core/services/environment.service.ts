@@ -1,4 +1,4 @@
-import { Service } from '@rxdi/core';
+import { Service } from 'typedi';
 
 @Service()
 export class EnvironmentVariableService {

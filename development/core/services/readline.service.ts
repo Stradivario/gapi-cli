@@ -1,4 +1,4 @@
-import { Service } from '@rxdi/core';
+import { Service } from 'typedi';
 import { createInterface, ReadLine, clearScreenDown } from 'readline';
 
 @Service()

@@ -5,6 +5,7 @@ export declare class RootService {
     private configService;
     private schemaTask;
     private deployTask;
+    private buildTask;
     checkForCustomTasks(): Promise<any>;
     runTask(): Promise<void | {}>;
 }

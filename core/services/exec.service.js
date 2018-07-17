@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@rxdi/core");
+const typedi_1 = require("typedi");
 const shelljs_1 = require("shelljs");
 let ExecService = class ExecService {
     call(command, options) {
@@ -21,6 +21,6 @@ let ExecService = class ExecService {
     }
 };
 ExecService = __decorate([
-    core_1.Service()
+    typedi_1.Service()
 ], ExecService);
 exports.ExecService = ExecService;

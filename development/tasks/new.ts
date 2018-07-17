@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-import { Service, Container } from '@rxdi/core';
+import { Service, Container } from 'typedi';
 import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
 

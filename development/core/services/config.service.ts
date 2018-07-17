@@ -1,4 +1,4 @@
-import { Service } from '@rxdi/core';
+import { Service } from 'typedi';
 
 export class MainConfig {
     API_PORT?: number | string;
