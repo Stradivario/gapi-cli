@@ -10,6 +10,6 @@ export declare class StartTask {
     run(stop?: {
         state?: boolean;
     }): Promise<{}>;
-    prepareBundler(file: any, argv: any, start?: any): void;
+    prepareBundler(file: any, argv: any, start?: boolean, buildOnly?: boolean, minify?: boolean): void;
     extendConfig(config: any): any;
 }

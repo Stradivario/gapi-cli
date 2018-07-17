@@ -52,7 +52,7 @@ let StartTask = class StartTask {
                 }
                 else {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
-                    console.log(`"local" configuration loaded!`);
+                    this.configOriginal = this.configService.config.config.app.local;
                 }
                 console.log(`"${currentConfigKey}" configuration loaded!`);
             }
@@ -93,14 +93,15 @@ let StartTask = class StartTask {
                 }
             }
             else {
-                this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true);
+                this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
                 // return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
         });
     }
-    prepareBundler(file, argv, start) {
+    prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true) {
         const options = {
-            target: 'node'
+            target: 'node',
+            minify,
         };
         const bundler = new Bundler(file, options);
         let bundle = null;
@@ -109,6 +110,11 @@ let StartTask = class StartTask {
             bundle = compiledBundle;
         });
         bundler.on('buildEnd', () => {
+            if (buildOnly) {
+                process.stdout.write(`Gapi Application build finished! ${file}\n`);
+                process.stdout.write(`Bundle source: ${bundle.name}`);
+                process.exit(0);
+            }
             if (start && bundle !== null) {
                 if (child) {
                     child.stdout.removeAllListeners('data');
