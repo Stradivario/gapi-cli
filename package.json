@@ -46,6 +46,6 @@
     "reflect-metadata": "^0.1.12",
     "ts-lint": "^4.5.1",
     "ts-node": "5.0.1",
-    "typescript": "^2.7.1"
+    "typescript": "3.0.1"
   }
 }
