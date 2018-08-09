@@ -21,10 +21,6 @@
   },
   "author": "Kristiyan Tachev (@Stradivario)",
   "license": "MIT",
-  "peerDependencies": {
-    "nodemon": "1.17.1",
-    "ts-node": "5.0.1"
-  },
   "dependencies": {
     "@types/node": "^10.5.2",
     "@types/shelljs": "^0.8.0",
