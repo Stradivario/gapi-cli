@@ -7,6 +7,7 @@ import { ExecService } from '../core/services/exec.service';
 import { existsSync } from 'fs';
 import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
+import { rejects } from 'assert';
 
 @Service()
 export class StartTask {
@@ -75,23 +76,23 @@ export class StartTask {
             }
         } else {
             if (process.argv.toString().includes('--parcel')) {
-                this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
+                return this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
             } else {
                 return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
         }
     }
 
-    prepareBundler(
+    async prepareBundler(
         file,
         argv,
         start = process.argv.toString().includes('--start'),
         buildOnly: boolean = process.argv.toString().includes('--buildOnly=false') ? false : true,
-        minify: boolean = process.argv.toString().includes('--minify=false') ? false : true
+        minify: boolean = process.argv.toString().includes('--minify=false') ? false : true,
+        target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node'
     ) {
-
         const options = {
-            target: 'node',
+            target,
             minify,
         };
 
@@ -100,10 +101,7 @@ export class StartTask {
         let bundle = null;
         let child = null;
 
-        bundler.on('bundled', (compiledBundle) => {
-            bundle = compiledBundle;
-        });
-
+        bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
         bundler.on('buildEnd', () => {
             if (buildOnly) {
                 process.stdout.write(`Gapi Application build finished! ${file}\n`);
@@ -119,24 +117,15 @@ export class StartTask {
                 }
                 process.env = Object.assign(process.env, argv);
                 child = childProcess.spawn('node', [bundle.name]);
-
-                child.stdout.on('data', (data) => {
-                    process.stdout.write(data);
-                });
-
-                child.stderr.on('data', (data) => {
-                    process.stdout.write(data);
-                });
-
+                child.stdout.on('data', (data) => process.stdout.write(data));
+                child.stderr.on('data', (data) => process.stdout.write(data));
                 child.on('exit', (code) => {
                     console.log(`Child process exited with code ${code}`);
                     child = null;
                 });
             }
-
             bundle = null;
         });
-
         bundler.bundle();
     }
 
