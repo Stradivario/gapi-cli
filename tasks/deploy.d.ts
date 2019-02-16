@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 export declare const QuestionsType: {
     username: "username";
     password: "password";

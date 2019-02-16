@@ -29,6 +29,7 @@ let BuildTask = class BuildTask {
             const cwd = process.cwd();
             const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
             const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
+            console.log(this.configService.config.config.app.local);
             this.startTask.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local);
         });
     }

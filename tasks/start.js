@@ -94,7 +94,7 @@ let StartTask = class StartTask {
             }
             else {
                 if (process.argv.toString().includes('--parcel')) {
-                    this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
+                    return this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
                 }
                 else {
                     return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
@@ -102,46 +102,42 @@ let StartTask = class StartTask {
             }
         });
     }
-    prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true) {
-        const options = {
-            target: 'node',
-            minify,
-        };
-        const bundler = new Bundler(file, options);
-        let bundle = null;
-        let child = null;
-        bundler.on('bundled', (compiledBundle) => {
-            bundle = compiledBundle;
-        });
-        bundler.on('buildEnd', () => {
-            if (buildOnly) {
-                process.stdout.write(`Gapi Application build finished! ${file}\n`);
-                process.stdout.write(`Bundle source: ${bundle.name}`);
-                process.exit(0);
-            }
-            if (start && bundle !== null) {
-                if (child) {
-                    child.stdout.removeAllListeners('data');
-                    child.stderr.removeAllListeners('data');
-                    child.removeAllListeners('exit');
-                    child.kill();
+    prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true, target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node') {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bundler = new Bundler(file, {
+                target,
+                minify,
+                bundleNodeModules: process.argv.toString().includes('--bundle-modules')
+            });
+            let bundle = null;
+            let child = null;
+            bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
+            bundler.on('buildEnd', () => {
+                if (buildOnly) {
+                    process.stdout.write(`Gapi Application build finished! ${file}\n`);
+                    process.stdout.write(`Bundle source: ${bundle.name}`);
+                    process.exit(0);
                 }
-                process.env = Object.assign(process.env, argv);
-                child = childProcess.spawn('node', [bundle.name]);
-                child.stdout.on('data', (data) => {
-                    process.stdout.write(data);
-                });
-                child.stderr.on('data', (data) => {
-                    process.stdout.write(data);
-                });
-                child.on('exit', (code) => {
-                    console.log(`Child process exited with code ${code}`);
-                    child = null;
-                });
-            }
-            bundle = null;
+                if (start && bundle !== null) {
+                    if (child) {
+                        child.stdout.removeAllListeners('data');
+                        child.stderr.removeAllListeners('data');
+                        child.removeAllListeners('exit');
+                        child.kill();
+                    }
+                    process.env = Object.assign(process.env, argv);
+                    child = childProcess.spawn('node', [bundle.name]);
+                    child.stdout.on('data', (data) => process.stdout.write(data));
+                    child.stderr.on('data', (data) => process.stdout.write(data));
+                    child.on('exit', (code) => {
+                        console.log(`Child process exited with code ${code}`);
+                        child = null;
+                    });
+                }
+                bundle = null;
+            });
+            bundler.bundle();
         });
-        bundler.bundle();
     }
     extendConfig(config) {
         const splitted = config.split(' ');

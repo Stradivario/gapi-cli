@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 export declare class SchemaTask {
     private folder;
     private endpoint;
@@ -8,7 +9,7 @@ export declare class SchemaTask {
     private argsService;
     private configService;
     run(): Promise<void>;
-    private createDir();
+    private createDir;
     collectQueries(): Promise<void>;
     generateSchema(): Promise<void>;
     generateTypes(readDocumentsTemp: any): Promise<void>;

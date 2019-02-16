@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 export declare class TestTask {
     private execService;
     private argsService;

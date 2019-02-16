@@ -89,14 +89,14 @@ export class StartTask {
         start = process.argv.toString().includes('--start'),
         buildOnly: boolean = process.argv.toString().includes('--buildOnly=false') ? false : true,
         minify: boolean = process.argv.toString().includes('--minify=false') ? false : true,
-        target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node'
+        target: 'browser' | 'node' = process.argv.toString().includes('--target=browser') ? 'browser' : 'node'
     ) {
-        const options = {
+
+        const bundler = new Bundler(file, {
             target,
             minify,
-        };
-
-        const bundler = new Bundler(file, options);
+            bundleNodeModules: process.argv.toString().includes('--bundle-modules')
+        });
 
         let bundle = null;
         let child = null;

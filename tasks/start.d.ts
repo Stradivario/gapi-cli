@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 export declare class StartTask {
     private argsService;
     private configService;
@@ -9,7 +10,7 @@ export declare class StartTask {
     private quiet;
     run(stop?: {
         state?: boolean;
-    }): Promise<{}>;
-    prepareBundler(file: any, argv: any, start?: boolean, buildOnly?: boolean, minify?: boolean): void;
+    }): Promise<void | {}>;
+    prepareBundler(file: any, argv: any, start?: boolean, buildOnly?: boolean, minify?: boolean, target?: 'browser' | 'node'): Promise<void>;
     extendConfig(config: any): any;
 }
