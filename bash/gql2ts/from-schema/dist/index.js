@@ -121,7 +121,7 @@ const run = (schemaInput, optionsInput) => {
             return generateAbstractTypeDeclaration(type, ignoredTypes, interfaceMap);
         }
         if (util_1.isEnum(type)) {
-            return generateEnumDeclaration(type.description, type.name, type.getValues());
+            return `export ${generateEnumDeclaration(type.description, type.name, type.getValues())}`;
         }
         let isInput = type instanceof graphql_1.GraphQLInputObjectType;
         const f1 = type.getFields();
