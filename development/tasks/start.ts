@@ -26,6 +26,7 @@ export class StartTask {
             this.verbose = ' --verbose';
             this.quiet = false;
         }
+        this.configService.config.config.app = this.configService.config.config.app || <any>{};
         if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
             const currentConfigKey = this.argsService.args[3].replace('--', '');
             const currentConfiguration = this.configService.config.config.app[currentConfigKey];
@@ -58,7 +59,7 @@ export class StartTask {
         const mainExists = existsSync(`${cwd}/src/main.ts`);
         const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
         const customPathExists = existsSync(`${cwd}/${customPath}`);
-
+        const isLintEnabled = this.argsService.args.toString().includes('--lint');
         if (this.argsService.args.toString().includes('--docker')) {
             return await this.execService.call(`${this.config} && pm2-docker ${cwd}/${customPathExists ? customPath : 'process.yml'} --only APP`);
         } else if (this.argsService.args.toString().includes('--pm2')) {
@@ -78,7 +79,7 @@ export class StartTask {
             if (process.argv.toString().includes('--parcel')) {
                 return this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configService.config.config.app.local, true, false);
             } else {
-                return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && npm run lint && ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
+                return await this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && ${isLintEnabled ? 'npm run lint &&' : ''} ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
         }
     }

@@ -11,7 +11,7 @@ const figlet = require("figlet");
 const rootService = typedi_1.Container.get(root_service_1.RootService);
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 const configService = typedi_1.Container.get(config_service_1.ConfigService);
-let config;
+let config = {};
 try {
     config = yamljs_1.load('gapi-cli.conf.yml');
 }

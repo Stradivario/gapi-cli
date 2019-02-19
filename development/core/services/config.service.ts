@@ -12,6 +12,7 @@ export class MainConfig {
     GRAPHIQL_TOKEN?: string;
     ENDPOINT_TESTING?: string;
     NODE_ENV?: string;
+    GAPI_VERSION?: string;
 }
 
 export class Commands {
@@ -81,6 +82,14 @@ export class ConfigService {
             introspectionEndpoint: '',
             introspectionOutputFolder: '',
             pattern: ''
+        }
+        this.config.config.app = this.config.config.app || {
+            local: {
+                GAPI_VERSION: ''
+            },
+            prod: {
+                GAPI_VERSION: ''
+            },
         }
     }
 

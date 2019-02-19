@@ -52,6 +52,14 @@ let ConfigService = class ConfigService {
             introspectionOutputFolder: '',
             pattern: ''
         };
+        this.config.config.app = this.config.config.app || {
+            local: {
+                GAPI_VERSION: ''
+            },
+            prod: {
+                GAPI_VERSION: ''
+            },
+        };
     }
     genericError(command) {
         throw new Error(`You cannot define command "${command}" they are restricted!`);

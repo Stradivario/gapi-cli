@@ -10,6 +10,7 @@ export declare class MainConfig {
     GRAPHIQL_TOKEN?: string;
     ENDPOINT_TESTING?: string;
     NODE_ENV?: string;
+    GAPI_VERSION?: string;
 }
 export declare class Commands {
     commands: {
