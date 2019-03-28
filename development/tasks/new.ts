@@ -17,6 +17,9 @@ export class NewTask {
         rxdiServer: 'https://github.com/rxdi/starter-server-side',
         rxdiClient: 'https://github.com/rxdi/starter-client-side',
         rxdiClientAdvanced: 'https://github.com/rxdi/starter-client-side-advanced',
+        rxdiNeoTypescript: 'https://github.com/rxdi/starter-neo4j-typescript',
+        rxdiNeoJavascript: 'https://github.com/rxdi/starter-neo4j-javascript',
+        rxdiNeoComplex: 'https://github.com/rxdi/starter-neo4j-typescript-complex',
         
     };
 
@@ -35,6 +38,12 @@ export class NewTask {
             await this.exec(this.repoLinks.rxdiClient);
         } else if (this.argsService.args.toString().includes('--rxdi-client-advanced')) {
             await this.exec(this.repoLinks.rxdiClientAdvanced);
+        } else if (this.argsService.args.toString().includes('--neo4j-typescript')) {
+            await this.exec(this.repoLinks.rxdiNeoTypescript);
+        } else if (this.argsService.args.toString().includes('--neo4j-javascript')) {
+            await this.exec(this.repoLinks.rxdiNeoJavascript);
+        } else if (this.argsService.args.toString().includes('--neo4j-complex')) {
+            await this.exec(this.repoLinks.rxdiNeoComplex);
         } else {
             await this.exec(this.repoLinks.basic, 'echo basic example uses ts-node and @gapi/cli installed internally because of Heroku easy deployment button. To uninstall ts-node and @gapi/cli type "npm uninstall ts-node @gapi/cli"');
         }
