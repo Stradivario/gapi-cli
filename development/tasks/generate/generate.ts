@@ -31,6 +31,22 @@ export class GenerateTask {
     if (args[0] === 't' || args[0] === 'type') {
       method = 'type';
     }
+
+    if (args[0] === 'p' || args[0] === 'provider') {
+      method = 'provider';
+    }
+
+    if (args[0] === 's' || args[0] === 'service') {
+      method = 'service';
+    }
+
+    if (args[0] === 'g' || args[0] === 'guard') {
+      method = 'guard';
+    }
+
+    if (args[0] === 'i' || args[0] === 'interceptor') {
+      method = 'interceptor';
+    }
     if (!method) {
       throw new Error('Method not specified');
     }
