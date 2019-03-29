@@ -6,6 +6,7 @@ export declare class RootService {
     private schemaTask;
     private deployTask;
     private buildTask;
+    private generateTask;
     checkForCustomTasks(): Promise<any>;
     runTask(): Promise<void | {}>;
 }

@@ -22,6 +22,10 @@
   "author": "Kristiyan Tachev (@Stradivario)",
   "license": "MIT",
   "dependencies": {
+    "@angular-devkit/core": "^7.3.7",
+    "@angular-devkit/schematics": "^7.3.7",
+    "@angular-devkit/schematics-cli": "^0.13.7",
+    "@rxdi/schematics": "0.0.411",
     "@types/node": "^11.9.4",
     "@types/shelljs": "^0.8.3",
     "apollo-codegen": "^0.19.0",
@@ -32,6 +36,7 @@
     "graphql-document-collector": "^0.2.1",
     "humps": "^2.0.1",
     "inquirer": "^6.2.2",
+    "node-emoji": "^1.10.0",
     "parcel-bundler": "^1.11.0",
     "rxjs": "^6.4.0",
     "shelljs": "^0.8.3",

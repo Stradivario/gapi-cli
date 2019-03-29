@@ -8,6 +8,7 @@ import { TestTask } from '../../tasks/test';
 import { SchemaTask } from '../../tasks/schema';
 import { DeployTask } from '../../tasks/deploy';
 import { BuildTask } from '../../tasks/build';
+import { GenerateTask } from '../../tasks/generate/generate';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -21,6 +22,7 @@ export class RootService {
     private schemaTask: SchemaTask = Container.get(SchemaTask);
     private deployTask: DeployTask = Container.get(DeployTask);
     private buildTask: BuildTask = Container.get(BuildTask);
+    private generateTask: GenerateTask = Container.get(GenerateTask);
 
     checkForCustomTasks(): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -86,6 +88,10 @@ export class RootService {
 
         if (argsService.args[2] === 'deploy') {
             return await this.deployTask.run();
+        }
+
+        if (argsService.args[2] === 'generate' || argsService.args[2] === 'g') {
+            return await this.generateTask.run();
         }
 
         try {

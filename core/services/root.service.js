@@ -24,6 +24,7 @@ const test_1 = require("../../tasks/test");
 const schema_1 = require("../../tasks/schema");
 const deploy_1 = require("../../tasks/deploy");
 const build_1 = require("../../tasks/build");
+const generate_1 = require("../../tasks/generate/generate");
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
@@ -34,6 +35,7 @@ let RootService = class RootService {
         this.schemaTask = typedi_1.Container.get(schema_1.SchemaTask);
         this.deployTask = typedi_1.Container.get(deploy_1.DeployTask);
         this.buildTask = typedi_1.Container.get(build_1.BuildTask);
+        this.generateTask = typedi_1.Container.get(generate_1.GenerateTask);
     }
     checkForCustomTasks() {
         return new Promise((resolve, reject) => {
@@ -95,6 +97,9 @@ let RootService = class RootService {
             }
             if (argsService.args[2] === 'deploy') {
                 return yield this.deployTask.run();
+            }
+            if (argsService.args[2] === 'generate' || argsService.args[2] === 'g') {
+                return yield this.generateTask.run();
             }
             try {
                 yield this.checkForCustomTasks();
