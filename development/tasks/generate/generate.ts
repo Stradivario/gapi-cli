@@ -47,6 +47,9 @@ export class GenerateTask {
     if (args[0] === 'i' || args[0] === 'interceptor') {
       method = 'interceptor';
     }
+    if (args[0] === 'e' || args[0] === 'effect') {
+      method = 'effect';
+    }
     if (!method) {
       throw new Error('Method not specified');
     }
