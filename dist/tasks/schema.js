@@ -30,8 +30,8 @@ let SchemaTask = class SchemaTask {
             this.folder = this.configService.config.config.schema.introspectionOutputFolder;
             this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
             this.pattern = this.configService.config.config.schema.pattern;
-            this.node_modules = __dirname.replace('tasks', 'node_modules');
-            this.bashFolder = __dirname.replace('tasks', 'bash');
+            this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
+            this.bashFolder = __dirname.replace('dist/tasks', 'bash');
             if (process.argv[3] === 'introspect') {
                 this.createDir();
                 yield this.generateSchema();

@@ -1,18 +1,19 @@
-#! /usr/bin/env node
-import { Service, Container } from 'typedi';
-import { ArgsService } from '../../core/services/args.service';
-import { ExecService } from '../../core/services/exec.service';
+import { Service } from 'typedi';
 import { SchematicRunner } from './runners/schematic.runner';
+import { nextOrDefault, includes } from '../../core/helpers/index';
 
 @Service()
 export class GenerateTask {
-  private execService: ExecService = Container.get(ExecService);
-  private argsService: ArgsService = Container.get(ArgsService);
 
   async run() {
-    this.argsService.args.toString().includes('--advanced');
+    const dryRun = includes('--dry-run');
+    const force = includes('--force');
+    let internalArguments = '';
     var args = process.argv.slice(3);
     let method = '';
+    let sourceRoot = nextOrDefault('--source-root', 'src');
+    let language = nextOrDefault('--language', 'ts');
+
     let hasSpec = false;
     if (args[0] === 'c' || args[0] === 'controller') {
       method = 'controller';
@@ -56,6 +57,7 @@ export class GenerateTask {
 
     if (args[0] === 'pg' || args[0] === 'plugin') {
       method = 'plugin';
+      internalArguments = `--method=${nextOrDefault('--method', 'GET')}`;
     }
     if (!method) {
       throw new Error('Method not specified');
@@ -63,20 +65,12 @@ export class GenerateTask {
 
     try {
       await new SchematicRunner().run(
-        `@rxdi/schematics:${method} --name=${args[1]} ${
+        `@rxdi/schematics:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${
           hasSpec ? '--spec' : ''
-        } --language='ts' --sourceRoot='src' --method=${ args[2] ? args[2] : 'GET' }`
+        } --language='${language}' --sourceRoot='${sourceRoot}' ${internalArguments}`
       );
     } catch (e) {
       console.log(e);
     }
-  }
-
-  async exec(repoLink: string, args = '') {
-    await this.execService.call(
-      `git clone ${repoLink} ${process.argv[3]} && cd ./${
-        process.argv[3]
-      } && npm install ${args ? `&& ${args}` : ''}`
-    );
   }
 }

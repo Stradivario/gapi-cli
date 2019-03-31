@@ -19,6 +19,7 @@ const typedi_1 = require("typedi");
 const args_service_1 = require("../../core/services/args.service");
 const exec_service_1 = require("../../core/services/exec.service");
 const schematic_runner_1 = require("./runners/schematic.runner");
+const index_1 = require("../../core/helpers/index");
 let GenerateTask = class GenerateTask {
     constructor() {
         this.execService = typedi_1.Container.get(exec_service_1.ExecService);
@@ -26,9 +27,13 @@ let GenerateTask = class GenerateTask {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.argsService.args.toString().includes('--advanced');
+            const dryRun = this.argsService.args.toString().includes('--dry-run');
+            const force = index_1.includes('--force');
+            let internalArguments = '';
             var args = process.argv.slice(3);
             let method = '';
+            let sourceRoot = index_1.nextOrDefault('--source-root', 'src');
+            let language = index_1.nextOrDefault('--language', 'ts');
             let hasSpec = false;
             if (args[0] === 'c' || args[0] === 'controller') {
                 method = 'controller';
@@ -64,21 +69,17 @@ let GenerateTask = class GenerateTask {
             }
             if (args[0] === 'pg' || args[0] === 'plugin') {
                 method = 'plugin';
+                internalArguments = `--method=${index_1.nextOrDefault('--method', 'GET')}`;
             }
             if (!method) {
                 throw new Error('Method not specified');
             }
             try {
-                yield new schematic_runner_1.SchematicRunner().run(`@rxdi/schematics:${method} --name=${args[1]} ${hasSpec ? '--spec' : ''} --language='ts' --sourceRoot='src' --method=${args[2] ? args[2] : 'GET'}`);
+                yield new schematic_runner_1.SchematicRunner().run(`@rxdi/schematics:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${hasSpec ? '--spec' : ''} --language='${language}' --sourceRoot='${sourceRoot}' ${internalArguments}`);
             }
             catch (e) {
                 console.log(e);
             }
-        });
-    }
-    exec(repoLink, args = '') {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install ${args ? `&& ${args}` : ''}`);
         });
     }
 };
