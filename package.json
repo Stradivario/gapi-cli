@@ -7,7 +7,8 @@
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "bash"
   ],
   "scripts": {
     "postpublish": "git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git && git push --tags && git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git --tags",
