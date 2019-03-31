@@ -8,8 +8,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "outDir": ".",
-    "rootDir": "./development",
+    "outDir": "dist",
+    "rootDir": "src",
     "lib": [
       "es2017",
       "es2016",
@@ -34,6 +34,6 @@
     "flatModuleId": "gapi-sequelize"
   },
   "files": [
-    "./development/root.ts"
+    "./src/main.ts"
   ]
 }

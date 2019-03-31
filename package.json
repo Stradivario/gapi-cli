@@ -2,7 +2,13 @@
   "name": "@gapi/cli",
   "version": "1.5.7",
   "description": "Gapi command line interface",
-  "main": "main.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "postpublish": "git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git && git push --tags && git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git --tags",
     "test": "test"
@@ -17,7 +23,7 @@
     "graphql"
   ],
   "bin": {
-    "gapi": "root.js"
+    "gapi": "./dist/main.js"
   },
   "author": "Kristiyan Tachev (@Stradivario)",
   "license": "MIT",
@@ -25,7 +31,7 @@
     "@angular-devkit/core": "^7.3.7",
     "@angular-devkit/schematics": "^7.3.7",
     "@angular-devkit/schematics-cli": "^0.13.7",
-    "@rxdi/schematics": "0.1.0",
+    "@rxdi/schematics": "0.2.0",
     "@types/node": "^11.9.4",
     "@types/shelljs": "^0.8.3",
     "apollo-codegen": "^0.19.0",
