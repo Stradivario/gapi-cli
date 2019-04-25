@@ -112,19 +112,37 @@ let StartTask = class StartTask {
             });
             let bundle = null;
             let child = null;
+            const killChild = () => {
+                child.stdout.removeAllListeners('data');
+                child.stderr.removeAllListeners('data');
+                child.removeAllListeners('exit');
+                child.kill();
+            };
             bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
-            bundler.on('buildEnd', () => {
+            bundler.on('buildEnd', () => __awaiter(this, void 0, void 0, function* () {
                 if (buildOnly) {
                     process.stdout.write(`Gapi Application build finished! ${file}\n`);
                     process.stdout.write(`Bundle source: ${bundle.name}`);
                     process.exit(0);
                 }
                 if (start && bundle !== null) {
+                    if (this.argsService.args.toString().includes('--lint')) {
+                        let hasError = false;
+                        try {
+                            yield this.execService.call('npm run lint');
+                        }
+                        catch (e) {
+                            if (child) {
+                                killChild();
+                            }
+                            hasError = true;
+                        }
+                        if (hasError) {
+                            return;
+                        }
+                    }
                     if (child) {
-                        child.stdout.removeAllListeners('data');
-                        child.stderr.removeAllListeners('data');
-                        child.removeAllListeners('exit');
-                        child.kill();
+                        killChild();
                     }
                     process.env = Object.assign(process.env, argv);
                     child = childProcess.spawn('node', [bundle.name]);
@@ -136,7 +154,7 @@ let StartTask = class StartTask {
                     });
                 }
                 bundle = null;
-            });
+            }));
             bundler.bundle();
         });
     }

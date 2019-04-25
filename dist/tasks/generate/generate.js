@@ -1,4 +1,3 @@
-#! /usr/bin/env node
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -16,18 +15,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
-const args_service_1 = require("../../core/services/args.service");
-const exec_service_1 = require("../../core/services/exec.service");
 const schematic_runner_1 = require("./runners/schematic.runner");
 const index_1 = require("../../core/helpers/index");
 let GenerateTask = class GenerateTask {
-    constructor() {
-        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
-        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
-    }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            const dryRun = this.argsService.args.toString().includes('--dry-run');
+            const dryRun = index_1.includes('--dry-run');
             const force = index_1.includes('--force');
             let internalArguments = '';
             var args = process.argv.slice(3);

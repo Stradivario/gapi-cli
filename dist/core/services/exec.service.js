@@ -11,11 +11,11 @@ const shelljs_1 = require("shelljs");
 let ExecService = class ExecService {
     call(command, options) {
         return new Promise((resolve, reject) => {
-            shelljs_1.exec(command, options, (e) => {
-                if (e) {
-                    reject(e);
+            shelljs_1.exec(command, options, (code, stdout, stderr) => {
+                if (code !== 0) {
+                    reject(stderr);
                 }
-                resolve();
+                resolve(stdout);
             });
         });
     }
