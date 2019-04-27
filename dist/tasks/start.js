@@ -118,6 +118,11 @@ let StartTask = class StartTask {
                 child.removeAllListeners('exit');
                 child.kill();
             };
+            bundler.on('buildStart', () => {
+                if (child) {
+                    killChild();
+                }
+            });
             bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
             bundler.on('buildEnd', () => __awaiter(this, void 0, void 0, function* () {
                 if (buildOnly) {
@@ -126,23 +131,20 @@ let StartTask = class StartTask {
                     process.exit(0);
                 }
                 if (start && bundle !== null) {
+                    if (child) {
+                        killChild();
+                    }
                     if (this.argsService.args.toString().includes('--lint')) {
                         let hasError = false;
                         try {
                             yield this.execService.call('npm run lint');
                         }
                         catch (e) {
-                            if (child) {
-                                killChild();
-                            }
                             hasError = true;
                         }
                         if (hasError) {
                             return;
                         }
-                    }
-                    if (child) {
-                        killChild();
                     }
                     const childArguments = [];
                     if (this.argsService.args.toString().includes('--inspect-brk')) {
