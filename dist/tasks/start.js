@@ -144,8 +144,18 @@ let StartTask = class StartTask {
                     if (child) {
                         killChild();
                     }
+                    const childArguments = [];
+                    if (this.argsService.args.toString().includes('--inspect-brk')) {
+                        childArguments.push('--inspect-brk');
+                    }
+                    else if (this.argsService.args.toString().includes('--inspect')) {
+                        childArguments.push('--inspect');
+                    }
                     process.env = Object.assign(process.env, argv);
-                    child = childProcess.spawn('node', [bundle.name]);
+                    child = childProcess.spawn('node', [
+                        ...childArguments,
+                        bundle.name
+                    ]);
                     child.stdout.on('data', (data) => process.stdout.write(data));
                     child.stderr.on('data', (data) => process.stdout.write(data));
                     child.on('exit', (code) => {
