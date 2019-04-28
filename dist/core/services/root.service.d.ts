@@ -7,6 +7,7 @@ export declare class RootService {
     private deployTask;
     private buildTask;
     private generateTask;
+    private daemonTask;
     checkForCustomTasks(): Promise<any>;
     runTask(): Promise<void | {}>;
 }

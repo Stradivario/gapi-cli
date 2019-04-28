@@ -24,6 +24,7 @@ const test_1 = require("../../tasks/test");
 const schema_1 = require("../../tasks/schema");
 const deploy_1 = require("../../tasks/deploy");
 const build_1 = require("../../tasks/build");
+const daemon_1 = require("../../tasks/daemon");
 const generate_1 = require("../../tasks/generate/generate");
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
@@ -36,28 +37,31 @@ let RootService = class RootService {
         this.deployTask = typedi_1.Container.get(deploy_1.DeployTask);
         this.buildTask = typedi_1.Container.get(build_1.BuildTask);
         this.generateTask = typedi_1.Container.get(generate_1.GenerateTask);
+        this.daemonTask = typedi_1.Container.get(daemon_1.DaemonTask);
     }
     checkForCustomTasks() {
         return new Promise((resolve, reject) => {
             const commands = this.configService.config.commands;
-            const filteredCommands = Object.keys(commands)
-                .filter(cmd => {
+            const filteredCommands = Object.keys(commands).filter(cmd => {
                 if (cmd === argsService.args[2]) {
                     if (commands[cmd][argsService.args[3]]) {
                         if (commands[cmd][argsService.args[3]].constructor === Array) {
                             let count = 0;
                             const commandsArray = commands[cmd][argsService.args[3]];
-                            const commandsToExecute = commandsArray.map((res) => {
+                            const commandsToExecute = commandsArray.map(res => {
                                 count++;
                                 let item;
                                 if (count === commandsArray.length) {
-                                    return item = res;
+                                    return (item = res);
                                 }
                                 else {
                                     return res + ' && ';
                                 }
                             });
-                            const finalCommand = commandsToExecute.toString().replace(/[, ]+/g, ' ').trim();
+                            const finalCommand = commandsToExecute
+                                .toString()
+                                .replace(/[, ]+/g, ' ')
+                                .trim();
                             resolve(shelljs_1.exec(finalCommand));
                         }
                         else {
@@ -100,6 +104,9 @@ let RootService = class RootService {
             }
             if (argsService.args[2] === 'generate' || argsService.args[2] === 'g') {
                 return yield this.generateTask.run();
+            }
+            if (argsService.args[2] === 'daemon') {
+                return yield this.daemonTask.run();
             }
             try {
                 yield this.checkForCustomTasks();

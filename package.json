@@ -43,14 +43,18 @@
     "graphql-document-collector": "^0.2.1",
     "humps": "^2.0.1",
     "inquirer": "^6.2.2",
+    "mkdirp": "^0.5.1",
     "node-emoji": "^1.10.0",
     "parcel-bundler": "^1.12.3",
+    "rimraf": "^2.6.3",
     "rxjs": "^6.4.0",
     "shelljs": "^0.8.3",
     "typedi": "^0.8.0",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/mkdirp": "^0.5.2",
+    "@types/rimraf": "^2.0.2",
     "reflect-metadata": "^0.1.13",
     "ts-lint": "^4.5.1",
     "ts-node": "8.0.2",
