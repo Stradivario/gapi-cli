@@ -5,7 +5,7 @@ import mkdirp = require('mkdirp');
 import { homedir } from 'os';
 import { promisify } from 'util';
 import * as rimraf from 'rimraf';
-import { processList } from '../core/helpers/ps-list';
+import { getProcessList } from '../core/helpers/ps-list';
 import { strEnum } from '../core/helpers/stringEnum';
 import { nextOrDefault, includes } from '../core/helpers';
 
@@ -80,9 +80,10 @@ export class DaemonTask {
       console.log('Daemon is not running!');
       return;
     }
+    console.log(await this.isDaemonRunning(pid))
     if (await this.isDaemonRunning(pid)) {
-      process.kill(pid);
       console.log(`Daemon process ${pid} Killed!`);
+      process.kill(pid);
     }
   }
 
@@ -100,10 +101,11 @@ export class DaemonTask {
     if (!pid) {
       return false;
     }
-    return (await this.getActiveDaemon(pid)).length;
+    return !!(await this.getActiveDaemon(pid)).length;
   }
 
   private async getActiveDaemon(pid: number) {
-    return (await processList()).filter(p => p.pid === pid);
+    return (await getProcessList()).filter(p => p.pid === pid);
   }
 }
+
