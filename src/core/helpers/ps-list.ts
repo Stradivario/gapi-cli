@@ -1,26 +1,32 @@
 'use strict';
-const util = require('util');
-const path = require('path');
-const childProcess = require('child_process');
+import { promisify } from 'util';
+import { join, basename } from 'path';
+import { execFile } from 'child_process';
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
-const execFile = util.promisify(childProcess.execFile);
-
 export interface Process {
 	pid: number;
 	name: string;
-	cmd: string;
+	cmd?: string;
 	ppid: number;
-	uid: number;
-	cpu: number;
-	memory: number;
+	uid?: number;
+	cpu?: number;
+	memory?: number;
 }
+
+interface ReturnType {
+	comm: {
+		comm: string;
+		args: string;
+		ppid: string;
+		uid: string;
+	}
+}
+
 const windows = async (): Promise<Process[]> => {
 	// Source: https://github.com/MarkTiedemann/fastlist
-	const bin = path.join(__dirname, 'fastlist.exe');
-
-	const {stdout} = await execFile(bin, {maxBuffer: TEN_MEGABYTES});
-
+	const bin = join(__dirname, 'fastlist.exe');
+	const { stdout } = await promisify(execFile)(bin, {maxBuffer: TEN_MEGABYTES});
 	return stdout
 		.trim()
 		.split('\r\n')
@@ -34,10 +40,10 @@ const windows = async (): Promise<Process[]> => {
 
 const main = async (options = { all: null }): Promise<Process[]> => {
 	const flags = (options.all === false ? '' : 'a') + 'wwxo';
-	const ret: {comm} = {} as any;
+	const ret: ReturnType = {} as any;
 
 	await Promise.all(['comm', 'args', 'ppid', 'uid', '%cpu', '%mem'].map(async cmd => {
-		const {stdout} = await execFile('ps', [flags, `pid,${cmd}`], {maxBuffer: TEN_MEGABYTES});
+		const { stdout } = await promisify(execFile)('ps', [flags, `pid,${cmd}`], {maxBuffer: TEN_MEGABYTES});
 
 		for (let line of stdout.trim().split('\n').slice(1)) {
 			line = line.trim();
@@ -58,7 +64,7 @@ const main = async (options = { all: null }): Promise<Process[]> => {
 		.filter(([, value]) => value.comm && value.args && value.ppid && value.uid && value['%cpu'] && value['%mem'])
 		.map(([key, value]) => ({
 			pid: Number.parseInt(key, 10),
-			name: path.basename(value.comm),
+			name: basename(value.comm),
 			cmd: value.args,
 			ppid: Number.parseInt(value.ppid, 10),
 			uid: Number.parseInt(value.uid, 10),
@@ -68,4 +74,4 @@ const main = async (options = { all: null }): Promise<Process[]> => {
 };
 
 
-export const processList = process.platform === 'win32' ? windows : main;
+export const getProcessList = process.platform === 'win32' ? windows : main;

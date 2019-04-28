@@ -26,13 +26,6 @@
       "node"
     ]
   },
-  "angularCompilerOptions": {
-    "annotateForClosureCompiler": true,
-    "strictMetadataEmit": true,
-    "skipTemplateCodegen": true,
-    "flatModuleOutFile": "gapi-sequelize.js",
-    "flatModuleId": "gapi-sequelize"
-  },
   "files": [
     "./src/main.ts"
   ]

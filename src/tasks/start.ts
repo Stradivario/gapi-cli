@@ -7,6 +7,7 @@ import { existsSync } from 'fs';
 import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
 import { rejects } from 'assert';
+import { nextOrDefault } from '../core/helpers';
 
 @Service()
 export class StartTask {
@@ -94,6 +95,7 @@ export class StartTask {
 
         const bundler = new Bundler(file, {
             target,
+            outDir: nextOrDefault('--outDir', './dist'),
             minify,
             bundleNodeModules: process.argv.toString().includes('--bundle-modules')
         });
@@ -141,6 +143,7 @@ export class StartTask {
                 } else if (this.argsService.args.toString().includes('--inspect')) {
                     childArguments.push('--inspect');
                 }
+                console.log(bundle.name)
                 process.env = Object.assign(process.env, argv);
                 child = childProcess.spawn('node', [
                     ...childArguments,
