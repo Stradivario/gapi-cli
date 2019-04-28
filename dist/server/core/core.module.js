@@ -6,15 +6,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@gapi/core");
-const server_controller_1 = require("./server.controller");
-const core_module_1 = require("./core/core.module");
-let ServerModule = class ServerModule {
+const core_1 = require("@rxdi/core");
+const list_service_1 = require("./services/list.service");
+let CoreModule = class CoreModule {
 };
-ServerModule = __decorate([
+CoreModule = __decorate([
     core_1.Module({
-        imports: [core_module_1.CoreModule],
-        controllers: [server_controller_1.ServerController]
+        services: [list_service_1.ListService]
     })
-], ServerModule);
-exports.ServerModule = ServerModule;
+], CoreModule);
+exports.CoreModule = CoreModule;

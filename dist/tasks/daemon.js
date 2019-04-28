@@ -15,6 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
+const core_1 = require("@gapi/core");
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
 const mkdirp = require("mkdirp");
@@ -25,8 +26,10 @@ const ps_list_1 = require("../core/helpers/ps-list");
 const stringEnum_1 = require("../core/helpers/stringEnum");
 const helpers_1 = require("../core/helpers");
 const bootstrap_1 = require("./bootstrap");
+const core_2 = require("@gapi/core");
 const systemd_service_1 = require("../core/services/systemd.service");
-exports.DaemonTasks = stringEnum_1.strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap']);
+const yamljs_1 = require("yamljs");
+exports.DaemonTasks = stringEnum_1.strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap', 'link', 'unlink', 'list']);
 let DaemonTask = class DaemonTask {
     constructor() {
         this.gapiFolder = `${os_1.homedir()}/.gapi`;
@@ -34,14 +37,15 @@ let DaemonTask = class DaemonTask {
         this.outLogFile = `${this.daemonFolder}/out.log`;
         this.errLogFile = `${this.daemonFolder}/err.log`;
         this.pidLogFile = `${this.daemonFolder}/pid`;
+        this.processListFile = `${this.daemonFolder}/process-list`;
         this.bootstrapTask = typedi_1.default.get(bootstrap_1.BootstrapTask);
         this.systemDService = typedi_1.default.get(systemd_service_1.SystemDService);
-        this.start = () => __awaiter(this, void 0, void 0, function* () {
+        this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
             yield util_1.promisify(mkdirp)(this.daemonFolder);
             if (helpers_1.includes('--systemd')) {
                 yield this.systemDService.register({
-                    name: 'my-node-service',
+                    name: name || 'my-node-service',
                     cwd: __dirname.replace('tasks', 'core/helpers/'),
                     app: 'systemd-daemon.js',
                     engine: 'node',
@@ -66,15 +70,82 @@ let DaemonTask = class DaemonTask {
                 child.unref();
             }
         });
-        this.stop = () => __awaiter(this, void 0, void 0, function* () {
+        this.stop = (name) => __awaiter(this, void 0, void 0, function* () {
             if (helpers_1.includes('--systemd')) {
-                yield this.systemDService.remove('my-node-service');
+                yield this.systemDService.remove(name);
             }
             else {
                 yield this.killDaemon();
             }
         });
+        this.list = () => __awaiter(this, void 0, void 0, function* () {
+            core_1.Container.set(core_2.HAPI_SERVER, { info: { port: '42000' } });
+            const linkList = yield core_2.sendRequest({
+                query: `
+        query {
+          getLinkList {
+            repoPath
+            introspectionPath
+            linkName
+          }
+        }
+      `
+            });
+            console.log(linkList.data.getLinkList);
+        });
         this.kill = (pid) => process.kill(Number(pid));
+        this.link = (linkName) => __awaiter(this, void 0, void 0, function* () {
+            const repoPath = process.cwd();
+            let config = { config: { schema: {} } };
+            let processList = [];
+            try {
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+                    encoding: 'utf-8'
+                }));
+            }
+            catch (e) { }
+            try {
+                config = yamljs_1.load(`${repoPath}/gapi-cli.conf.yml`);
+            }
+            catch (e) {
+                console.error('Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.');
+            }
+            const currentLink = processList.filter(p => p.repoPath === repoPath);
+            const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+            if (!currentLink.length) {
+                processList.push({
+                    repoPath,
+                    introspectionPath,
+                    linkName
+                });
+            }
+            else if (currentLink[0].introspectionPath !== introspectionPath) {
+                processList = processList.filter(p => p.repoPath !== repoPath);
+                processList.push({
+                    repoPath,
+                    introspectionPath,
+                    linkName
+                });
+            }
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList), {
+                encoding: 'utf-8'
+            });
+        });
+        this.unlink = () => __awaiter(this, void 0, void 0, function* () {
+            const repoPath = process.cwd();
+            let processList = [];
+            try {
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+                    encoding: 'utf-8'
+                }));
+            }
+            catch (e) { }
+            if (processList.filter(p => p.repoPath === repoPath).length) {
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== repoPath)), {
+                    encoding: 'utf-8'
+                });
+            }
+        });
         this.clean = () => util_1.promisify(rimraf)(this.daemonFolder);
         this.genericRunner = (task) => (args) => this[task](args || helpers_1.nextOrDefault(task, ''));
         this.tasks = new Map([
@@ -82,11 +153,12 @@ let DaemonTask = class DaemonTask {
             [exports.DaemonTasks.stop, this.genericRunner(exports.DaemonTasks.stop)],
             [exports.DaemonTasks.clean, this.genericRunner(exports.DaemonTasks.clean)],
             [exports.DaemonTasks.kill, this.genericRunner(exports.DaemonTasks.kill)],
-            [exports.DaemonTasks.bootstrap, this.genericRunner(exports.DaemonTasks.bootstrap)]
+            [exports.DaemonTasks.bootstrap, this.genericRunner(exports.DaemonTasks.bootstrap)],
+            [exports.DaemonTasks.link, this.genericRunner(exports.DaemonTasks.link)],
+            [exports.DaemonTasks.unlink, this.genericRunner(exports.DaemonTasks.unlink)],
+            [exports.DaemonTasks.list, this.genericRunner(exports.DaemonTasks.list)],
         ]);
-    }
-    bootstrap(options) {
-        return __awaiter(this, void 0, void 0, function* () {
+        this.bootstrap = (options) => __awaiter(this, void 0, void 0, function* () {
             return yield this.bootstrapTask.run(options);
         });
     }
@@ -107,8 +179,24 @@ let DaemonTask = class DaemonTask {
             if (helpers_1.includes(exports.DaemonTasks.kill)) {
                 return yield this.tasks.get(exports.DaemonTasks.kill)();
             }
+            if (helpers_1.includes(exports.DaemonTasks.unlink)) {
+                return yield this.tasks.get(exports.DaemonTasks.unlink)(helpers_1.nextOrDefault('--name'));
+            }
+            if (helpers_1.includes(exports.DaemonTasks.link)) {
+                return yield this.tasks.get(exports.DaemonTasks.link)();
+            }
+            if (helpers_1.includes(exports.DaemonTasks.list)) {
+                typedi_1.default.reset(core_2.HAPI_SERVER);
+                typedi_1.default.set(core_2.HAPI_SERVER, { info: { port: '42000' } });
+                return yield this.tasks.get(exports.DaemonTasks.list)();
+            }
             if (helpers_1.includes(exports.DaemonTasks.bootstrap)) {
                 return yield this.tasks.get(exports.DaemonTasks.bootstrap)({
+                    server: {
+                        hapi: {
+                            port: 42000
+                        }
+                    },
                     graphql: {
                         openBrowser: false,
                         graphiql: false,

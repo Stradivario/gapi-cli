@@ -1,4 +1,5 @@
 import Container, { Service } from 'typedi';
+import { Container as rxdiContainer } from '@gapi/core';
 import { openSync, writeFile, readFile } from 'fs';
 import { spawn } from 'child_process';
 import mkdirp = require('mkdirp');
@@ -9,27 +10,33 @@ import { getProcessList } from '../core/helpers/ps-list';
 import { strEnum } from '../core/helpers/stringEnum';
 import { nextOrDefault, includes } from '../core/helpers';
 import { BootstrapTask } from './bootstrap';
-import { CoreModuleConfig } from '@gapi/core';
+import { CoreModuleConfig, sendRequest, HAPI_SERVER } from '@gapi/core';
 import { SystemDService } from '../core/services/systemd.service';
+import { load } from 'yamljs';
+import { GapiConfig } from '../core/services/config.service';
+import { ILinkListType } from '../server/api-introspection/index';
 
-export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap']);
+export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap', 'link', 'unlink', 'list']);
 export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
 export class DaemonTask {
+
   private gapiFolder: string = `${homedir()}/.gapi`;
   private daemonFolder: string = `${this.gapiFolder}/daemon`;
   private outLogFile: string = `${this.daemonFolder}/out.log`;
   private errLogFile: string = `${this.daemonFolder}/err.log`;
   private pidLogFile: string = `${this.daemonFolder}/pid`;
+  private processListFile: string = `${this.daemonFolder}/process-list`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
-  private systemDService: SystemDService = Container.get(SystemDService)
-  private start = async () => {
+  private systemDService: SystemDService = Container.get(SystemDService);
+
+  private start = async (name: string) => {
     await this.killDaemon();
     await promisify(mkdirp)(this.daemonFolder);
     if (includes('--systemd')) {
       await this.systemDService.register({
-        name: 'my-node-service',
+        name: name || 'my-node-service',
         cwd: __dirname.replace('tasks', 'core/helpers/'),
         app: 'systemd-daemon.js',
         engine: 'node',
@@ -54,18 +61,87 @@ export class DaemonTask {
     }
   };
 
-  private stop = async () => {
+  private stop = async (name: string) => {
     if (includes('--systemd')) {
-      await this.systemDService.remove('my-node-service');
+      await this.systemDService.remove(name);
     } else {
       await this.killDaemon();
     }
   };
+
+  private list = async () => {
+    rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
+    const linkList = await sendRequest<any>({
+      query: `
+        query {
+          getLinkList {
+            repoPath
+            introspectionPath
+            linkName
+          }
+        }
+      `
+    });
+    console.log(linkList.data.getLinkList);
+  };
+
   private kill = (pid: number) => process.kill(Number(pid));
+
+  private link = async (linkName: string) => {
+    const repoPath = process.cwd();
+    let config: GapiConfig = { config: { schema: {} } } as any;
+    let processList: ILinkListType[] = [];
+    try {
+      processList = JSON.parse(await promisify(readFile)(this.processListFile, {
+        encoding: 'utf-8'
+      }))
+    } catch (e) {}
+    try {
+      config = load(`${repoPath}/gapi-cli.conf.yml`);
+    } catch (e) {
+      console.error(
+        'Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.'
+      );
+    }
+    const currentLink = processList.filter(p => p.repoPath === repoPath);
+    const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+    if (!currentLink.length) {
+      processList.push({
+        repoPath,
+        introspectionPath,
+        linkName
+      });
+
+    } else if (currentLink[0].introspectionPath !== introspectionPath) {
+      processList = processList.filter(p => p.repoPath !== repoPath);
+      processList.push({
+        repoPath,
+        introspectionPath,
+        linkName
+      });
+    }
+    await promisify(writeFile)(this.processListFile, JSON.stringify(processList), {
+      encoding: 'utf-8'
+    });
+  };
+
+  private unlink = async () => {
+    const repoPath = process.cwd();
+    let processList: ILinkListType[] = [];
+    try {
+      processList = JSON.parse(await promisify(readFile)(this.processListFile, {
+        encoding: 'utf-8'
+      }))
+    } catch (e) {}
+    if (processList.filter(p => p.repoPath === repoPath).length) {
+      await promisify(writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== repoPath)), {
+        encoding: 'utf-8'
+      });
+    }
+  };
+
   private clean = () => promisify(rimraf)(this.daemonFolder);
-  async bootstrap(options: CoreModuleConfig) {
-    return await this.bootstrapTask.run(options)
-  }
+
   private genericRunner = (task: DaemonTasks) => (args) =>
     (this[task] as any)(args || nextOrDefault(task, ''));
 
@@ -77,8 +153,15 @@ export class DaemonTask {
     [DaemonTasks.stop, this.genericRunner(DaemonTasks.stop)],
     [DaemonTasks.clean, this.genericRunner(DaemonTasks.clean)],
     [DaemonTasks.kill, this.genericRunner(DaemonTasks.kill)],
-    [DaemonTasks.bootstrap, this.genericRunner(DaemonTasks.bootstrap)]
+    [DaemonTasks.bootstrap, this.genericRunner(DaemonTasks.bootstrap)],
+    [DaemonTasks.link, this.genericRunner(DaemonTasks.link)],
+    [DaemonTasks.unlink, this.genericRunner(DaemonTasks.unlink)],
+    [DaemonTasks.list, this.genericRunner(DaemonTasks.list)],
   ]);
+
+  bootstrap = async (options: CoreModuleConfig) => {
+    return await this.bootstrapTask.run(options);
+  }
 
   async run() {
     if (includes(DaemonTasks.clean)) {
@@ -96,8 +179,24 @@ export class DaemonTask {
     if (includes(DaemonTasks.kill)) {
       return await this.tasks.get(DaemonTasks.kill)();
     }
+    if (includes(DaemonTasks.unlink)) {
+      return await this.tasks.get(DaemonTasks.unlink)(nextOrDefault('--name'));
+    }
+    if (includes(DaemonTasks.link)) {
+      return await this.tasks.get(DaemonTasks.link)();
+    }
+    if (includes(DaemonTasks.list)) {
+      Container.reset(HAPI_SERVER);
+      Container.set(HAPI_SERVER, { info: { port: '42000' } });
+      return await this.tasks.get(DaemonTasks.list)();
+    }
     if (includes(DaemonTasks.bootstrap)) {
       return await this.tasks.get(DaemonTasks.bootstrap)(<CoreModuleConfig>{
+        server: {
+          hapi: {
+            port: 42000
+          }
+        },
         graphql: {
           openBrowser: false,
           graphiql: false,

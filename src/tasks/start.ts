@@ -6,8 +6,10 @@ import { ExecService } from '../core/services/exec.service';
 import { existsSync } from 'fs';
 import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
-import { rejects } from 'assert';
 import { nextOrDefault } from '../core/helpers';
+import { sendRequest, HAPI_SERVER } from '@gapi/core';
+import { IQuery } from 'src/server/api-introspection';
+import { Container as rxdiContainer } from '@gapi/core';
 
 @Service()
 export class StartTask {
@@ -83,7 +85,39 @@ export class StartTask {
             }
         }
     }
-
+    async isDaemonRunning() {
+        rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
+       const res = await sendRequest<IQuery>({
+            query: `
+                query {
+                    status {
+                        status
+                    }
+                }
+            `
+        });
+        if (res.status === 200 && res.data.status.status === '200') {
+            return true;
+        }
+        return false;
+    }
+    async notifyDaemon(variables: {
+        repoPath?: string,
+    }) {
+        rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
+        if (await this.isDaemonRunning()) {
+            await sendRequest({
+                query: `
+                mutation notifyDaemon($repoPath: String!) {
+                  notifyDaemon(repoPath: $repoPath) {
+                    repoPath
+                  }
+                }
+                `,
+                variables
+            })
+        }
+    }
     async prepareBundler(
         file,
         argv,
@@ -108,20 +142,21 @@ export class StartTask {
             child.removeAllListeners('exit');
             child.kill();
         }
-        bundler.on('buildStart', () => {
-            if (child) {
-                killChild()
-            }
+        bundler.on('buildStart', async () => {
+            // if (child) {
+            //     killChild();
+            // }
         });
         bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
         bundler.on('buildEnd', async () => {
- 
             if (buildOnly) {
                 process.stdout.write(`Gapi Application build finished! ${file}\n`);
                 process.stdout.write(`Bundle source: ${bundle.name}`);
                 process.exit(0);
             }
-   
+            await this.notifyDaemon({
+                repoPath: process.cwd()
+            });
             if (start && bundle !== null) {
                 if (child) {
                     killChild()
@@ -143,13 +178,15 @@ export class StartTask {
                 } else if (this.argsService.args.toString().includes('--inspect')) {
                     childArguments.push('--inspect');
                 }
-                console.log(bundle.name)
                 process.env = Object.assign(process.env, argv);
+              
                 child = childProcess.spawn('node', [
                     ...childArguments,
                     bundle.name
                 ]);
-                child.stdout.on('data', (data) => process.stdout.write(data));
+                child.stdout.on('data', (data: Buffer) => {
+                    process.stdout.write(data);
+                });
                 child.stderr.on('data', (data) => process.stdout.write(data));
                 child.on('exit', (code) => {
                     console.log(`Child process exited with code ${code}`);
@@ -158,7 +195,7 @@ export class StartTask {
             }
             bundle = null;
         });
-        bundler.bundle();
+        await bundler.bundle();
     }
 
     extendConfig(config) {

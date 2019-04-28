@@ -23,6 +23,8 @@ const fs_1 = require("fs");
 const Bundler = require("parcel-bundler");
 const childProcess = require("child_process");
 const helpers_1 = require("../core/helpers");
+const core_1 = require("@gapi/core");
+const core_2 = require("@gapi/core");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
@@ -104,6 +106,41 @@ let StartTask = class StartTask {
             }
         });
     }
+    isDaemonRunning() {
+        return __awaiter(this, void 0, void 0, function* () {
+            core_2.Container.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
+            const res = yield core_1.sendRequest({
+                query: `
+                query {
+                    status {
+                        status
+                    }
+                }
+            `
+            });
+            if (res.status === 200 && res.data.status.status === '200') {
+                return true;
+            }
+            return false;
+        });
+    }
+    notifyDaemon(variables) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core_2.Container.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
+            if (yield this.isDaemonRunning()) {
+                yield core_1.sendRequest({
+                    query: `
+                mutation notifyDaemon($repoPath: String!) {
+                  notifyDaemon(repoPath: $repoPath) {
+                    repoPath
+                  }
+                }
+                `,
+                    variables
+                });
+            }
+        });
+    }
     prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true, target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node') {
         return __awaiter(this, void 0, void 0, function* () {
             const bundler = new Bundler(file, {
@@ -120,11 +157,11 @@ let StartTask = class StartTask {
                 child.removeAllListeners('exit');
                 child.kill();
             };
-            bundler.on('buildStart', () => {
-                if (child) {
-                    killChild();
-                }
-            });
+            bundler.on('buildStart', () => __awaiter(this, void 0, void 0, function* () {
+                // if (child) {
+                //     killChild();
+                // }
+            }));
             bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
             bundler.on('buildEnd', () => __awaiter(this, void 0, void 0, function* () {
                 if (buildOnly) {
@@ -132,6 +169,9 @@ let StartTask = class StartTask {
                     process.stdout.write(`Bundle source: ${bundle.name}`);
                     process.exit(0);
                 }
+                yield this.notifyDaemon({
+                    repoPath: process.cwd()
+                });
                 if (start && bundle !== null) {
                     if (child) {
                         killChild();
@@ -155,13 +195,14 @@ let StartTask = class StartTask {
                     else if (this.argsService.args.toString().includes('--inspect')) {
                         childArguments.push('--inspect');
                     }
-                    console.log(bundle.name);
                     process.env = Object.assign(process.env, argv);
                     child = childProcess.spawn('node', [
                         ...childArguments,
                         bundle.name
                     ]);
-                    child.stdout.on('data', (data) => process.stdout.write(data));
+                    child.stdout.on('data', (data) => {
+                        process.stdout.write(data);
+                    });
                     child.stderr.on('data', (data) => process.stdout.write(data));
                     child.on('exit', (code) => {
                         console.log(`Child process exited with code ${code}`);
@@ -170,7 +211,7 @@ let StartTask = class StartTask {
                 }
                 bundle = null;
             }));
-            bundler.bundle();
+            yield bundler.bundle();
         });
     }
     extendConfig(config) {

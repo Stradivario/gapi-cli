@@ -5,6 +5,9 @@ export declare const DaemonTasks: {
     clean: "clean";
     kill: "kill";
     bootstrap: "bootstrap";
+    link: "link";
+    unlink: "unlink";
+    list: "list";
 };
 export declare type DaemonTasks = keyof typeof DaemonTasks;
 export declare class DaemonTask {
@@ -13,15 +16,19 @@ export declare class DaemonTask {
     private outLogFile;
     private errLogFile;
     private pidLogFile;
+    private processListFile;
     private bootstrapTask;
     private systemDService;
     private start;
     private stop;
+    private list;
     private kill;
+    private link;
+    private unlink;
     private clean;
-    bootstrap(options: CoreModuleConfig): Promise<void>;
     private genericRunner;
     private tasks;
+    bootstrap: (options: CoreModuleConfig) => Promise<void>;
     run(): Promise<void>;
     private killDaemon;
     private readPidDaemonConfig;

@@ -12,6 +12,25 @@ export declare class MainConfig {
     NODE_ENV?: string;
     GAPI_VERSION?: string;
 }
+export interface GapiMainConfig {
+    deploy: {
+        app_name: string;
+    };
+    app: {
+        local: MainConfig | string;
+        prod: MainConfig | string;
+    };
+    test: {
+        prod: MainConfig | string;
+        local: MainConfig | string;
+        worker: MainConfig | string;
+    };
+    schema: {
+        introspectionEndpoint: string;
+        introspectionOutputFolder: string;
+        pattern: string;
+    };
+}
 export declare class Commands {
     commands: {
         docker: {
@@ -20,25 +39,7 @@ export declare class Commands {
             build: string;
         };
     };
-    config: {
-        deploy: {
-            app_name: string;
-        };
-        app: {
-            local: MainConfig | string;
-            prod: MainConfig | string;
-        };
-        test: {
-            prod: MainConfig | string;
-            local: MainConfig | string;
-            worker: MainConfig | string;
-        };
-        schema: {
-            introspectionEndpoint: string;
-            introspectionOutputFolder: string;
-            pattern: string;
-        };
-    };
+    config: GapiMainConfig;
 }
 export declare class GapiConfig extends Commands {
     port: string;

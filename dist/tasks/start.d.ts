@@ -10,6 +10,10 @@ export declare class StartTask {
     run(stop?: {
         state?: boolean;
     }): Promise<void | {}>;
+    isDaemonRunning(): Promise<boolean>;
+    notifyDaemon(variables: {
+        repoPath?: string;
+    }): Promise<void>;
     prepareBundler(file: any, argv: any, start?: boolean, buildOnly?: boolean, minify?: boolean, target?: 'browser' | 'node'): Promise<void>;
     extendConfig(config: any): any;
 }

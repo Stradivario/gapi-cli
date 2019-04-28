@@ -24,6 +24,7 @@
   export interface IQuery {
     __typename?: "Query";
     status: IStatusQueryType | null;
+    getLinkList: Array<ILinkListType> | null;
 }
 
   
@@ -32,12 +33,21 @@
     status: string | null;
 }
 
+  
+  export interface ILinkListType {
+    __typename?: "LinkListType";
+    repoPath: string | null;
+    introspectionPath: string | null;
+    linkName: string | null;
+}
+
   /**
     description: Subscription type for all subscriptions via pub sub
   */
   export interface ISubscription {
     __typename?: "Subscription";
     statusSubscription: ISubscriptionStatusType | null;
+    serverRestarted: ISubscriptionStatusType | null;
 }
 
   
