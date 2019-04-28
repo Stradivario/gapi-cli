@@ -10,6 +10,7 @@ import { DeployTask } from '../../tasks/deploy';
 import { BuildTask } from '../../tasks/build';
 import { DaemonTask } from '../../tasks/daemon';
 import { GenerateTask } from '../../tasks/generate/generate';
+import { BootstrapTask } from '../../tasks/bootstrap';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -24,6 +25,7 @@ export class RootService {
   private buildTask: BuildTask = Container.get(BuildTask);
   private generateTask: GenerateTask = Container.get(GenerateTask);
   private daemonTask: DaemonTask = Container.get(DaemonTask);
+  private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
 
   checkForCustomTasks(): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -98,6 +100,10 @@ export class RootService {
 
     if (argsService.args[2] === 'daemon') {
       return await this.daemonTask.run();
+    }
+
+    if (argsService.args[2] === 'bootstrap') {
+      return await this.bootstrapTask.run();
     }
 
     try {

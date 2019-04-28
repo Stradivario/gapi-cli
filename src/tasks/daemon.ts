@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { openSync, writeFile, readFile } from 'fs';
 import { spawn } from 'child_process';
 import mkdirp = require('mkdirp');
@@ -8,8 +8,10 @@ import * as rimraf from 'rimraf';
 import { getProcessList } from '../core/helpers/ps-list';
 import { strEnum } from '../core/helpers/stringEnum';
 import { nextOrDefault, includes } from '../core/helpers';
+import { BootstrapTask } from './bootstrap';
+import { CoreModuleConfig } from '@gapi/core';
 
-export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill']);
+export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap']);
 export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
@@ -19,11 +21,12 @@ export class DaemonTask {
   private outLogFile: string = `${this.daemonFolder}/out.log`;
   private errLogFile: string = `${this.daemonFolder}/err.log`;
   private pidLogFile: string = `${this.daemonFolder}/pid`;
+  private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
 
   private start = async () => {
     await this.killDaemon();
     await promisify(mkdirp)(this.daemonFolder);
-    const child = spawn('sleep', ['5'], {
+    const child = spawn('gapi', ['daemon', 'bootstrap'], {
       detached: true,
       stdio: [
         'ignore',
@@ -41,9 +44,11 @@ export class DaemonTask {
   private stop = () => this.killDaemon();
   private kill = (pid: number) => process.kill(Number(pid));
   private clean = () => promisify(rimraf)(this.daemonFolder);
-
-  private genericRunner = (task: DaemonTasks) => () =>
-    (this[task] as any)(nextOrDefault(task, ''));
+  async bootstrap(options: CoreModuleConfig) {
+    return await this.bootstrapTask.run(options)
+  }
+  private genericRunner = (task: DaemonTasks) => (args) =>
+    (this[task] as any)(args || nextOrDefault(task, ''));
 
   private tasks: Map<
     DaemonTasks | string,
@@ -52,7 +57,8 @@ export class DaemonTask {
     [DaemonTasks.start, this.genericRunner(DaemonTasks.start)],
     [DaemonTasks.stop, this.genericRunner(DaemonTasks.stop)],
     [DaemonTasks.clean, this.genericRunner(DaemonTasks.clean)],
-    [DaemonTasks.kill, this.genericRunner(DaemonTasks.kill)]
+    [DaemonTasks.kill, this.genericRunner(DaemonTasks.kill)],
+    [DaemonTasks.bootstrap, this.genericRunner(DaemonTasks.bootstrap)]
   ]);
 
   async run() {
@@ -71,6 +77,15 @@ export class DaemonTask {
     if (includes(DaemonTasks.kill)) {
       return await this.tasks.get(DaemonTasks.kill)();
     }
+    if (includes(DaemonTasks.bootstrap)) {
+      return await this.tasks.get(DaemonTasks.bootstrap)(<CoreModuleConfig>{
+        graphql: {
+          openBrowser: false,
+          graphiql: false,
+          graphiQlPlayground: false
+        }
+      });
+    }
     console.log('Missing command for Daemon');
   }
 
@@ -80,7 +95,6 @@ export class DaemonTask {
       console.log('Daemon is not running!');
       return;
     }
-    console.log(await this.isDaemonRunning(pid))
     if (await this.isDaemonRunning(pid)) {
       console.log(`Daemon process ${pid} Killed!`);
       process.kill(pid);
