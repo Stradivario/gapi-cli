@@ -2,7 +2,7 @@
 import { Container } from 'typedi';
 import { RootService } from './core/services/root.service';
 import { ArgsService } from './core/services/args.service';
-import { ConfigService } from './core/services/config.service';
+import { ConfigService, GapiConfig } from './core/services/config.service';
 import { load } from 'yamljs';
 import chalk = require('chalk');
 import * as figlet from 'figlet';
@@ -10,7 +10,7 @@ import * as figlet from 'figlet';
 const rootService = Container.get(RootService);
 const argsService = Container.get(ArgsService);
 const configService = Container.get(ConfigService);
-let config: any = {};
+let config: GapiConfig = {} as any;
 try {
   config = load('gapi-cli.conf.yml');
 } catch (e) {

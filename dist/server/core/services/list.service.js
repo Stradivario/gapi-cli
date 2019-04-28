@@ -6,15 +6,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@gapi/core");
-const server_controller_1 = require("./server.controller");
-const core_module_1 = require("./core/core.module");
-let ServerModule = class ServerModule {
+const core_1 = require("@rxdi/core");
+let ListService = class ListService {
+    constructor() {
+        this.linkedList = [];
+    }
 };
-ServerModule = __decorate([
-    core_1.Module({
-        imports: [core_module_1.CoreModule],
-        controllers: [server_controller_1.ServerController]
-    })
-], ServerModule);
-exports.ServerModule = ServerModule;
+ListService = __decorate([
+    core_1.Injectable()
+], ListService);
+exports.ListService = ListService;

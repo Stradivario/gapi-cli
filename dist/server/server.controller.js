@@ -11,9 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@gapi/core");
 const server_type_1 = require("./server.type");
+const list_service_1 = require("./core/services/list.service");
 let ServerController = class ServerController {
-    constructor(pubsub) {
+    constructor(pubsub, listService) {
         this.pubsub = pubsub;
+        this.listService = listService;
         let count = 0;
         setInterval(() => {
             count++;
@@ -21,6 +23,11 @@ let ServerController = class ServerController {
         }, 2000);
     }
     statusSubscription(message) {
+        return {
+            status: message
+        };
+    }
+    serverRestarted(message) {
         return {
             status: message
         };
@@ -34,8 +41,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ServerController.prototype, "statusSubscription", null);
+__decorate([
+    core_1.Type(server_type_1.SubscriptionStatusType),
+    core_1.Subscribe((self) => self.pubsub.asyncIterator('CREATE_SIGNAL_BASIC')),
+    core_1.Subscription(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ServerController.prototype, "serverRestarted", null);
 ServerController = __decorate([
     core_1.Controller(),
-    __metadata("design:paramtypes", [core_1.PubSubService])
+    __metadata("design:paramtypes", [core_1.PubSubService,
+        list_service_1.ListService])
 ], ServerController);
 exports.ServerController = ServerController;

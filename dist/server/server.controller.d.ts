@@ -1,8 +1,13 @@
 import { PubSubService } from '@gapi/core';
+import { ListService } from './core/services/list.service';
 export declare class ServerController {
     private pubsub;
-    constructor(pubsub: PubSubService);
+    private listService;
+    constructor(pubsub: PubSubService, listService: ListService);
     statusSubscription(message: any): {
+        status: any;
+    };
+    serverRestarted(message: any): {
         status: any;
     };
 }

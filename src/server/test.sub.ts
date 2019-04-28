@@ -1,5 +1,5 @@
 import { gql } from 'apollo-server-core';
-import { subscribeToTopic, createWebsocketLink } from '@gapi/core';
+import { subscribeToTopic, createWebsocketLink, sendRequest } from '@gapi/core';
 import { ISubscription } from './api-introspection';
 
 const subscription = subscribeToTopic<{data: ISubscription}>(gql`
@@ -11,6 +11,16 @@ const subscription = subscribeToTopic<{data: ISubscription}>(gql`
 `).subscribe(stream => {
   console.log(stream.data.statusSubscription.status);
 });
-setTimeout(() => {
-  subscription.unsubscribe();
-}, 5000);
+
+sendRequest({
+    query: `
+        query {
+            status {
+                status
+            }
+        }
+    `
+}).then((stat) => console.log(stat))
+// setTimeout(() => {
+//   subscription.unsubscribe();
+// }, 5000);
