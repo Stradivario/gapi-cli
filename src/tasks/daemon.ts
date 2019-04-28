@@ -10,6 +10,7 @@ import { strEnum } from '../core/helpers/stringEnum';
 import { nextOrDefault, includes } from '../core/helpers';
 import { BootstrapTask } from './bootstrap';
 import { CoreModuleConfig } from '@gapi/core';
+import { SystemDService } from '../core/services/systemd.service';
 
 export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap']);
 export type DaemonTasks = keyof typeof DaemonTasks;
@@ -22,26 +23,44 @@ export class DaemonTask {
   private errLogFile: string = `${this.daemonFolder}/err.log`;
   private pidLogFile: string = `${this.daemonFolder}/pid`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
-
+  private systemDService: SystemDService = Container.get(SystemDService)
   private start = async () => {
     await this.killDaemon();
     await promisify(mkdirp)(this.daemonFolder);
-    const child = spawn('gapi', ['daemon', 'bootstrap'], {
-      detached: true,
-      stdio: [
-        'ignore',
-        openSync(this.outLogFile, 'a'),
-        openSync(this.errLogFile, 'a')
-      ]
-    });
-    await promisify(writeFile)(this.pidLogFile, child.pid, {
-      encoding: 'utf-8'
-    });
-    console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
-    child.unref();
+    if (includes('--systemd')) {
+      await this.systemDService.register({
+        name: 'my-node-service',
+        cwd: __dirname.replace('tasks', 'core/helpers/'),
+        app: 'systemd-daemon.js',
+        engine: 'node',
+        env: {
+          PORT_2: 3002,
+        }
+      });
+    } else {
+      const child = spawn('gapi', ['daemon', 'bootstrap'], {
+        detached: true,
+        stdio: [
+          'ignore',
+          openSync(this.outLogFile, 'a'),
+          openSync(this.errLogFile, 'a')
+        ]
+      });
+      await promisify(writeFile)(this.pidLogFile, child.pid, {
+        encoding: 'utf-8'
+      });
+      console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
+      child.unref();
+    }
   };
 
-  private stop = () => this.killDaemon();
+  private stop = async () => {
+    if (includes('--systemd')) {
+      await this.systemDService.remove('my-node-service');
+    } else {
+      await this.killDaemon();
+    }
+  };
   private kill = (pid: number) => process.kill(Number(pid));
   private clean = () => promisify(rimraf)(this.daemonFolder);
   async bootstrap(options: CoreModuleConfig) {

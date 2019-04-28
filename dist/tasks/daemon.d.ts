@@ -14,6 +14,7 @@ export declare class DaemonTask {
     private errLogFile;
     private pidLogFile;
     private bootstrapTask;
+    private systemDService;
     private start;
     private stop;
     private kill;

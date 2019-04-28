@@ -25,6 +25,7 @@ const ps_list_1 = require("../core/helpers/ps-list");
 const stringEnum_1 = require("../core/helpers/stringEnum");
 const helpers_1 = require("../core/helpers");
 const bootstrap_1 = require("./bootstrap");
+const systemd_service_1 = require("../core/services/systemd.service");
 exports.DaemonTasks = stringEnum_1.strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap']);
 let DaemonTask = class DaemonTask {
     constructor() {
@@ -34,24 +35,45 @@ let DaemonTask = class DaemonTask {
         this.errLogFile = `${this.daemonFolder}/err.log`;
         this.pidLogFile = `${this.daemonFolder}/pid`;
         this.bootstrapTask = typedi_1.default.get(bootstrap_1.BootstrapTask);
+        this.systemDService = typedi_1.default.get(systemd_service_1.SystemDService);
         this.start = () => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
             yield util_1.promisify(mkdirp)(this.daemonFolder);
-            const child = child_process_1.spawn('gapi', ['daemon', 'bootstrap'], {
-                detached: true,
-                stdio: [
-                    'ignore',
-                    fs_1.openSync(this.outLogFile, 'a'),
-                    fs_1.openSync(this.errLogFile, 'a')
-                ]
-            });
-            yield util_1.promisify(fs_1.writeFile)(this.pidLogFile, child.pid, {
-                encoding: 'utf-8'
-            });
-            console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
-            child.unref();
+            if (helpers_1.includes('--systemd')) {
+                yield this.systemDService.register({
+                    name: 'my-node-service',
+                    cwd: __dirname.replace('tasks', 'core/helpers/'),
+                    app: 'systemd-daemon.js',
+                    engine: 'node',
+                    env: {
+                        PORT_2: 3002,
+                    }
+                });
+            }
+            else {
+                const child = child_process_1.spawn('gapi', ['daemon', 'bootstrap'], {
+                    detached: true,
+                    stdio: [
+                        'ignore',
+                        fs_1.openSync(this.outLogFile, 'a'),
+                        fs_1.openSync(this.errLogFile, 'a')
+                    ]
+                });
+                yield util_1.promisify(fs_1.writeFile)(this.pidLogFile, child.pid, {
+                    encoding: 'utf-8'
+                });
+                console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
+                child.unref();
+            }
         });
-        this.stop = () => this.killDaemon();
+        this.stop = () => __awaiter(this, void 0, void 0, function* () {
+            if (helpers_1.includes('--systemd')) {
+                yield this.systemDService.remove('my-node-service');
+            }
+            else {
+                yield this.killDaemon();
+            }
+        });
         this.kill = (pid) => process.kill(Number(pid));
         this.clean = () => util_1.promisify(rimraf)(this.daemonFolder);
         this.genericRunner = (task) => (args) => this[task](args || helpers_1.nextOrDefault(task, ''));

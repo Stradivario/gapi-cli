@@ -12,3 +12,5 @@ export const nextOrDefault = (i, fb: any = true, type = (p) => (p)) => {
     }
     return fb;
 }
+
+export * from './systemd-daemon';
