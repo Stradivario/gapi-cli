@@ -11,6 +11,7 @@ export declare class StartTask {
         state?: boolean;
     }): Promise<void | {}>;
     isDaemonRunning(): Promise<boolean>;
+    private setFakeHapiServer;
     notifyDaemon(variables: {
         repoPath?: string;
     }): Promise<void>;

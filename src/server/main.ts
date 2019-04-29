@@ -9,7 +9,7 @@ BootstrapFramework(ServerModule, [CoreModule.forRoot({
         }
     },
     graphql: {
-        graphiql: true,
+        graphiql: false,
         graphiQlPlayground: false
     }
 })]).subscribe(

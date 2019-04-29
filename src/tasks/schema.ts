@@ -22,10 +22,14 @@ export class SchemaTask {
   private argsService: ArgsService = Container.get(ArgsService);
   private configService: ConfigService = Container.get(ConfigService);
 
-  async run() {
-    this.folder = this.configService.config.config.schema.introspectionOutputFolder;
-    this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
-    this.pattern = this.configService.config.config.schema.pattern;
+  async run(introspectionEndpoint?: string, introspectionOutputFolder?: string, pattern?: string) {
+    const originalConsole = console.log.bind(console);
+    console.log = function() {
+        return originalConsole.apply(console, ['\x1b[36m%s\x1b[0m', `${process.cwd()} =>`, ...arguments]);
+    }
+    this.folder = introspectionOutputFolder || this.configService.config.config.schema.introspectionOutputFolder;
+    this.endpoint = introspectionEndpoint || this.configService.config.config.schema.introspectionEndpoint;
+    this.pattern = pattern || this.configService.config.config.schema.pattern;
     this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
     this.bashFolder = __dirname.replace('dist/tasks', 'bash');
 
@@ -79,6 +83,7 @@ export class SchemaTask {
   }
 
   public async generateSchema() {
+    console.log(`Trying to hit ${this.endpoint} ...`)
     await this.execService.call(
       `export NODE_TLS_REJECT_UNAUTHORIZED=0 && node ${
         this.node_modules
@@ -87,6 +92,7 @@ export class SchemaTask {
       }/schema.json`,
       { async: true }
     );
+    console.log(`Endpoint ${this.endpoint} hit!`)
     await this.execService.call(
       `export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${
         this.bashFolder

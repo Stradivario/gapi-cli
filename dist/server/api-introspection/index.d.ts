@@ -1,5 +1,5 @@
 export interface IGraphQLResponseRoot {
-    data?: IQuery | ISubscription;
+    data?: IQuery | IMutation | ISubscription;
     errors?: Array<IGraphQLResponseError>;
 }
 export interface IGraphQLResponseError {
@@ -28,6 +28,13 @@ export interface ILinkListType {
     repoPath: string | null;
     introspectionPath: string | null;
     linkName: string | null;
+}
+/**
+  description: Mutation type for all requests which will change persistent data
+*/
+export interface IMutation {
+    __typename?: "Mutation";
+    notifyDaemon: ILinkListType | null;
 }
 /**
   description: Subscription type for all subscriptions via pub sub

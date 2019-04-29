@@ -25,11 +25,15 @@ let SchemaTask = class SchemaTask {
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
         this.configService = typedi_1.Container.get(config_service_1.ConfigService);
     }
-    run() {
+    run(introspectionEndpoint, introspectionOutputFolder, pattern) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.folder = this.configService.config.config.schema.introspectionOutputFolder;
-            this.endpoint = this.configService.config.config.schema.introspectionEndpoint;
-            this.pattern = this.configService.config.config.schema.pattern;
+            const originalConsole = console.log.bind(console);
+            console.log = function () {
+                return originalConsole.apply(console, ['\x1b[36m%s\x1b[0m', `${process.cwd()} =>`, ...arguments]);
+            };
+            this.folder = introspectionOutputFolder || this.configService.config.config.schema.introspectionOutputFolder;
+            this.endpoint = introspectionEndpoint || this.configService.config.config.schema.introspectionEndpoint;
+            this.pattern = pattern || this.configService.config.config.schema.pattern;
             this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
             this.bashFolder = __dirname.replace('dist/tasks', 'bash');
             if (process.argv[3] === 'introspect') {
@@ -65,7 +69,9 @@ let SchemaTask = class SchemaTask {
     }
     generateSchema() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(`Trying to hit ${this.endpoint} ...`);
             yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
+            console.log(`Endpoint ${this.endpoint} hit!`);
             yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.ts`, { async: true });
         });
     }

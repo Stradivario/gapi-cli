@@ -140,7 +140,15 @@ export class DaemonTask {
     }
   };
 
-  private clean = () => promisify(rimraf)(this.daemonFolder);
+  private clean = async () => {
+    const isRunning = await this.isDaemonRunning();
+    if (!isRunning) {
+      await promisify(rimraf)(this.daemonFolder)
+    } else {
+      console.log('Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again');
+    }
+    console.log(`${this.daemonFolder} cleaned!`)
+  };
 
   private genericRunner = (task: DaemonTasks) => (args) =>
     (this[task] as any)(args || nextOrDefault(task, ''));
@@ -176,7 +184,7 @@ export class DaemonTask {
       console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
       return await this.tasks.get(DaemonTasks.stop)();
     }
-    if (includes(DaemonTasks.kill)) {
+    if (includes(DaemonTasks.kill) || includes('k')) {
       return await this.tasks.get(DaemonTasks.kill)();
     }
     if (includes(DaemonTasks.unlink)) {
@@ -213,7 +221,7 @@ export class DaemonTask {
       console.log('Daemon is not running!');
       return;
     }
-    if (await this.isDaemonRunning(pid)) {
+    if (await this.isDaemonRunning()) {
       console.log(`Daemon process ${pid} Killed!`);
       process.kill(pid);
     }
@@ -229,8 +237,10 @@ export class DaemonTask {
     return pid;
   }
 
-  private async isDaemonRunning(pid: number) {
+  private async isDaemonRunning() {
+    const pid = await this.readPidDaemonConfig();
     if (!pid) {
+      console.log('Daemon is not running!');
       return false;
     }
     return !!(await this.getActiveDaemon(pid)).length;

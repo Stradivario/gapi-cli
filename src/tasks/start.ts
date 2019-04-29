@@ -86,7 +86,6 @@ export class StartTask {
         }
     }
     async isDaemonRunning() {
-        rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
        const res = await sendRequest<IQuery>({
             query: `
                 query {
@@ -101,10 +100,15 @@ export class StartTask {
         }
         return false;
     }
+
+    private setFakeHapiServer() {
+        rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
+    }
+
     async notifyDaemon(variables: {
         repoPath?: string,
     }) {
-        rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
+        this.setFakeHapiServer();
         if (await this.isDaemonRunning()) {
             await sendRequest({
                 query: `
@@ -136,6 +140,7 @@ export class StartTask {
 
         let bundle = null;
         let child = null;
+        let isFirstTimeRun = true;
         const killChild = () => {
             child.stdout.removeAllListeners('data');
             child.stderr.removeAllListeners('data');
@@ -154,9 +159,11 @@ export class StartTask {
                 process.stdout.write(`Bundle source: ${bundle.name}`);
                 process.exit(0);
             }
-            await this.notifyDaemon({
-                repoPath: process.cwd()
-            });
+            if (!isFirstTimeRun) {
+                try {
+                    await this.notifyDaemon({ repoPath: process.cwd() });
+                } catch (e) {}
+            }
             if (start && bundle !== null) {
                 if (child) {
                     killChild()
@@ -186,6 +193,7 @@ export class StartTask {
                 ]);
                 child.stdout.on('data', (data: Buffer) => {
                     process.stdout.write(data);
+                    isFirstTimeRun = false;
                 });
                 child.stderr.on('data', (data) => process.stdout.write(data));
                 child.on('exit', (code) => {

@@ -27,6 +27,7 @@ const build_1 = require("../../tasks/build");
 const daemon_1 = require("../../tasks/daemon");
 const generate_1 = require("../../tasks/generate/generate");
 const bootstrap_1 = require("../../tasks/bootstrap");
+const helpers_1 = require("../helpers");
 const argsService = typedi_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
@@ -99,7 +100,10 @@ let RootService = class RootService {
                 return yield this.testTask.run();
             }
             if (argsService.args[2] === 'schema') {
-                return yield this.schemaTask.run();
+                const introspectionEndpoint = helpers_1.nextOrDefault('--url', '');
+                const introspectionFolder = helpers_1.nextOrDefault('--folder', '');
+                const pattern = helpers_1.nextOrDefault('--pattern', '');
+                return yield this.schemaTask.run(introspectionEndpoint, introspectionFolder, pattern);
             }
             if (argsService.args[2] === 'deploy') {
                 return yield this.deployTask.run();
@@ -107,10 +111,10 @@ let RootService = class RootService {
             if (argsService.args[2] === 'generate' || argsService.args[2] === 'g') {
                 return yield this.generateTask.run();
             }
-            if (argsService.args[2] === 'daemon') {
+            if (argsService.args[2] === 'daemon' || argsService.args[2] === 'd') {
                 return yield this.daemonTask.run();
             }
-            if (argsService.args[2] === 'bootstrap') {
+            if (argsService.args[2] === 'bootstrap' || argsService.args[2] === 'b') {
                 return yield this.bootstrapTask.run();
             }
             try {

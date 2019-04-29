@@ -53,10 +53,9 @@ let ServerController = class ServerController {
             });
             child.stderr.on('data', data => {
                 process.stderr.write(data);
-                reject(data.toString('utf8'));
             });
             child.on('close', code => {
-                console.log(`child process exited with code ${code}`);
+                // console.log(`child process exited with code ${code}`);
                 resolve(payload);
             });
         });

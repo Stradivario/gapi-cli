@@ -7,7 +7,7 @@ export declare class SchemaTask {
     private execService;
     private argsService;
     private configService;
-    run(): Promise<void>;
+    run(introspectionEndpoint?: string, introspectionOutputFolder?: string, pattern?: string): Promise<void>;
     private createDir;
     collectQueries(): Promise<void>;
     generateSchema(): Promise<void>;

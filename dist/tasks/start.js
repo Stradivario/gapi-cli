@@ -108,7 +108,6 @@ let StartTask = class StartTask {
     }
     isDaemonRunning() {
         return __awaiter(this, void 0, void 0, function* () {
-            core_2.Container.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
             const res = yield core_1.sendRequest({
                 query: `
                 query {
@@ -124,9 +123,12 @@ let StartTask = class StartTask {
             return false;
         });
     }
+    setFakeHapiServer() {
+        core_2.Container.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
+    }
     notifyDaemon(variables) {
         return __awaiter(this, void 0, void 0, function* () {
-            core_2.Container.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
+            this.setFakeHapiServer();
             if (yield this.isDaemonRunning()) {
                 yield core_1.sendRequest({
                     query: `
@@ -151,6 +153,7 @@ let StartTask = class StartTask {
             });
             let bundle = null;
             let child = null;
+            let isFirstTimeRun = true;
             const killChild = () => {
                 child.stdout.removeAllListeners('data');
                 child.stderr.removeAllListeners('data');
@@ -169,9 +172,12 @@ let StartTask = class StartTask {
                     process.stdout.write(`Bundle source: ${bundle.name}`);
                     process.exit(0);
                 }
-                yield this.notifyDaemon({
-                    repoPath: process.cwd()
-                });
+                if (!isFirstTimeRun) {
+                    try {
+                        yield this.notifyDaemon({ repoPath: process.cwd() });
+                    }
+                    catch (e) { }
+                }
                 if (start && bundle !== null) {
                     if (child) {
                         killChild();
@@ -202,6 +208,7 @@ let StartTask = class StartTask {
                     ]);
                     child.stdout.on('data', (data) => {
                         process.stdout.write(data);
+                        isFirstTimeRun = false;
                     });
                     child.stderr.on('data', (data) => process.stdout.write(data));
                     child.on('exit', (code) => {

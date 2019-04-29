@@ -146,7 +146,16 @@ let DaemonTask = class DaemonTask {
                 });
             }
         });
-        this.clean = () => util_1.promisify(rimraf)(this.daemonFolder);
+        this.clean = () => __awaiter(this, void 0, void 0, function* () {
+            const isRunning = yield this.isDaemonRunning();
+            if (!isRunning) {
+                yield util_1.promisify(rimraf)(this.daemonFolder);
+            }
+            else {
+                console.log('Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again');
+            }
+            console.log(`${this.daemonFolder} cleaned!`);
+        });
         this.genericRunner = (task) => (args) => this[task](args || helpers_1.nextOrDefault(task, ''));
         this.tasks = new Map([
             [exports.DaemonTasks.start, this.genericRunner(exports.DaemonTasks.start)],
@@ -176,7 +185,7 @@ let DaemonTask = class DaemonTask {
                 console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
                 return yield this.tasks.get(exports.DaemonTasks.stop)();
             }
-            if (helpers_1.includes(exports.DaemonTasks.kill)) {
+            if (helpers_1.includes(exports.DaemonTasks.kill) || helpers_1.includes('k')) {
                 return yield this.tasks.get(exports.DaemonTasks.kill)();
             }
             if (helpers_1.includes(exports.DaemonTasks.unlink)) {
@@ -214,7 +223,7 @@ let DaemonTask = class DaemonTask {
                 console.log('Daemon is not running!');
                 return;
             }
-            if (yield this.isDaemonRunning(pid)) {
+            if (yield this.isDaemonRunning()) {
                 console.log(`Daemon process ${pid} Killed!`);
                 process.kill(pid);
             }
@@ -230,9 +239,11 @@ let DaemonTask = class DaemonTask {
             return pid;
         });
     }
-    isDaemonRunning(pid) {
+    isDaemonRunning() {
         return __awaiter(this, void 0, void 0, function* () {
+            const pid = yield this.readPidDaemonConfig();
             if (!pid) {
+                console.log('Daemon is not running!');
                 return false;
             }
             return !!(yield this.getActiveDaemon(pid)).length;

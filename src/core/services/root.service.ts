@@ -11,6 +11,7 @@ import { BuildTask } from '../../tasks/build';
 import { DaemonTask } from '../../tasks/daemon';
 import { GenerateTask } from '../../tasks/generate/generate';
 import { BootstrapTask } from '../../tasks/bootstrap';
+import { nextOrDefault } from '../helpers';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -87,7 +88,10 @@ export class RootService {
     }
 
     if (argsService.args[2] === 'schema') {
-      return await this.schemaTask.run();
+      const introspectionEndpoint = nextOrDefault('--url', '');
+      const introspectionFolder = nextOrDefault('--folder', '');
+      const pattern = nextOrDefault('--pattern', '');
+      return await this.schemaTask.run(introspectionEndpoint, introspectionFolder, pattern);
     }
 
     if (argsService.args[2] === 'deploy') {
@@ -98,11 +102,11 @@ export class RootService {
       return await this.generateTask.run();
     }
 
-    if (argsService.args[2] === 'daemon') {
+    if (argsService.args[2] === 'daemon' || argsService.args[2] === 'd') {
       return await this.daemonTask.run();
     }
 
-    if (argsService.args[2] === 'bootstrap') {
+    if (argsService.args[2] === 'bootstrap' || argsService.args[2] === 'b') {
       return await this.bootstrapTask.run();
     }
 
