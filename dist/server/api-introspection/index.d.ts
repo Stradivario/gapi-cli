@@ -1,5 +1,5 @@
 export interface IGraphQLResponseRoot {
-    data?: IQuery | IMutation | ISubscription;
+    data?: IQuery | IMutation;
     errors?: Array<IGraphQLResponseError>;
 }
 export interface IGraphQLResponseError {
@@ -35,16 +35,4 @@ export interface ILinkListType {
 export interface IMutation {
     __typename?: "Mutation";
     notifyDaemon: ILinkListType | null;
-}
-/**
-  description: Subscription type for all subscriptions via pub sub
-*/
-export interface ISubscription {
-    __typename?: "Subscription";
-    statusSubscription: ISubscriptionStatusType | null;
-    serverRestarted: ISubscriptionStatusType | null;
-}
-export interface ISubscriptionStatusType {
-    __typename?: "SubscriptionStatusType";
-    status: string | null;
 }

@@ -20,4 +20,13 @@ export class ListService {
         return this.linkedList
     }
 
+    async findByRepoPath(repoPath: string) {
+      return (await this.readList()).filter(l => l.repoPath === repoPath);
+    }
+
+    async findByLinkName(linkName: string, notLike: string) {
+      return (await this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
+    }
+
+
 }

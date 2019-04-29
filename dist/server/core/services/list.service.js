@@ -36,6 +36,16 @@ let ListService = class ListService {
             return this.linkedList;
         });
     }
+    findByRepoPath(repoPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield this.readList()).filter(l => l.repoPath === repoPath);
+        });
+    }
+    findByLinkName(linkName, notLike) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
+        });
+    }
 };
 ListService = __decorate([
     core_1.Injectable()

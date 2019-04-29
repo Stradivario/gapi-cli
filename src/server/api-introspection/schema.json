@@ -7,9 +7,7 @@
       "mutationType": {
         "name": "Mutation"
       },
-      "subscriptionType": {
-        "name": "Subscription"
-      },
+      "subscriptionType": null,
       "types": [
         {
           "kind": "OBJECT",
@@ -173,64 +171,6 @@
               "type": {
                 "kind": "OBJECT",
                 "name": "LinkListType",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            }
-          ],
-          "inputFields": null,
-          "interfaces": [],
-          "enumValues": null,
-          "possibleTypes": null
-        },
-        {
-          "kind": "OBJECT",
-          "name": "Subscription",
-          "description": "Subscription type for all subscriptions via pub sub",
-          "fields": [
-            {
-              "name": "statusSubscription",
-              "description": null,
-              "args": [],
-              "type": {
-                "kind": "OBJECT",
-                "name": "SubscriptionStatusType",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "serverRestarted",
-              "description": null,
-              "args": [],
-              "type": {
-                "kind": "OBJECT",
-                "name": "SubscriptionStatusType",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            }
-          ],
-          "inputFields": null,
-          "interfaces": [],
-          "enumValues": null,
-          "possibleTypes": null
-        },
-        {
-          "kind": "OBJECT",
-          "name": "SubscriptionStatusType",
-          "description": null,
-          "fields": [
-            {
-              "name": "status",
-              "description": null,
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
                 "ofType": null
               },
               "isDeprecated": false,

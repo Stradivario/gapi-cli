@@ -5,4 +5,6 @@ export declare class ListService {
     private daemonFolder;
     private processListFile;
     readList(): Promise<ILinkListType[]>;
+    findByRepoPath(repoPath: string): Promise<ILinkListType[]>;
+    findByLinkName(linkName: string, notLike: string): Promise<ILinkListType[]>;
 }

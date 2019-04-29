@@ -8,11 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const list_service_1 = require("./services/list.service");
+const daemon_service_1 = require("./services/daemon.service");
 let CoreModule = class CoreModule {
 };
 CoreModule = __decorate([
     core_1.Module({
-        services: [list_service_1.ListService]
+        services: [list_service_1.ListService, daemon_service_1.DaemonService]
     })
 ], CoreModule);
 exports.CoreModule = CoreModule;

@@ -18,84 +18,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@gapi/core");
-const server_type_1 = require("./server.type");
 const list_service_1 = require("./core/services/list.service");
 const link_list_type_1 = require("./types/link-list.type");
-const child_process_1 = require("child_process");
-const util_1 = require("util");
-const fs_1 = require("fs");
+const daemon_service_1 = require("./core/services/daemon.service");
 let ServerController = class ServerController {
-    constructor(pubsub, listService) {
-        this.pubsub = pubsub;
+    constructor(listService, daemonService) {
         this.listService = listService;
+        this.daemonService = daemonService;
         let count = 0;
         setInterval(() => {
             count++;
-            pubsub.publish('CREATE_SIGNAL_BASIC', `AZ${count}`);
+            // pubsub.publish('CREATE_SIGNAL_BASIC', `AZ${count}`);
         }, 2000);
-    }
-    statusSubscription(message) {
-        return {
-            status: message
-        };
-    }
-    serverRestarted(message) {
-        return {
-            status: message
-        };
     }
     getLinkList() {
         return this.listService.readList();
     }
     notifyDaemon(root, payload) {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            const args = ['schema', 'introspect', '--collect-documents', '--collect-types'];
-            const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
-            if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
-                args.push(`--url http://localhost:9000/graphql`);
-                args.push(`--folder ./api-introspection`);
+        return __awaiter(this, void 0, void 0, function* () {
+            if ((yield this.listService.readList()).length) {
+                const [repo] = yield this.listService.findByRepoPath(payload.repoPath);
+                let repoLinkedName = repo.linkName;
+                const otherRepos = this.listService.findByLinkName(repoLinkedName, repo.repoPath);
+                console.log(otherRepos);
             }
-            const child = child_process_1.spawn('gapi', args, {
-                cwd: payload.repoPath
-            });
-            child.stdout.on('data', data => {
-                process.stdout.write(data);
-                // if (
-                //   data
-                //     .toString('utf8')
-                //     .includes(
-                //       'Typings introspection based on GAPI Schema created inside folder'
-                //     )
-                // ) {
-                //   resolve(payload);
-                // }
-            });
-            child.stderr.on('data', data => {
-                // process.stderr.write(data);
-            });
-            child.on('close', code => {
-                // console.log(`child process exited with code ${code}`);
-                resolve(payload);
-            });
-        }));
+            return yield this.daemonService.trigger(payload);
+        });
     }
 };
-__decorate([
-    core_1.Type(server_type_1.SubscriptionStatusType),
-    core_1.Subscribe((self) => self.pubsub.asyncIterator('CREATE_SIGNAL_BASIC')),
-    core_1.Subscription(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], ServerController.prototype, "statusSubscription", null);
-__decorate([
-    core_1.Type(server_type_1.SubscriptionStatusType),
-    core_1.Subscribe((self) => self.pubsub.asyncIterator('CREATE_SIGNAL_BASIC')),
-    core_1.Subscription(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], ServerController.prototype, "serverRestarted", null);
 __decorate([
     core_1.Type(new core_1.GraphQLList(link_list_type_1.LinkListType)),
     core_1.Query(),
@@ -118,10 +68,11 @@ __decorate([
     }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ServerController.prototype, "notifyDaemon", null);
 ServerController = __decorate([
     core_1.Controller(),
-    __metadata("design:paramtypes", [core_1.PubSubService, list_service_1.ListService])
+    __metadata("design:paramtypes", [list_service_1.ListService,
+        daemon_service_1.DaemonService])
 ], ServerController);
 exports.ServerController = ServerController;
