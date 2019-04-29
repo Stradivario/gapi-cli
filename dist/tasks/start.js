@@ -108,15 +108,20 @@ let StartTask = class StartTask {
     }
     isDaemonRunning() {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield core_1.sendRequest({
-                query: `
-                query {
-                    status {
-                        status
+            this.setFakeHapiServer();
+            let res = {};
+            try {
+                res = yield core_1.sendRequest({
+                    query: `
+                    query {
+                        status {
+                            status
+                        }
                     }
-                }
-            `
-            });
+                `
+                });
+            }
+            catch (e) { }
             if (res.status === 200 && res.data.status.status === '200') {
                 return true;
             }
@@ -129,18 +134,16 @@ let StartTask = class StartTask {
     notifyDaemon(variables) {
         return __awaiter(this, void 0, void 0, function* () {
             this.setFakeHapiServer();
-            if (yield this.isDaemonRunning()) {
-                yield core_1.sendRequest({
-                    query: `
-                mutation notifyDaemon($repoPath: String!) {
-                  notifyDaemon(repoPath: $repoPath) {
-                    repoPath
-                  }
-                }
-                `,
-                    variables
-                });
+            yield core_1.sendRequest({
+                query: `
+            mutation notifyDaemon($repoPath: String!) {
+              notifyDaemon(repoPath: $repoPath) {
+                repoPath
+              }
             }
+            `,
+                variables
+            });
         });
     }
     prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true, target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node') {
@@ -172,7 +175,8 @@ let StartTask = class StartTask {
                     process.stdout.write(`Bundle source: ${bundle.name}`);
                     process.exit(0);
                 }
-                if (!isFirstTimeRun) {
+                const isDaemonInRunningcondition = yield this.isDaemonRunning();
+                if (!isFirstTimeRun && isDaemonInRunningcondition) {
                     try {
                         yield this.notifyDaemon({ repoPath: process.cwd() });
                     }
@@ -192,6 +196,11 @@ let StartTask = class StartTask {
                         }
                         if (hasError) {
                             return;
+                        }
+                    }
+                    else {
+                        if (isDaemonInRunningcondition) {
+                            yield this.execService.call('sleep 1');
                         }
                     }
                     const childArguments = [];

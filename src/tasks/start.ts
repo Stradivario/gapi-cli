@@ -86,15 +86,19 @@ export class StartTask {
         }
     }
     async isDaemonRunning() {
-       const res = await sendRequest<IQuery>({
-            query: `
-                query {
-                    status {
-                        status
+       this.setFakeHapiServer();
+       let res = {} as any;
+        try {
+            res = await sendRequest<IQuery>({
+                query: `
+                    query {
+                        status {
+                            status
+                        }
                     }
-                }
-            `
-        });
+                `
+            });
+        } catch (e) {}
         if (res.status === 200 && res.data.status.status === '200') {
             return true;
         }
@@ -109,18 +113,16 @@ export class StartTask {
         repoPath?: string,
     }) {
         this.setFakeHapiServer();
-        if (await this.isDaemonRunning()) {
-            await sendRequest({
-                query: `
-                mutation notifyDaemon($repoPath: String!) {
-                  notifyDaemon(repoPath: $repoPath) {
-                    repoPath
-                  }
-                }
-                `,
-                variables
-            })
-        }
+        await sendRequest({
+            query: `
+            mutation notifyDaemon($repoPath: String!) {
+              notifyDaemon(repoPath: $repoPath) {
+                repoPath
+              }
+            }
+            `,
+            variables
+        });
     }
     async prepareBundler(
         file,
@@ -159,7 +161,8 @@ export class StartTask {
                 process.stdout.write(`Bundle source: ${bundle.name}`);
                 process.exit(0);
             }
-            if (!isFirstTimeRun) {
+            const isDaemonInRunningcondition = await this.isDaemonRunning();
+            if (!isFirstTimeRun && isDaemonInRunningcondition) {
                 try {
                     await this.notifyDaemon({ repoPath: process.cwd() });
                 } catch (e) {}
@@ -177,6 +180,10 @@ export class StartTask {
                     }
                     if (hasError) {
                         return;
+                    }
+                } else {
+                    if (isDaemonInRunningcondition) {
+                        await this.execService.call('sleep 1');
                     }
                 }
                 const childArguments = [];

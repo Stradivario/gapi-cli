@@ -60,14 +60,18 @@ let ServerController = class ServerController {
             });
             child.stdout.on('data', data => {
                 process.stdout.write(data);
-                if (data
-                    .toString('utf8')
-                    .includes('Typings introspection based on GAPI Schema created inside folder')) {
-                    resolve(payload);
-                }
+                // if (
+                //   data
+                //     .toString('utf8')
+                //     .includes(
+                //       'Typings introspection based on GAPI Schema created inside folder'
+                //     )
+                // ) {
+                //   resolve(payload);
+                // }
             });
             child.stderr.on('data', data => {
-                process.stderr.write(data);
+                // process.stderr.write(data);
             });
             child.on('close', code => {
                 // console.log(`child process exited with code ${code}`);
