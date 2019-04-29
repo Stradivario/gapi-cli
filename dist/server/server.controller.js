@@ -8,12 +8,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@gapi/core");
 const server_type_1 = require("./server.type");
 const list_service_1 = require("./core/services/list.service");
 const link_list_type_1 = require("./types/link-list.type");
 const child_process_1 = require("child_process");
+const util_1 = require("util");
+const fs_1 = require("fs");
 let ServerController = class ServerController {
     constructor(pubsub, listService) {
         this.pubsub = pubsub;
@@ -38,9 +48,14 @@ let ServerController = class ServerController {
         return this.listService.readList();
     }
     notifyDaemon(root, payload) {
-        return new Promise((resolve, reject) => {
-            console.log(payload);
-            const child = child_process_1.spawn('gapi', ['schema', 'introspect', '--collect-documents', '--collect-types'], {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const args = ['schema', 'introspect', '--collect-documents', '--collect-types'];
+            const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
+            if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
+                args.push(`--url http://localhost:9000/graphql`);
+                args.push(`--folder ./api-introspection`);
+            }
+            const child = child_process_1.spawn('gapi', args, {
                 cwd: payload.repoPath
             });
             child.stdout.on('data', data => {
@@ -58,7 +73,7 @@ let ServerController = class ServerController {
                 // console.log(`child process exited with code ${code}`);
                 resolve(payload);
             });
-        });
+        }));
     }
 };
 __decorate([

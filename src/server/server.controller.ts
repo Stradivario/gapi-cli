@@ -13,7 +13,8 @@ import { SubscriptionStatusType } from './server.type';
 import { ListService } from './core/services/list.service';
 import { LinkListType } from './types/link-list.type';
 import { spawn } from 'child_process';
-import { normalize } from 'path';
+import { promisify } from 'util';
+import { exists } from 'fs';
 
 @Controller()
 export class ServerController {
@@ -66,11 +67,16 @@ export class ServerController {
     }
   })
   notifyDaemon(root, payload) {
-    return new Promise((resolve, reject) => {
-      console.log(payload);
+    return new Promise(async (resolve, reject) => {
+      const args = ['schema', 'introspect', '--collect-documents', '--collect-types'];
+      const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
+      if (!await promisify(exists)(gapiLocalConfig)) {
+        args.push(`--url http://localhost:9000/graphql`);
+        args.push(`--folder ./api-introspection`);
+      }
       const child = spawn(
         'gapi',
-        ['schema', 'introspect', '--collect-documents', '--collect-types'],
+        args,
         {
           cwd: payload.repoPath
         }

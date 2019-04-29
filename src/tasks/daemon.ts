@@ -184,11 +184,11 @@ export class DaemonTask {
       console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
       return await this.tasks.get(DaemonTasks.stop)();
     }
-    if (includes(DaemonTasks.kill) || includes('k')) {
+    if (includes(DaemonTasks.kill)) {
       return await this.tasks.get(DaemonTasks.kill)();
     }
     if (includes(DaemonTasks.unlink)) {
-      return await this.tasks.get(DaemonTasks.unlink)(nextOrDefault('--name'));
+      return await this.tasks.get(DaemonTasks.unlink)();
     }
     if (includes(DaemonTasks.link)) {
       return await this.tasks.get(DaemonTasks.link)();

@@ -77,7 +77,7 @@ export class SchemaTask {
     if (this.argsService.args.includes('--collect-types')) {
       this.generateTypes(readDocumentsTemp);
     }
-    const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp}`;
+    const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp};`;
     writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
     unlinkSync(`${this.folder}/documents-temp.json`);
   }

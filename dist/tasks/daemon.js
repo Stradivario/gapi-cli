@@ -185,11 +185,11 @@ let DaemonTask = class DaemonTask {
                 console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
                 return yield this.tasks.get(exports.DaemonTasks.stop)();
             }
-            if (helpers_1.includes(exports.DaemonTasks.kill) || helpers_1.includes('k')) {
+            if (helpers_1.includes(exports.DaemonTasks.kill)) {
                 return yield this.tasks.get(exports.DaemonTasks.kill)();
             }
             if (helpers_1.includes(exports.DaemonTasks.unlink)) {
-                return yield this.tasks.get(exports.DaemonTasks.unlink)(helpers_1.nextOrDefault('--name'));
+                return yield this.tasks.get(exports.DaemonTasks.unlink)();
             }
             if (helpers_1.includes(exports.DaemonTasks.link)) {
                 return yield this.tasks.get(exports.DaemonTasks.link)();
