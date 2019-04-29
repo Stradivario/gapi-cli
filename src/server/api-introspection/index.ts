@@ -3,7 +3,7 @@
 
 
   export interface IGraphQLResponseRoot {
-    data?: IQuery | ISubscription;
+    data?: IQuery | IMutation | ISubscription;
     errors?: Array<IGraphQLResponseError>;
   }
 
@@ -39,6 +39,14 @@
     repoPath: string | null;
     introspectionPath: string | null;
     linkName: string | null;
+}
+
+  /**
+    description: Mutation type for all requests which will change persistent data
+  */
+  export interface IMutation {
+    __typename?: "Mutation";
+    notifyDaemon: ILinkListType | null;
 }
 
   /**
