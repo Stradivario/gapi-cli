@@ -15,7 +15,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typedi_1 = require("typedi");
-const core_1 = require("@gapi/core");
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
 const mkdirp = require("mkdirp");
@@ -26,8 +25,9 @@ const ps_list_1 = require("../core/helpers/ps-list");
 const stringEnum_1 = require("../core/helpers/stringEnum");
 const helpers_1 = require("../core/helpers");
 const bootstrap_1 = require("./bootstrap");
-const core_2 = require("@gapi/core");
+const core_1 = require("@gapi/core");
 const systemd_service_1 = require("../core/services/systemd.service");
+const daemon_executor_service_1 = require("../core/services/daemon-executor/daemon-executor.service");
 const yamljs_1 = require("yamljs");
 exports.DaemonTasks = stringEnum_1.strEnum([
     'start',
@@ -37,7 +37,8 @@ exports.DaemonTasks = stringEnum_1.strEnum([
     'bootstrap',
     'link',
     'unlink',
-    'list'
+    'list',
+    'restart'
 ]);
 let DaemonTask = class DaemonTask {
     constructor() {
@@ -49,6 +50,7 @@ let DaemonTask = class DaemonTask {
         this.processListFile = `${this.daemonFolder}/process-list`;
         this.bootstrapTask = typedi_1.default.get(bootstrap_1.BootstrapTask);
         this.systemDService = typedi_1.default.get(systemd_service_1.SystemDService);
+        this.daemonExecutorService = typedi_1.default.get(daemon_executor_service_1.DaemonExecutorService);
         this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
             yield util_1.promisify(mkdirp)(this.daemonFolder);
@@ -79,6 +81,10 @@ let DaemonTask = class DaemonTask {
                 child.unref();
             }
         });
+        this.restart = (name) => __awaiter(this, void 0, void 0, function* () {
+            yield this.stop();
+            yield this.start();
+        });
         this.stop = (name) => __awaiter(this, void 0, void 0, function* () {
             if (helpers_1.includes('--systemd')) {
                 yield this.systemDService.remove(name);
@@ -88,46 +94,28 @@ let DaemonTask = class DaemonTask {
             }
         });
         this.list = () => __awaiter(this, void 0, void 0, function* () {
-            core_1.Container.set(core_2.HAPI_SERVER, { info: { port: '42000' } });
-            const linkList = yield core_2.sendRequest({
-                query: `
-        query {
-          getLinkList {
-            repoPath
-            introspectionPath
-            linkName
-          }
-        }
-      `
-            });
+            const linkList = yield this.daemonExecutorService.getLinkList();
             console.log(linkList.data.getLinkList);
         });
         this.kill = (pid) => process.kill(Number(pid));
         this.link = (linkName = 'default') => __awaiter(this, void 0, void 0, function* () {
-            const repoPath = process.cwd();
+            const encoding = 'utf-8';
             let config = { config: { schema: {} } };
             let processList = [];
             try {
-                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, {
-                    encoding: 'utf-8'
-                }));
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
-            try {
-                config = yamljs_1.load(`${repoPath}/gapi-cli.conf.yml`);
-            }
-            catch (e) {
-                console.error('Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.');
-            }
-            const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+            config = yield this.readGapiConfig();
+            const introspectionPath = config.config.schema.introspectionOutputFolder || `${process.cwd()}/api-introspection`;
             linkName = config.config.schema.linkName || linkName;
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== repoPath).concat({
-                repoPath,
+            const currentRepoProcess = {
+                repoPath: process.cwd(),
                 introspectionPath,
                 linkName
-            })), {
-                encoding: 'utf-8'
-            });
+            };
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd()).concat(currentRepoProcess)), { encoding });
+            console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
         });
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
             let processList = [];
@@ -136,18 +124,18 @@ let DaemonTask = class DaemonTask {
                 processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
+            const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
             if (helpers_1.includes('--all') && processList.length) {
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), {
-                    encoding: 'utf-8'
-                });
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), { encoding });
             }
-            else if (processList.filter(p => p.repoPath === process.cwd()).length) {
+            else if (currentProcess) {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
             }
             else if (helpers_1.includes('--link-name') && processList.length) {
                 const linkName = helpers_1.nextOrDefault('--link-name');
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
             }
+            console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
         });
         this.clean = () => __awaiter(this, void 0, void 0, function* () {
             const isRunning = yield this.isDaemonRunning();
@@ -174,6 +162,16 @@ let DaemonTask = class DaemonTask {
             return yield this.bootstrapTask.run(options);
         });
     }
+    readGapiConfig() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let file = {};
+            try {
+                file = yamljs_1.load(process.cwd() + '/gapi-cli.conf.yml');
+            }
+            catch (e) { }
+            return file;
+        });
+    }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             if (helpers_1.includes(exports.DaemonTasks.clean)) {
@@ -183,6 +181,9 @@ let DaemonTask = class DaemonTask {
             if (helpers_1.includes(exports.DaemonTasks.start)) {
                 console.log(`Stating daemon! Garbage is inside ${this.daemonFolder}!`);
                 return yield this.tasks.get(exports.DaemonTasks.start)();
+            }
+            if (helpers_1.includes(exports.DaemonTasks.restart)) {
+                return yield this.tasks.get(exports.DaemonTasks.restart)();
             }
             if (helpers_1.includes(exports.DaemonTasks.stop)) {
                 console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
@@ -198,8 +199,8 @@ let DaemonTask = class DaemonTask {
                 return yield this.tasks.get(exports.DaemonTasks.link)();
             }
             if (helpers_1.includes(exports.DaemonTasks.list)) {
-                typedi_1.default.reset(core_2.HAPI_SERVER);
-                typedi_1.default.set(core_2.HAPI_SERVER, { info: { port: '42000' } });
+                typedi_1.default.reset(core_1.HAPI_SERVER);
+                typedi_1.default.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
                 return yield this.tasks.get(exports.DaemonTasks.list)();
             }
             if (helpers_1.includes(exports.DaemonTasks.bootstrap)) {

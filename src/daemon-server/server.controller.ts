@@ -14,16 +14,11 @@ import { DaemonService } from './core/services/daemon.service';
 
 @Controller()
 export class ServerController {
+
   constructor(
     private listService: ListService,
     private daemonService: DaemonService
-  ) {
-    let count = 0;
-    setInterval(() => {
-      count++;
-      // pubsub.publish('CREATE_SIGNAL_BASIC', `AZ${count}`);
-    }, 2000);
-  }
+  ) {}
 
   @Type(new GraphQLList(LinkListType))
   @Query()

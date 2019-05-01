@@ -1,10 +1,10 @@
 import { gql } from 'apollo-server-core';
 import { subscribeToTopic, createWebsocketLink, sendRequest, Container, HAPI_SERVER } from '@gapi/core';
-import { ISubscription } from './api-introspection';
+// import { ISubscription } from './api-introspection';
 
 Container.set(HAPI_SERVER, { info: { port: '42000' } });
 
-const subscription = subscribeToTopic<{data: ISubscription}>(gql`
+const subscription = subscribeToTopic<{data: any}>(gql`
   subscription {
     statusSubscription {
       status

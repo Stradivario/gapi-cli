@@ -1,5 +1,4 @@
 import Container, { Service } from 'typedi';
-import { Container as rxdiContainer } from '@gapi/core';
 import { openSync, writeFile, readFile } from 'fs';
 import { spawn } from 'child_process';
 import mkdirp = require('mkdirp');
@@ -12,9 +11,11 @@ import { nextOrDefault, includes } from '../core/helpers';
 import { BootstrapTask } from './bootstrap';
 import { CoreModuleConfig, sendRequest, HAPI_SERVER } from '@gapi/core';
 import { SystemDService } from '../core/services/systemd.service';
+import { DaemonExecutorService } from '../core/services/daemon-executor/daemon-executor.service';
+
 import { load } from 'yamljs';
-import { GapiConfig } from '../core/services/config.service';
-import { ILinkListType } from '../server/api-introspection/index';
+import { GapiConfig, ConfigService } from '../core/services/config.service';
+import { ILinkListType } from '../daemon-server/api-introspection/index';
 
 export const DaemonTasks = strEnum([
   'start',
@@ -24,12 +25,14 @@ export const DaemonTasks = strEnum([
   'bootstrap',
   'link',
   'unlink',
-  'list'
+  'list',
+  'restart'
 ]);
 export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
 export class DaemonTask {
+
   private gapiFolder: string = `${homedir()}/.gapi`;
   private daemonFolder: string = `${this.gapiFolder}/daemon`;
   private outLogFile: string = `${this.daemonFolder}/out.log`;
@@ -38,8 +41,8 @@ export class DaemonTask {
   private processListFile: string = `${this.daemonFolder}/process-list`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
   private systemDService: SystemDService = Container.get(SystemDService);
-
-  private start = async (name: string) => {
+  private daemonExecutorService: DaemonExecutorService = Container.get(DaemonExecutorService)
+  private start = async (name?: string) => {
     await this.killDaemon();
     await promisify(mkdirp)(this.daemonFolder);
     if (includes('--systemd')) {
@@ -69,7 +72,12 @@ export class DaemonTask {
     }
   };
 
-  private stop = async (name: string) => {
+  private restart = async (name: string) => {
+    await this.stop();
+    await this.start();
+  };
+
+  private stop = async (name?: string) => {
     if (includes('--systemd')) {
       await this.systemDService.remove(name);
     } else {
@@ -78,55 +86,40 @@ export class DaemonTask {
   };
 
   private list = async () => {
-    rxdiContainer.set(HAPI_SERVER, { info: { port: '42000' } });
-    const linkList = await sendRequest<any>({
-      query: `
-        query {
-          getLinkList {
-            repoPath
-            introspectionPath
-            linkName
-          }
-        }
-      `
-    });
+    const linkList = await this.daemonExecutorService.getLinkList();
     console.log(linkList.data.getLinkList);
   };
 
   private kill = (pid: number) => process.kill(Number(pid));
 
   private link = async (linkName: string = 'default') => {
-    const repoPath = process.cwd();
+    const encoding = 'utf-8';
     let config: GapiConfig = { config: { schema: {} } } as any;
     let processList: ILinkListType[] = [];
     try {
-      processList = JSON.parse(
-        await promisify(readFile)(this.processListFile, {
-          encoding: 'utf-8'
-        })
-      );
+      processList = JSON.parse(await promisify(readFile)(this.processListFile, { encoding }));
     } catch (e) {}
-    try {
-      config = load(`${repoPath}/gapi-cli.conf.yml`);
-    } catch (e) {
-      console.error(
-        'Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.'
-      );
-    }
-    const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+    config = await this.readGapiConfig();
+    const introspectionPath = config.config.schema.introspectionOutputFolder || `${process.cwd()}/api-introspection`;
     linkName = config.config.schema.linkName || linkName;
+    const currentRepoProcess = {
+      repoPath: process.cwd(),
+      introspectionPath,
+      linkName
+    };
     await promisify(writeFile)(
       this.processListFile,
-      JSON.stringify(processList.filter(p => p.repoPath !== repoPath).concat({
-        repoPath,
-        introspectionPath,
-        linkName
-      })),
-      {
-        encoding: 'utf-8'
-      }
-    );
+      JSON.stringify(processList.filter(p => p.repoPath !== process.cwd()).concat(currentRepoProcess)), { encoding });
+    console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
   };
+
+  private async readGapiConfig() {
+    let file: GapiConfig = {} as any;
+    try {
+      file = load(process.cwd() + '/gapi-cli.conf.yml')
+    } catch (e) {}
+    return file;
+  }
 
   private unlink = async () => {
     let processList: ILinkListType[] = [];
@@ -136,11 +129,10 @@ export class DaemonTask {
         await promisify(readFile)(this.processListFile, { encoding })
       );
     } catch (e) {}
+    const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
     if (includes('--all') && processList.length) {
-      await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
-        encoding: 'utf-8'
-      });
-    } else if (processList.filter(p => p.repoPath === process.cwd()).length) {
+      await promisify(writeFile)(this.processListFile, JSON.stringify([]), { encoding });
+    } else if (currentProcess) {
       await promisify(writeFile)(
         this.processListFile,
         JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
@@ -150,6 +142,7 @@ export class DaemonTask {
         this.processListFile,
         JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
     }
+    console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
   };
 
   private clean = async () => {
@@ -193,6 +186,9 @@ export class DaemonTask {
     if (includes(DaemonTasks.start)) {
       console.log(`Stating daemon! Garbage is inside ${this.daemonFolder}!`);
       return await this.tasks.get(DaemonTasks.start)();
+    }
+    if (includes(DaemonTasks.restart)) {
+      return await this.tasks.get(DaemonTasks.restart)();
     }
     if (includes(DaemonTasks.stop)) {
       console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);

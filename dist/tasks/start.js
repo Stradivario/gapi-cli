@@ -197,9 +197,9 @@ let StartTask = class StartTask {
                 child.kill();
             };
             bundler.on('buildStart', () => __awaiter(this, void 0, void 0, function* () {
-                // if (child) {
-                //     killChild();
-                // }
+                if (child) {
+                    killChild();
+                }
             }));
             bundler.on('bundled', compiledBundle => (bundle = compiledBundle));
             bundler.on('buildEnd', () => __awaiter(this, void 0, void 0, function* () {

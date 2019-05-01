@@ -8,7 +8,7 @@ import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
 import { nextOrDefault, includes } from '../core/helpers';
 import { sendRequest, HAPI_SERVER } from '@gapi/core';
-import { IQuery } from '../server/api-introspection';
+import { IQuery } from '../daemon-server/api-introspection';
 import { Container as rxdiContainer } from '@gapi/core';
 import { normalize } from 'path';
 
@@ -241,9 +241,9 @@ export class StartTask {
       child.kill();
     };
     bundler.on('buildStart', async () => {
-      // if (child) {
-      //     killChild();
-      // }
+      if (child) {
+          killChild();
+      }
     });
     bundler.on('bundled', compiledBundle => (bundle = compiledBundle));
     bundler.on('buildEnd', async () => {

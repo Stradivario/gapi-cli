@@ -14,25 +14,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
 const core_1 = require("@rxdi/core");
-const server_module_1 = require("../daemon-server/server.module");
-const core_2 = require("@gapi/core");
-let BootstrapTask = class BootstrapTask {
-    run(options) {
+const util_1 = require("util");
+const fs_1 = require("fs");
+const os_1 = require("os");
+let ListService = class ListService {
+    constructor() {
+        this.linkedList = [];
+        this.gapiFolder = `${os_1.homedir()}/.gapi`;
+        this.daemonFolder = `${this.gapiFolder}/daemon`;
+        this.processListFile = `${this.daemonFolder}/process-list`;
+    }
+    readList() {
         return __awaiter(this, void 0, void 0, function* () {
-            core_1.BootstrapFramework(server_module_1.ServerModule, [
-                core_2.CoreModule.forRoot(options || {
-                    graphql: {
-                        graphiql: true,
-                        graphiQlPlayground: false
-                    }
-                })
-            ]).subscribe(() => console.log('Server started'), console.error.bind(console));
+            try {
+                this.linkedList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+                    encoding: 'utf-8'
+                }));
+            }
+            catch (e) { }
+            return this.linkedList;
+        });
+    }
+    findByRepoPath(repoPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield this.readList()).filter(l => l.repoPath === repoPath);
+        });
+    }
+    findByLinkName(linkName, notLike) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
         });
     }
 };
-BootstrapTask = __decorate([
-    typedi_1.Service()
-], BootstrapTask);
-exports.BootstrapTask = BootstrapTask;
+ListService = __decorate([
+    core_1.Injectable()
+], ListService);
+exports.ListService = ListService;

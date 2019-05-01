@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { BootstrapFramework } from '@rxdi/core';
-import { ServerModule } from '../server/server.module';
+import { ServerModule } from '../daemon-server/server.module';
 import { CoreModule, CoreModuleConfig } from '@gapi/core';
 
 @Service()

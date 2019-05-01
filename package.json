@@ -13,10 +13,8 @@
   "scripts": {
     "postpublish": "git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git && git push --tags && git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git --tags",
     "build": "gapi build",
-    "start-server": "gapi start --local --path=./src/server/main.ts --parcel --minify=false --outDir ./develop-server/server",
-    "test": "test",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "start-server": "gapi start --local --path=./src/daemon-server/main.ts --parcel --minify=false --outDir ./daemon-server/server",
+    "test": "test"
   },
   "repository": {
     "type": "git",
@@ -57,8 +55,7 @@
     "service-systemd": "3.4.1",
     "shelljs": "0.8.3",
     "typedi": "0.8.0",
-    "yamljs": "0.3.0",
-    "snyk": "^1.154.0"
+    "yamljs": "0.3.0"
   },
   "devDependencies": {
     "@types/hapi": "^18.0.2",
