@@ -25,6 +25,7 @@ const childProcess = require("child_process");
 const helpers_1 = require("../core/helpers");
 const core_1 = require("@gapi/core");
 const core_2 = require("@gapi/core");
+const path_1 = require("path");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
@@ -40,14 +41,18 @@ let StartTask = class StartTask {
                 this.verbose = ' --verbose';
                 this.quiet = false;
             }
-            this.configService.config.config.app = this.configService.config.config.app || {};
+            this.configService.config.config.app =
+                this.configService.config.config.app || {};
             if (this.argsService.args[3] && this.argsService.args[3].includes('--')) {
                 const currentConfigKey = this.argsService.args[3].replace('--', '');
                 const currentConfiguration = this.configService.config.config.app[currentConfigKey];
-                if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                if (currentConfiguration &&
+                    currentConfiguration.prototype &&
+                    currentConfiguration.prototype === String &&
+                    currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                     this.configOriginal = this.extendConfig(currentConfiguration);
-                    console.log(`"${currentConfigKey}" configuration loaded!`);
+                    console.log(`'${currentConfigKey}' configuration loaded!`);
                 }
                 else if (currentConfiguration) {
                     this.config = this.environmentService.setVariables(currentConfiguration);
@@ -57,11 +62,14 @@ let StartTask = class StartTask {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
                     this.configOriginal = this.configService.config.config.app.local;
                 }
-                console.log(`"${currentConfigKey}" configuration loaded!`);
+                console.log(`'${currentConfigKey}' configuration loaded!`);
             }
             else {
-                const currentConfiguration = this.configService.config.config.app.local;
-                if (currentConfiguration && currentConfiguration.prototype && currentConfiguration.prototype === String && currentConfiguration.includes('extends')) {
+                const currentConfiguration = (this.configService.config.config.app.local);
+                if (currentConfiguration &&
+                    currentConfiguration.prototype &&
+                    currentConfiguration.prototype === String &&
+                    currentConfiguration.includes('extends')) {
                     this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
                     this.configOriginal = this.extendConfig(currentConfiguration);
                 }
@@ -69,12 +77,14 @@ let StartTask = class StartTask {
                     this.config = this.environmentService.setVariables(this.configService.config.config.app.local);
                     this.configOriginal = this.configService.config.config.app.local;
                 }
-                console.log(`"local" configuration loaded!`);
+                console.log(`'local' configuration loaded!`);
             }
             const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
             const cwd = process.cwd();
             const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
-            const customPath = process.argv[4] ? process.argv[4].split('--path=')[1] : null;
+            const customPath = process.argv[4]
+                ? process.argv[4].split('--path=')[1]
+                : null;
             const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
             const isLintEnabled = this.argsService.args.toString().includes('--lint');
             if (this.argsService.args.toString().includes('--docker')) {
@@ -98,10 +108,17 @@ let StartTask = class StartTask {
             }
             else {
                 if (process.argv.toString().includes('--parcel')) {
-                    return this.prepareBundler(`${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}`, this.configOriginal, true, false);
+                    return this.prepareBundler(`${customPathExists
+                        ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
+                        : `${cwd}/src/main.ts`}`, {
+                        original: this.configOriginal,
+                        schema: this.configService.config.config.schema
+                    }, true, false);
                 }
                 else {
-                    return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && ${isLintEnabled ? 'npm run lint &&' : ''} ${sleep} ts-node' ${customPathExists ? `${cwd}/${customPathExists ? customPath : 'index.ts'}` : `${cwd}/src/main.ts`}  ${this.verbose}`);
+                    return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && ${isLintEnabled ? 'npm run lint &&' : ''} ${sleep} ts-node' ${customPathExists
+                        ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
+                        : `${cwd}/src/main.ts`}  ${this.verbose}`);
                 }
             }
         });
@@ -146,14 +163,30 @@ let StartTask = class StartTask {
             });
         });
     }
-    prepareBundler(file, argv, start = process.argv.toString().includes('--start'), buildOnly = process.argv.toString().includes('--buildOnly=false') ? false : true, minify = process.argv.toString().includes('--minify=false') ? false : true, target = process.argv.toString().includes('--target=browser') ? 'browser' : 'node') {
+    prepareBundler(file, { original, schema }, start = helpers_1.includes('--start'), buildOnly = helpers_1.includes('--buildOnly=false') ? false : true, minify = helpers_1.includes('--minify=false') ? false : true, target = helpers_1.includes('--target=browser')
+        ? 'browser'
+        : 'node', excludedFolders = []) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (schema.excludedFolders.length) {
+                excludedFolders = [...excludedFolders, ...schema.excludedFolders];
+            }
+            if (schema.introspectionOutputFolder) {
+                excludedFolders.push(schema.introspectionOutputFolder);
+            }
+            excludedFolders = excludedFolders.map(f => path_1.normalize(process.cwd() + f).replace('.', ''));
             const bundler = new Bundler(file, {
                 target,
                 outDir: helpers_1.nextOrDefault('--outDir', './dist'),
                 minify,
-                bundleNodeModules: process.argv.toString().includes('--bundle-modules')
+                bundleNodeModules: helpers_1.includes('--bundle-modules')
             });
+            const originalOnChange = bundler.onChange.bind(bundler);
+            bundler.onChange = function (path) {
+                if (excludedFolders.filter(d => path.substring(0, path.lastIndexOf('/')).includes(d)).length) {
+                    return;
+                }
+                return originalOnChange(path);
+            };
             let bundle = null;
             let child = null;
             let isFirstTimeRun = true;
@@ -168,20 +201,19 @@ let StartTask = class StartTask {
                 //     killChild();
                 // }
             }));
-            bundler.on('bundled', (compiledBundle) => bundle = compiledBundle);
+            bundler.on('bundled', compiledBundle => (bundle = compiledBundle));
             bundler.on('buildEnd', () => __awaiter(this, void 0, void 0, function* () {
                 if (buildOnly) {
                     process.stdout.write(`Gapi Application build finished! ${file}\n`);
                     process.stdout.write(`Bundle source: ${bundle.name}`);
                     process.exit(0);
                 }
-                const isDaemonInRunningcondition = yield this.isDaemonRunning();
-                if (!isFirstTimeRun && isDaemonInRunningcondition) {
-                    try {
-                        yield this.notifyDaemon({ repoPath: process.cwd() });
-                    }
-                    catch (e) { }
-                }
+                //   const isDaemonInRunningcondition = await this.isDaemonRunning();
+                //   if (!isFirstTimeRun && isDaemonInRunningcondition) {
+                //     try {
+                //       await this.notifyDaemon({ repoPath: process.cwd() });
+                //     } catch (e) {}
+                //   }
                 if (start && bundle !== null) {
                     if (child) {
                         killChild();
@@ -199,9 +231,9 @@ let StartTask = class StartTask {
                         }
                     }
                     else {
-                        if (isDaemonInRunningcondition) {
-                            yield this.execService.call('sleep 1');
-                        }
+                        //   if (isDaemonInRunningcondition) {
+                        //     await this.execService.call('sleep 1');
+                        //   }
                     }
                     const childArguments = [];
                     if (this.argsService.args.toString().includes('--inspect-brk')) {
@@ -210,17 +242,14 @@ let StartTask = class StartTask {
                     else if (this.argsService.args.toString().includes('--inspect')) {
                         childArguments.push('--inspect');
                     }
-                    process.env = Object.assign(process.env, argv);
-                    child = childProcess.spawn('node', [
-                        ...childArguments,
-                        bundle.name
-                    ]);
+                    process.env = Object.assign(process.env, original);
+                    child = childProcess.spawn('node', [...childArguments, bundle.name]);
                     child.stdout.on('data', (data) => {
                         process.stdout.write(data);
                         isFirstTimeRun = false;
                     });
-                    child.stderr.on('data', (data) => process.stdout.write(data));
-                    child.on('exit', (code) => {
+                    child.stderr.on('data', data => process.stdout.write(data));
+                    child.on('exit', code => {
                         console.log(`Child process exited with code ${code}`);
                         child = null;
                     });

@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-
 export class MainConfig {
     API_PORT?: number | string;
     DB_PORT?: string;
@@ -28,6 +27,7 @@ export interface GapiMainConfig {
         worker: MainConfig | string;
     };
     schema: {
+        excludedFolders: string[];
         introspectionEndpoint: string;
         introspectionOutputFolder: string;
         pattern: string;
@@ -78,11 +78,12 @@ export class ConfigService {
         }
         this.config = config;
         this.config.config = this.config.config || <any>{};
-        this.config.config.schema = this.config.config.schema || {
+        this.config.config.schema = Object.assign({
+            excludedFolders: [],
             introspectionEndpoint: '',
             introspectionOutputFolder: '',
             pattern: ''
-        }
+        }, this.config.config.schema);
         this.config.config.app = this.config.config.app || {
             local: {
                 GAPI_VERSION: ''

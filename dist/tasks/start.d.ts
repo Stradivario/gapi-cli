@@ -15,6 +15,9 @@ export declare class StartTask {
     notifyDaemon(variables: {
         repoPath?: string;
     }): Promise<void>;
-    prepareBundler(file: any, argv: any, start?: boolean, buildOnly?: boolean, minify?: boolean, target?: 'browser' | 'node'): Promise<void>;
+    prepareBundler(file: any, { original, schema }: {
+        original: any;
+        schema: any;
+    }, start?: boolean, buildOnly?: boolean, minify?: boolean, target?: 'browser' | 'node', excludedFolders?: string[]): Promise<void>;
     extendConfig(config: any): any;
 }

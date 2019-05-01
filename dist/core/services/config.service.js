@@ -47,11 +47,12 @@ let ConfigService = class ConfigService {
         }
         this.config = config;
         this.config.config = this.config.config || {};
-        this.config.config.schema = this.config.config.schema || {
+        this.config.config.schema = Object.assign({
+            excludedFolders: [],
             introspectionEndpoint: '',
             introspectionOutputFolder: '',
             pattern: ''
-        };
+        }, this.config.config.schema);
         this.config.config.app = this.config.config.app || {
             local: {
                 GAPI_VERSION: ''
