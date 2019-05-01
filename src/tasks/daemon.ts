@@ -16,12 +16,20 @@ import { load } from 'yamljs';
 import { GapiConfig } from '../core/services/config.service';
 import { ILinkListType } from '../server/api-introspection/index';
 
-export const DaemonTasks = strEnum(['start', 'stop', 'clean', 'kill', 'bootstrap', 'link', 'unlink', 'list']);
+export const DaemonTasks = strEnum([
+  'start',
+  'stop',
+  'clean',
+  'kill',
+  'bootstrap',
+  'link',
+  'unlink',
+  'list'
+]);
 export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
 export class DaemonTask {
-
   private gapiFolder: string = `${homedir()}/.gapi`;
   private daemonFolder: string = `${this.gapiFolder}/daemon`;
   private outLogFile: string = `${this.daemonFolder}/out.log`;
@@ -41,7 +49,7 @@ export class DaemonTask {
         app: 'systemd-daemon.js',
         engine: 'node',
         env: {
-          PORT_2: 3002,
+          PORT_2: 3002
         }
       });
     } else {
@@ -92,9 +100,11 @@ export class DaemonTask {
     let config: GapiConfig = { config: { schema: {} } } as any;
     let processList: ILinkListType[] = [];
     try {
-      processList = JSON.parse(await promisify(readFile)(this.processListFile, {
-        encoding: 'utf-8'
-      }))
+      processList = JSON.parse(
+        await promisify(readFile)(this.processListFile, {
+          encoding: 'utf-8'
+        })
+      );
     } catch (e) {}
     try {
       config = load(`${repoPath}/gapi-cli.conf.yml`);
@@ -104,14 +114,15 @@ export class DaemonTask {
       );
     }
     const currentLink = processList.filter(p => p.repoPath === repoPath);
-    const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+    const introspectionPath =
+      config.config.schema.introspectionOutputFolder ||
+      `${repoPath}/api-introspection`;
     if (!currentLink.length) {
       processList.push({
         repoPath,
         introspectionPath,
         linkName
       });
-
     } else if (currentLink[0].introspectionPath !== introspectionPath) {
       processList = processList.filter(p => p.repoPath !== repoPath);
       processList.push({
@@ -120,37 +131,52 @@ export class DaemonTask {
         linkName
       });
     }
-    await promisify(writeFile)(this.processListFile, JSON.stringify(processList), {
-      encoding: 'utf-8'
-    });
+    await promisify(writeFile)(
+      this.processListFile,
+      JSON.stringify(processList),
+      {
+        encoding: 'utf-8'
+      }
+    );
   };
 
   private unlink = async () => {
-    const repoPath = process.cwd();
     let processList: ILinkListType[] = [];
+    const encoding = 'utf-8';
     try {
-      processList = JSON.parse(await promisify(readFile)(this.processListFile, {
-        encoding: 'utf-8'
-      }))
+      processList = JSON.parse(
+        await promisify(readFile)(this.processListFile, { encoding })
+      );
     } catch (e) {}
-    if (processList.filter(p => p.repoPath === repoPath).length) {
-      await promisify(writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== repoPath)), {
+    if (includes('--all') && processList.length) {
+      await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
         encoding: 'utf-8'
       });
+    } else if (processList.filter(p => p.repoPath === process.cwd()).length) {
+      await promisify(writeFile)(
+        this.processListFile,
+        JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
+    } else if (includes('--link-name') && processList.length) {
+      const linkName = nextOrDefault('--link-name');
+      await promisify(writeFile)(
+        this.processListFile,
+        JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
     }
   };
 
   private clean = async () => {
     const isRunning = await this.isDaemonRunning();
     if (!isRunning) {
-      await promisify(rimraf)(this.daemonFolder)
+      await promisify(rimraf)(this.daemonFolder);
     } else {
-      console.log('Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again');
+      console.log(
+        'Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again'
+      );
     }
-    console.log(`${this.daemonFolder} cleaned!`)
+    console.log(`${this.daemonFolder} cleaned!`);
   };
 
-  private genericRunner = (task: DaemonTasks) => (args) =>
+  private genericRunner = (task: DaemonTasks) => args =>
     (this[task] as any)(args || nextOrDefault(task, ''));
 
   private tasks: Map<
@@ -164,12 +190,12 @@ export class DaemonTask {
     [DaemonTasks.bootstrap, this.genericRunner(DaemonTasks.bootstrap)],
     [DaemonTasks.link, this.genericRunner(DaemonTasks.link)],
     [DaemonTasks.unlink, this.genericRunner(DaemonTasks.unlink)],
-    [DaemonTasks.list, this.genericRunner(DaemonTasks.list)],
+    [DaemonTasks.list, this.genericRunner(DaemonTasks.list)]
   ]);
 
   bootstrap = async (options: CoreModuleConfig) => {
     return await this.bootstrapTask.run(options);
-  }
+  };
 
   async run() {
     if (includes(DaemonTasks.clean)) {
@@ -250,4 +276,3 @@ export class DaemonTask {
     return (await getProcessList()).filter(p => p.pid === pid);
   }
 }
-
