@@ -95,7 +95,7 @@ export class DaemonTask {
 
   private kill = (pid: number) => process.kill(Number(pid));
 
-  private link = async (linkName: string) => {
+  private link = async (linkName: string = 'default') => {
     const repoPath = process.cwd();
     let config: GapiConfig = { config: { schema: {} } } as any;
     let processList: ILinkListType[] = [];
@@ -113,27 +113,15 @@ export class DaemonTask {
         'Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.'
       );
     }
-    const currentLink = processList.filter(p => p.repoPath === repoPath);
-    const introspectionPath =
-      config.config.schema.introspectionOutputFolder ||
-      `${repoPath}/api-introspection`;
-    if (!currentLink.length) {
-      processList.push({
-        repoPath,
-        introspectionPath,
-        linkName
-      });
-    } else if (currentLink[0].introspectionPath !== introspectionPath) {
-      processList = processList.filter(p => p.repoPath !== repoPath);
-      processList.push({
-        repoPath,
-        introspectionPath,
-        linkName
-      });
-    }
+    const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+    linkName = config.config.schema.linkName || linkName;
     await promisify(writeFile)(
       this.processListFile,
-      JSON.stringify(processList),
+      JSON.stringify(processList.filter(p => p.repoPath !== repoPath).concat({
+        repoPath,
+        introspectionPath,
+        linkName
+      })),
       {
         encoding: 'utf-8'
       }

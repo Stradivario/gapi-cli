@@ -27,6 +27,7 @@ export interface GapiMainConfig {
         worker: MainConfig | string;
     };
     schema: {
+        linkName: string;
         excludedFolders: string[];
         introspectionEndpoint: string;
         introspectionOutputFolder: string;
@@ -79,6 +80,7 @@ export class ConfigService {
         this.config = config;
         this.config.config = this.config.config || <any>{};
         this.config.config.schema = Object.assign({
+            linkName: 'default',
             excludedFolders: [],
             introspectionEndpoint: '',
             introspectionOutputFolder: '',

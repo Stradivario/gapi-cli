@@ -26,6 +26,7 @@ export interface GapiMainConfig {
         worker: MainConfig | string;
     };
     schema: {
+        linkName: string;
         excludedFolders: string[];
         introspectionEndpoint: string;
         introspectionOutputFolder: string;

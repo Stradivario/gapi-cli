@@ -103,7 +103,7 @@ let DaemonTask = class DaemonTask {
             console.log(linkList.data.getLinkList);
         });
         this.kill = (pid) => process.kill(Number(pid));
-        this.link = (linkName) => __awaiter(this, void 0, void 0, function* () {
+        this.link = (linkName = 'default') => __awaiter(this, void 0, void 0, function* () {
             const repoPath = process.cwd();
             let config = { config: { schema: {} } };
             let processList = [];
@@ -119,25 +119,13 @@ let DaemonTask = class DaemonTask {
             catch (e) {
                 console.error('Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.');
             }
-            const currentLink = processList.filter(p => p.repoPath === repoPath);
-            const introspectionPath = config.config.schema.introspectionOutputFolder ||
-                `${repoPath}/api-introspection`;
-            if (!currentLink.length) {
-                processList.push({
-                    repoPath,
-                    introspectionPath,
-                    linkName
-                });
-            }
-            else if (currentLink[0].introspectionPath !== introspectionPath) {
-                processList = processList.filter(p => p.repoPath !== repoPath);
-                processList.push({
-                    repoPath,
-                    introspectionPath,
-                    linkName
-                });
-            }
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList), {
+            const introspectionPath = config.config.schema.introspectionOutputFolder || `${repoPath}/api-introspection`;
+            linkName = config.config.schema.linkName || linkName;
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== repoPath).concat({
+                repoPath,
+                introspectionPath,
+                linkName
+            })), {
                 encoding: 'utf-8'
             });
         });

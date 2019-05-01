@@ -48,6 +48,7 @@ let ConfigService = class ConfigService {
         this.config = config;
         this.config.config = this.config.config || {};
         this.config.config.schema = Object.assign({
+            linkName: 'default',
             excludedFolders: [],
             introspectionEndpoint: '',
             introspectionOutputFolder: '',
