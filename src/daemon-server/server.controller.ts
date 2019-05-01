@@ -13,6 +13,7 @@ import { ILinkListType } from './api-introspection';
 import { DaemonService } from './core/services/daemon.service';
 import { Observable, from, of, combineLatest } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { ServerMetadataInputType } from './types/server-metadata.type';
 
 @Controller()
 export class ServerController {
@@ -37,6 +38,9 @@ export class ServerController {
     },
     linkName: {
       type: GraphQLString
+    },
+    serverMetadata: {
+      type: ServerMetadataInputType
     }
   })
   notifyDaemon(root, payload: ILinkListType): Observable<ILinkListType> {

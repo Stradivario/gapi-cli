@@ -15,6 +15,7 @@ const link_list_type_1 = require("./types/link-list.type");
 const daemon_service_1 = require("./core/services/daemon.service");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
+const server_metadata_type_1 = require("./types/server-metadata.type");
 let ServerController = class ServerController {
     constructor(listService, daemonService) {
         this.listService = listService;
@@ -55,6 +56,9 @@ __decorate([
         },
         linkName: {
             type: core_1.GraphQLString
+        },
+        serverMetadata: {
+            type: server_metadata_type_1.ServerMetadataInputType
         }
     }),
     __metadata("design:type", Function),
