@@ -17,7 +17,7 @@ export class ServerController {
   constructor(
     private listService: ListService,
     private daemonService: DaemonService
-    ) {
+  ) {
     let count = 0;
     setInterval(() => {
       count++;
@@ -44,12 +44,20 @@ export class ServerController {
     }
   })
   async notifyDaemon(root, payload: ILinkListType): Promise<ILinkListType> {
+    let otherRepos: ILinkListType[] = [];
     if ((await this.listService.readList()).length) {
       const [repo] = await this.listService.findByRepoPath(payload.repoPath);
-      let repoLinkedName: string = repo.linkName;
-      const otherRepos = this.listService.findByLinkName(repoLinkedName, repo.repoPath);
-      console.log(otherRepos);
+      if (repo && repo.linkName) {
+        otherRepos = await this.listService.findByLinkName(
+          repo.linkName,
+          repo.repoPath
+        );
+      }
     }
-    return await this.daemonService.trigger(payload)
+    await Promise.all([
+      await this.daemonService.trigger(payload),
+      ...otherRepos.map(async r => await this.daemonService.trigger(r))
+    ]);
+    return payload;
   }
 }

@@ -22,31 +22,20 @@ let DaemonService = class DaemonService {
     trigger(payload) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
-            const args = ['schema', 'introspect', '--collect-documents', '--collect-types'];
+            const args = [
+                'schema',
+                'introspect',
+                '--collect-documents',
+                '--collect-types'
+            ];
             if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
                 args.push(`--url http://localhost:9000/graphql`);
                 args.push(`--folder ./api-introspection`);
             }
-            const child = child_process_1.spawn('gapi', args, {
-                cwd: payload.repoPath
-            });
-            child.stdout.on('data', data => {
-                process.stdout.write(data);
-                //   if (
-                //     data
-                //       .toString('utf8')
-                //       .includes(
-                //         'Typings introspection based on GAPI Schema created inside folder'
-                //       )
-                //   ) {
-                //     resolve(payload);
-                //   }
-            });
-            child.stderr.on('data', data => {
-                // process.stderr.write(data);
-            });
+            const child = child_process_1.spawn('gapi', args, { cwd: payload.repoPath });
+            child.stdout.on('data', data => process.stdout.write(data));
+            child.stderr.on('data', data => process.stderr.write(data));
             child.on('close', code => {
-                // console.log(`child process exited with code ${code}`);
                 if (!code) {
                     resolve(payload);
                 }

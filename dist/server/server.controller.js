@@ -36,13 +36,18 @@ let ServerController = class ServerController {
     }
     notifyDaemon(root, payload) {
         return __awaiter(this, void 0, void 0, function* () {
+            let otherRepos = [];
             if ((yield this.listService.readList()).length) {
                 const [repo] = yield this.listService.findByRepoPath(payload.repoPath);
-                let repoLinkedName = repo.linkName;
-                const otherRepos = this.listService.findByLinkName(repoLinkedName, repo.repoPath);
-                console.log(otherRepos);
+                if (repo && repo.linkName) {
+                    otherRepos = yield this.listService.findByLinkName(repo.linkName, repo.repoPath);
+                }
             }
-            return yield this.daemonService.trigger(payload);
+            yield Promise.all([
+                yield this.daemonService.trigger(payload),
+                ...otherRepos.map((r) => __awaiter(this, void 0, void 0, function* () { return yield this.daemonService.trigger(r); }))
+            ]);
+            return payload;
         });
     }
 };
