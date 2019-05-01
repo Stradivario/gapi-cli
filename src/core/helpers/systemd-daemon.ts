@@ -2,9 +2,14 @@ import { Container } from "@rxdi/core";
 import { BootstrapTask } from "../../tasks/bootstrap";
 
 Container.get(BootstrapTask).run({
-    graphql: {
-      openBrowser: false,
-      graphiql: false,
-      graphiQlPlayground: false
+  server: {
+    hapi: {
+      port: 42000
     }
+  },
+  graphql: {
+    openBrowser: false,
+    graphiql: false,
+    graphiQlPlayground: false
+  }
 });

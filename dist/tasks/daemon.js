@@ -38,7 +38,8 @@ exports.DaemonTasks = stringEnum_1.strEnum([
     'link',
     'unlink',
     'list',
-    'restart'
+    'restart',
+    'status'
 ]);
 let DaemonTask = class DaemonTask {
     constructor() {
@@ -58,11 +59,9 @@ let DaemonTask = class DaemonTask {
                 yield this.systemDService.register({
                     name: name || 'my-node-service',
                     cwd: __dirname.replace('tasks', 'core/helpers/'),
-                    app: 'systemd-daemon.js',
+                    app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
                     engine: 'node',
-                    env: {
-                        PORT_2: 3002
-                    }
+                    env: {}
                 });
             }
             else {
@@ -87,7 +86,7 @@ let DaemonTask = class DaemonTask {
         });
         this.stop = (name) => __awaiter(this, void 0, void 0, function* () {
             if (helpers_1.includes('--systemd')) {
-                yield this.systemDService.remove(name);
+                yield this.systemDService.remove(name || 'my-node-service');
             }
             else {
                 yield this.killDaemon();
@@ -98,6 +97,9 @@ let DaemonTask = class DaemonTask {
             console.log(linkList.data.getLinkList);
         });
         this.kill = (pid) => process.kill(Number(pid));
+        this.status = () => __awaiter(this, void 0, void 0, function* () {
+            console.log(`Daemon status: ${(yield this.isDaemonRunning()) ? 'active' : 'stopped'}`);
+        });
         this.link = (linkName = 'default') => __awaiter(this, void 0, void 0, function* () {
             const encoding = 'utf-8';
             let config = { config: { schema: {} } };
@@ -161,7 +163,8 @@ let DaemonTask = class DaemonTask {
             [exports.DaemonTasks.bootstrap, this.genericRunner(exports.DaemonTasks.bootstrap)],
             [exports.DaemonTasks.link, this.genericRunner(exports.DaemonTasks.link)],
             [exports.DaemonTasks.unlink, this.genericRunner(exports.DaemonTasks.unlink)],
-            [exports.DaemonTasks.list, this.genericRunner(exports.DaemonTasks.list)]
+            [exports.DaemonTasks.list, this.genericRunner(exports.DaemonTasks.list)],
+            [exports.DaemonTasks.status, this.genericRunner(exports.DaemonTasks.status)],
         ]);
         this.bootstrap = (options) => __awaiter(this, void 0, void 0, function* () {
             return yield this.bootstrapTask.run(options);
@@ -189,6 +192,9 @@ let DaemonTask = class DaemonTask {
             }
             if (helpers_1.includes(exports.DaemonTasks.restart)) {
                 return yield this.tasks.get(exports.DaemonTasks.restart)();
+            }
+            if (helpers_1.includes(exports.DaemonTasks.status)) {
+                return yield this.tasks.get(exports.DaemonTasks.status)();
             }
             if (helpers_1.includes(exports.DaemonTasks.stop)) {
                 console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);

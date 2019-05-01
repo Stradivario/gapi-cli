@@ -26,7 +26,8 @@ export const DaemonTasks = strEnum([
   'link',
   'unlink',
   'list',
-  'restart'
+  'restart',
+  'status'
 ]);
 export type DaemonTasks = keyof typeof DaemonTasks;
 
@@ -50,11 +51,9 @@ export class DaemonTask {
       await this.systemDService.register({
         name: name || 'my-node-service',
         cwd: __dirname.replace('tasks', 'core/helpers/'),
-        app: 'systemd-daemon.js',
+        app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
         engine: 'node',
-        env: {
-          PORT_2: 3002
-        }
+        env: {}
       });
     } else {
       const child = spawn('gapi', ['daemon', 'bootstrap'], {
@@ -80,7 +79,7 @@ export class DaemonTask {
 
   private stop = async (name?: string) => {
     if (includes('--systemd')) {
-      await this.systemDService.remove(name);
+      await this.systemDService.remove(name || 'my-node-service');
     } else {
       await this.killDaemon();
     }
@@ -92,6 +91,9 @@ export class DaemonTask {
   };
 
   private kill = (pid: number) => process.kill(Number(pid));
+  private status = async () => {
+    console.log(`Daemon status: ${await this.isDaemonRunning() ? 'active' : 'stopped'}`)
+  };
 
   private link = async (linkName: string = 'default') => {
     const encoding = 'utf-8';
@@ -196,7 +198,8 @@ export class DaemonTask {
     [DaemonTasks.bootstrap, this.genericRunner(DaemonTasks.bootstrap)],
     [DaemonTasks.link, this.genericRunner(DaemonTasks.link)],
     [DaemonTasks.unlink, this.genericRunner(DaemonTasks.unlink)],
-    [DaemonTasks.list, this.genericRunner(DaemonTasks.list)]
+    [DaemonTasks.list, this.genericRunner(DaemonTasks.list)],
+    [DaemonTasks.status, this.genericRunner(DaemonTasks.status)],
   ]);
 
   bootstrap = async (options: CoreModuleConfig) => {
@@ -214,6 +217,9 @@ export class DaemonTask {
     }
     if (includes(DaemonTasks.restart)) {
       return await this.tasks.get(DaemonTasks.restart)();
+    }
+    if (includes(DaemonTasks.status)) {
+      return await this.tasks.get(DaemonTasks.status)();
     }
     if (includes(DaemonTasks.stop)) {
       console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);

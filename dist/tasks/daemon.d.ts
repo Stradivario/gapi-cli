@@ -9,6 +9,7 @@ export declare const DaemonTasks: {
     unlink: "unlink";
     list: "list";
     restart: "restart";
+    status: "status";
 };
 export declare type DaemonTasks = keyof typeof DaemonTasks;
 export declare class DaemonTask {
@@ -26,6 +27,7 @@ export declare class DaemonTask {
     private stop;
     private list;
     private kill;
+    private status;
     private link;
     private readGapiConfig;
     private unlink;
