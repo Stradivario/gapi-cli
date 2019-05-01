@@ -1,5 +1,5 @@
 import { Service } from '@rxdi/core';
-import { exists } from 'fs';
+import { exists, writeFile } from 'fs';
 import { promisify } from 'util';
 import { spawn } from 'child_process';
 import { ILinkListType } from '../../api-introspection';
@@ -16,8 +16,7 @@ export class DaemonService {
         '--collect-types'
       ];
       if (!(await promisify(exists)(gapiLocalConfig))) {
-        args.push(`--url http://localhost:9000/graphql`);
-        args.push(`--folder ./api-introspection`);
+        await this.writeGapiCliConfig(gapiLocalConfig);
       }
       const child = spawn('gapi', args, { cwd: payload.repoPath });
       child.stdout.on('data', data => process.stdout.write(data));
@@ -30,5 +29,16 @@ export class DaemonService {
         }
       });
     });
+  }
+
+  writeGapiCliConfig(gapiLocalConfig: string) {
+    return promisify(writeFile)(gapiLocalConfig, 
+`
+config:
+schema:
+  introspectionEndpoint: http://localhost:9000/graphql
+  introspectionOutputFolder: ./api-introspection
+`
+    )
   }
 }

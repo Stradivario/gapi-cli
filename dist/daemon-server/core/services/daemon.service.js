@@ -29,8 +29,7 @@ let DaemonService = class DaemonService {
                 '--collect-types'
             ];
             if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
-                args.push(`--url http://localhost:9000/graphql`);
-                args.push(`--folder ./api-introspection`);
+                yield this.writeGapiCliConfig(gapiLocalConfig);
             }
             const child = child_process_1.spawn('gapi', args, { cwd: payload.repoPath });
             child.stdout.on('data', data => process.stdout.write(data));
@@ -44,6 +43,14 @@ let DaemonService = class DaemonService {
                 }
             });
         }));
+    }
+    writeGapiCliConfig(gapiLocalConfig) {
+        return util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
+config:
+schema:
+  introspectionEndpoint: http://localhost:9000/graphql
+  introspectionOutputFolder: ./api-introspection
+`);
     }
 };
 DaemonService = __decorate([
