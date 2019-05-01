@@ -8,19 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@gapi/core");
 const list_service_1 = require("./core/services/list.service");
 const link_list_type_1 = require("./types/link-list.type");
 const daemon_service_1 = require("./core/services/daemon.service");
+const rxjs_1 = require("rxjs");
+const operators_1 = require("rxjs/operators");
 let ServerController = class ServerController {
     constructor(listService, daemonService) {
         this.listService = listService;
@@ -30,20 +24,17 @@ let ServerController = class ServerController {
         return this.listService.readList();
     }
     notifyDaemon(root, payload) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let otherRepos = [];
-            if ((yield this.listService.readList()).length) {
-                const [repo] = yield this.listService.findByRepoPath(payload.repoPath);
-                if (repo && repo.linkName) {
-                    otherRepos = yield this.listService.findByLinkName(repo.linkName, repo.repoPath);
-                }
+        return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length
+            ? this.listService.findByRepoPath(payload.repoPath)
+            : rxjs_1.of([])), operators_1.switchMap(([repo]) => {
+            if (repo && repo.linkName) {
+                return this.listService.findByLinkName(repo.linkName, repo.repoPath);
             }
-            yield Promise.all([
-                yield this.daemonService.trigger(payload),
-                ...otherRepos.map((r) => __awaiter(this, void 0, void 0, function* () { return yield this.daemonService.trigger(r); }))
-            ]);
-            return payload;
-        });
+            return rxjs_1.of([]);
+        }), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
+            this.daemonService.trigger(payload),
+            ...otherRepos.map(r => this.daemonService.trigger(r))
+        ])), operators_1.map(() => payload));
     }
 };
 __decorate([
@@ -68,7 +59,7 @@ __decorate([
     }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", rxjs_1.Observable)
 ], ServerController.prototype, "notifyDaemon", null);
 ServerController = __decorate([
     core_1.Controller(),

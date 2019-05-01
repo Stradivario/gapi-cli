@@ -11,10 +11,11 @@ import { ListService } from './core/services/list.service';
 import { LinkListType } from './types/link-list.type';
 import { ILinkListType } from './api-introspection';
 import { DaemonService } from './core/services/daemon.service';
+import { Observable, from, of, combineLatest } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 @Controller()
 export class ServerController {
-
   constructor(
     private listService: ListService,
     private daemonService: DaemonService
@@ -38,21 +39,26 @@ export class ServerController {
       type: GraphQLString
     }
   })
-  async notifyDaemon(root, payload: ILinkListType): Promise<ILinkListType> {
-    let otherRepos: ILinkListType[] = [];
-    if ((await this.listService.readList()).length) {
-      const [repo] = await this.listService.findByRepoPath(payload.repoPath);
-      if (repo && repo.linkName) {
-        otherRepos = await this.listService.findByLinkName(
-          repo.linkName,
-          repo.repoPath
-        );
-      }
-    }
-    await Promise.all([
-      await this.daemonService.trigger(payload),
-      ...otherRepos.map(async r => await this.daemonService.trigger(r))
-    ]);
-    return payload;
+  notifyDaemon(root, payload: ILinkListType): Observable<ILinkListType> {
+    return from(this.listService.readList()).pipe(
+      switchMap(list =>
+        list.length
+          ? this.listService.findByRepoPath(payload.repoPath)
+          : of([] as ILinkListType[])
+      ),
+      switchMap(([repo]) => {
+        if (repo && repo.linkName) {
+          return this.listService.findByLinkName(repo.linkName, repo.repoPath);
+        }
+        return of([] as ILinkListType[]);
+      }),
+      switchMap(otherRepos =>
+        combineLatest([
+          this.daemonService.trigger(payload),
+          ...otherRepos.map(r => this.daemonService.trigger(r))
+        ])
+      ),
+      map(() => payload)
+    );
   }
 }
