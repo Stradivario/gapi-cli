@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import { Service } from '@rxdi/core';
 import { BootstrapFramework } from '@rxdi/core';
 import { ServerModule } from '../daemon-server/server.module';
 import { CoreModule, CoreModuleConfig } from '@gapi/core';
@@ -13,6 +13,6 @@ export class BootstrapTask {
           graphiQlPlayground: false
         }
       })
-    ]).subscribe(() => console.log('Server started'), console.error.bind(console));
+    ]).subscribe(() => console.log('Daemon started'), console.error.bind(console));
   }
 }

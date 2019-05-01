@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const graphql_1 = require("@rxdi/graphql");
 let DaemonExecutorService = class DaemonExecutorService {
     constructor() {
@@ -27,6 +27,6 @@ let DaemonExecutorService = class DaemonExecutorService {
     }
 };
 DaemonExecutorService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], DaemonExecutorService);
 exports.DaemonExecutorService = DaemonExecutorService;

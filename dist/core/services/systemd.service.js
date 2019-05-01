@@ -15,7 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const service = require('service-systemd');
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const os_1 = require("os");
 let SystemDService = class SystemDService {
@@ -46,6 +46,6 @@ let SystemDService = class SystemDService {
     }
 };
 SystemDService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], SystemDService);
 exports.SystemDService = SystemDService;

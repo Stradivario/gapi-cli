@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const schematic_runner_1 = require("./runners/schematic.runner");
 const index_1 = require("../../core/helpers/index");
 let GenerateTask = class GenerateTask {
@@ -77,6 +77,6 @@ let GenerateTask = class GenerateTask {
     }
 };
 GenerateTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], GenerateTask);
 exports.GenerateTask = GenerateTask;

@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
 const mkdirp = require("mkdirp");
@@ -25,7 +25,7 @@ const ps_list_1 = require("../core/helpers/ps-list");
 const stringEnum_1 = require("../core/helpers/stringEnum");
 const helpers_1 = require("../core/helpers");
 const bootstrap_1 = require("./bootstrap");
-const core_1 = require("@gapi/core");
+const core_2 = require("@gapi/core");
 const systemd_service_1 = require("../core/services/systemd.service");
 const daemon_executor_service_1 = require("../core/services/daemon-executor/daemon-executor.service");
 const yamljs_1 = require("yamljs");
@@ -48,9 +48,9 @@ let DaemonTask = class DaemonTask {
         this.errLogFile = `${this.daemonFolder}/err.log`;
         this.pidLogFile = `${this.daemonFolder}/pid`;
         this.processListFile = `${this.daemonFolder}/process-list`;
-        this.bootstrapTask = typedi_1.default.get(bootstrap_1.BootstrapTask);
-        this.systemDService = typedi_1.default.get(systemd_service_1.SystemDService);
-        this.daemonExecutorService = typedi_1.default.get(daemon_executor_service_1.DaemonExecutorService);
+        this.bootstrapTask = core_1.Container.get(bootstrap_1.BootstrapTask);
+        this.systemDService = core_1.Container.get(systemd_service_1.SystemDService);
+        this.daemonExecutorService = core_1.Container.get(daemon_executor_service_1.DaemonExecutorService);
         this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
             yield util_1.promisify(mkdirp)(this.daemonFolder);
@@ -107,14 +107,17 @@ let DaemonTask = class DaemonTask {
             }
             catch (e) { }
             config = yield this.readGapiConfig();
-            const introspectionPath = config.config.schema.introspectionOutputFolder || `${process.cwd()}/api-introspection`;
+            const introspectionPath = config.config.schema.introspectionOutputFolder ||
+                `${process.cwd()}/api-introspection`;
             linkName = config.config.schema.linkName || linkName;
             const currentRepoProcess = {
                 repoPath: process.cwd(),
                 introspectionPath,
                 linkName
             };
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd()).concat(currentRepoProcess)), { encoding });
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
+                .filter(p => p.repoPath !== process.cwd())
+                .concat(currentRepoProcess)), { encoding });
             console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
         });
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
@@ -126,7 +129,9 @@ let DaemonTask = class DaemonTask {
             catch (e) { }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
             if (helpers_1.includes('--all') && processList.length) {
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), { encoding });
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), {
+                    encoding
+                });
             }
             else if (currentProcess) {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
@@ -199,8 +204,8 @@ let DaemonTask = class DaemonTask {
                 return yield this.tasks.get(exports.DaemonTasks.link)();
             }
             if (helpers_1.includes(exports.DaemonTasks.list)) {
-                typedi_1.default.reset(core_1.HAPI_SERVER);
-                typedi_1.default.set(core_1.HAPI_SERVER, { info: { port: '42000' } });
+                core_1.Container.reset(core_2.HAPI_SERVER);
+                core_1.Container.set(core_2.HAPI_SERVER, { info: { port: '42000' } });
                 return yield this.tasks.get(exports.DaemonTasks.list)();
             }
             if (helpers_1.includes(exports.DaemonTasks.bootstrap)) {
@@ -260,6 +265,6 @@ let DaemonTask = class DaemonTask {
     }
 };
 DaemonTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], DaemonTask);
 exports.DaemonTask = DaemonTask;

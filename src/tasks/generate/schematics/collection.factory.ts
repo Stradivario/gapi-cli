@@ -8,7 +8,7 @@ import { NestCollection } from './nest.collection';
 export class CollectionFactory {
   public static create(collection: Collection): AbstractCollection {
     switch (collection) {
-      case Collection.NESTJS:
+      case Collection.GAPI:
         return new NestCollection(RunnerFactory.create(
           Runner.SCHEMATIC,
         ) as SchematicRunner);

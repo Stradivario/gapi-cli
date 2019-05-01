@@ -6,13 +6,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 let ArgsService = class ArgsService {
     setArguments(args) {
         this.args = args;
     }
 };
 ArgsService = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], ArgsService);
 exports.ArgsService = ArgsService;

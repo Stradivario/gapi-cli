@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-import { Container } from 'typedi';
+import { Container } from '@rxdi/core';
 import { RootService } from './core/services/root.service';
 import { ArgsService } from './core/services/args.service';
 import { ConfigService, GapiConfig } from './core/services/config.service';

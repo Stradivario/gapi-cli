@@ -14,25 +14,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
 const core_1 = require("@rxdi/core");
+const core_2 = require("@rxdi/core");
 const server_module_1 = require("../daemon-server/server.module");
-const core_2 = require("@gapi/core");
+const core_3 = require("@gapi/core");
 let BootstrapTask = class BootstrapTask {
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            core_1.BootstrapFramework(server_module_1.ServerModule, [
-                core_2.CoreModule.forRoot(options || {
+            core_2.BootstrapFramework(server_module_1.ServerModule, [
+                core_3.CoreModule.forRoot(options || {
                     graphql: {
                         graphiql: true,
                         graphiQlPlayground: false
                     }
                 })
-            ]).subscribe(() => console.log('Server started'), console.error.bind(console));
+            ]).subscribe(() => console.log('Daemon started'), console.error.bind(console));
         });
     }
 };
 BootstrapTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], BootstrapTask);
 exports.BootstrapTask = BootstrapTask;

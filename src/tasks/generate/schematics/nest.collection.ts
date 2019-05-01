@@ -30,7 +30,7 @@ export class NestCollection extends AbstractCollection {
   ];
 
   constructor(runner: AbstractRunner) {
-    super('@nestjs/schematics', runner);
+    super('@gapi/schematics', runner);
   }
 
   public async execute(name: string, options: SchematicOption[]) {

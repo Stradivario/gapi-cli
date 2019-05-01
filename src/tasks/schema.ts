@@ -1,4 +1,4 @@
-import { Service, Container } from 'typedi';
+import { Service, Container } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
@@ -7,7 +7,6 @@ import {
   mkdirSync,
   readFileSync,
   writeFileSync,
-  unlink,
   unlinkSync
 } from 'fs';
 

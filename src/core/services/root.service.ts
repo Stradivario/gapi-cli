@@ -1,4 +1,4 @@
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { exec } from 'shelljs';
 import { StartTask } from '../../tasks/start';
 import { ArgsService } from '../services/args.service';

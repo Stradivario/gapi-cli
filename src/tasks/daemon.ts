@@ -1,4 +1,4 @@
-import Container, { Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { openSync, writeFile, readFile } from 'fs';
 import { spawn } from 'child_process';
 import mkdirp = require('mkdirp');
@@ -9,12 +9,12 @@ import { getProcessList } from '../core/helpers/ps-list';
 import { strEnum } from '../core/helpers/stringEnum';
 import { nextOrDefault, includes } from '../core/helpers';
 import { BootstrapTask } from './bootstrap';
-import { CoreModuleConfig, sendRequest, HAPI_SERVER } from '@gapi/core';
+import { CoreModuleConfig, HAPI_SERVER } from '@gapi/core';
 import { SystemDService } from '../core/services/systemd.service';
 import { DaemonExecutorService } from '../core/services/daemon-executor/daemon-executor.service';
 
 import { load } from 'yamljs';
-import { GapiConfig, ConfigService } from '../core/services/config.service';
+import { GapiConfig } from '../core/services/config.service';
 import { ILinkListType } from '../daemon-server/api-introspection/index';
 
 export const DaemonTasks = strEnum([
@@ -32,7 +32,6 @@ export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
 export class DaemonTask {
-
   private gapiFolder: string = `${homedir()}/.gapi`;
   private daemonFolder: string = `${this.gapiFolder}/daemon`;
   private outLogFile: string = `${this.daemonFolder}/out.log`;
@@ -41,7 +40,9 @@ export class DaemonTask {
   private processListFile: string = `${this.daemonFolder}/process-list`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
   private systemDService: SystemDService = Container.get(SystemDService);
-  private daemonExecutorService: DaemonExecutorService = Container.get(DaemonExecutorService)
+  private daemonExecutorService: DaemonExecutorService = Container.get(
+    DaemonExecutorService
+  );
   private start = async (name?: string) => {
     await this.killDaemon();
     await promisify(mkdirp)(this.daemonFolder);
@@ -97,10 +98,14 @@ export class DaemonTask {
     let config: GapiConfig = { config: { schema: {} } } as any;
     let processList: ILinkListType[] = [];
     try {
-      processList = JSON.parse(await promisify(readFile)(this.processListFile, { encoding }));
+      processList = JSON.parse(
+        await promisify(readFile)(this.processListFile, { encoding })
+      );
     } catch (e) {}
     config = await this.readGapiConfig();
-    const introspectionPath = config.config.schema.introspectionOutputFolder || `${process.cwd()}/api-introspection`;
+    const introspectionPath =
+      config.config.schema.introspectionOutputFolder ||
+      `${process.cwd()}/api-introspection`;
     linkName = config.config.schema.linkName || linkName;
     const currentRepoProcess = {
       repoPath: process.cwd(),
@@ -109,14 +114,24 @@ export class DaemonTask {
     };
     await promisify(writeFile)(
       this.processListFile,
-      JSON.stringify(processList.filter(p => p.repoPath !== process.cwd()).concat(currentRepoProcess)), { encoding });
-    console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
+      JSON.stringify(
+        processList
+          .filter(p => p.repoPath !== process.cwd())
+          .concat(currentRepoProcess)
+      ),
+      { encoding }
+    );
+    console.log(
+      `Project linked ${process.cwd()} link name: ${
+        currentRepoProcess.linkName
+      }`
+    );
   };
 
   private async readGapiConfig() {
     let file: GapiConfig = {} as any;
     try {
-      file = load(process.cwd() + '/gapi-cli.conf.yml')
+      file = load(process.cwd() + '/gapi-cli.conf.yml');
     } catch (e) {}
     return file;
   }
@@ -129,20 +144,30 @@ export class DaemonTask {
         await promisify(readFile)(this.processListFile, { encoding })
       );
     } catch (e) {}
-    const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
+    const [currentProcess] = processList.filter(
+      p => p.repoPath === process.cwd()
+    );
     if (includes('--all') && processList.length) {
-      await promisify(writeFile)(this.processListFile, JSON.stringify([]), { encoding });
+      await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
+        encoding
+      });
     } else if (currentProcess) {
       await promisify(writeFile)(
         this.processListFile,
-        JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
+        JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())),
+        { encoding }
+      );
     } else if (includes('--link-name') && processList.length) {
       const linkName = nextOrDefault('--link-name');
       await promisify(writeFile)(
         this.processListFile,
-        JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
+        JSON.stringify(processList.filter(p => p.linkName !== linkName)),
+        { encoding }
+      );
     }
-    console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+    console.log(
+      `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
+    );
   };
 
   private clean = async () => {

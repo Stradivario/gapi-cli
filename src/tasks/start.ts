@@ -1,4 +1,4 @@
-import { Container, Service } from 'typedi';
+import { Container, Service } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
 import { ConfigService, MainConfig } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';

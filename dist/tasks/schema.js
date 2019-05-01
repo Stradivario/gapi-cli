@@ -14,16 +14,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const args_service_1 = require("../core/services/args.service");
 const exec_service_1 = require("../core/services/exec.service");
 const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
 let SchemaTask = class SchemaTask {
     constructor() {
-        this.execService = typedi_1.Container.get(exec_service_1.ExecService);
-        this.argsService = typedi_1.Container.get(args_service_1.ArgsService);
-        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
+        this.execService = core_1.Container.get(exec_service_1.ExecService);
+        this.argsService = core_1.Container.get(args_service_1.ArgsService);
+        this.configService = core_1.Container.get(config_service_1.ConfigService);
     }
     run(introspectionEndpoint, introspectionOutputFolder, pattern) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -106,6 +106,6 @@ export type DocumentTypes = keyof typeof DocumentTypes;`;
     }
 };
 SchemaTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], SchemaTask);
 exports.SchemaTask = SchemaTask;

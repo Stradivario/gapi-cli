@@ -1,4 +1,3 @@
-#! /usr/bin/env node
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,14 +14,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const typedi_1 = require("typedi");
+const core_1 = require("@rxdi/core");
 const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
 const start_1 = require("./start");
 let BuildTask = class BuildTask {
     constructor() {
-        this.startTask = typedi_1.Container.get(start_1.StartTask);
-        this.configService = typedi_1.Container.get(config_service_1.ConfigService);
+        this.startTask = core_1.Container.get(start_1.StartTask);
+        this.configService = core_1.Container.get(config_service_1.ConfigService);
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -41,6 +40,6 @@ let BuildTask = class BuildTask {
     }
 };
 BuildTask = __decorate([
-    typedi_1.Service()
+    core_1.Service()
 ], BuildTask);
 exports.BuildTask = BuildTask;

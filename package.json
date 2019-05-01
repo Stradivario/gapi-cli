@@ -54,7 +54,6 @@
     "rxjs": "6.4.0",
     "service-systemd": "3.4.1",
     "shelljs": "0.8.3",
-    "typedi": "0.8.0",
     "yamljs": "0.3.0"
   },
   "devDependencies": {

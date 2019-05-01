@@ -1,3 +1,3 @@
 export enum Collection {
-  NESTJS = '@nestjs/schematics',
+  GAPI = '@rxdi/schematics',
 }

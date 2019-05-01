@@ -1,4 +1,4 @@
-import { Container } from "typedi";
+import { Container } from "@rxdi/core";
 import { BootstrapTask } from "../../tasks/bootstrap";
 
 Container.get(BootstrapTask).run({

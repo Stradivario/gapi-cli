@@ -1,8 +1,4 @@
-#! /usr/bin/env node
-import { Service, Container } from 'typedi';
-import { ArgsService } from '../core/services/args.service';
-import { ExecService } from '../core/services/exec.service';
-import { ConfigService } from '../core/services/config.service';
+import { Service, Container } from '@rxdi/core';
 import { ReadlineService } from '../core/services/readline.service';
 
 const chalk = require('chalk');

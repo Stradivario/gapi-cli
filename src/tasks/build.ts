@@ -1,6 +1,5 @@
-#! /usr/bin/env node
-import { Container, Service } from "typedi";
-import { ConfigService, MainConfig } from "../core/services/config.service";
+import { Container, Service } from "@rxdi/core";
+import { ConfigService } from "../core/services/config.service";
 import { existsSync } from "fs";
 import { StartTask } from "./start";
 

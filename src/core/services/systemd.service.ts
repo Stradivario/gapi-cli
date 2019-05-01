@@ -1,5 +1,5 @@
 const service = require('service-systemd')
-import { Service } from 'typedi';
+import { Service } from '@rxdi/core';
 import { readFileSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
 
