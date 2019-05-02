@@ -39,6 +39,13 @@
     repoPath: string | null;
     introspectionPath: string | null;
     linkName: string | null;
+    serverMetadata: IServerMetadataType | null;
+}
+
+  
+  export interface IServerMetadataType {
+    __typename?: "ServerMetadataType";
+    port: number | null;
 }
 
   /**
@@ -47,6 +54,11 @@
   export interface IMutation {
     __typename?: "Mutation";
     notifyDaemon: ILinkListType | null;
+}
+
+  
+  export interface IServerMetadataInputType {
+    port?: number | null;
 }
 
 

@@ -10,7 +10,11 @@ BootstrapFramework(ServerModule, [CoreModule.forRoot({
     },
     graphql: {
         graphiql: true,
+        openBrowser: false,
         graphiQlPlayground: false
+    },
+    daemon: {
+        activated: true
     }
 })]).subscribe(
     () => console.log('Server started'),

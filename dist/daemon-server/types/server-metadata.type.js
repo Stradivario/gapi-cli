@@ -5,7 +5,7 @@ exports.ServerMetadataType = new graphql_1.GraphQLObjectType({
     name: 'ServerMetadataType',
     fields: () => ({
         port: {
-            type: graphql_1.GraphQLString
+            type: graphql_1.GraphQLInt
         }
     })
 });
@@ -13,7 +13,7 @@ exports.ServerMetadataInputType = new graphql_1.GraphQLInputObjectType({
     name: 'ServerMetadataInputType',
     fields: () => ({
         port: {
-            type: graphql_1.GraphQLString
+            type: graphql_1.GraphQLInt
         }
     })
 });

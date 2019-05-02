@@ -1,0 +1,514 @@
+// modules are defined as an array
+// [ module function, map of requires ]
+//
+// map of requires is short require name -> numeric require
+//
+// anything defined in a previous bundle is accessed via the
+// orig method which is the require for previous bundles
+parcelRequire = (function (modules, cache, entry, globalName) {
+  // Save the require from previous bundle to this closure if any
+  var previousRequire = typeof parcelRequire === 'function' && parcelRequire;
+  var nodeRequire = typeof require === 'function' && require;
+
+  function newRequire(name, jumped) {
+    if (!cache[name]) {
+      if (!modules[name]) {
+        // if we cannot find the module within our internal map or
+        // cache jump to the current global require ie. the last bundle
+        // that was added to the page.
+        var currentRequire = typeof parcelRequire === 'function' && parcelRequire;
+        if (!jumped && currentRequire) {
+          return currentRequire(name, true);
+        }
+
+        // If there are other bundles on this page the require from the
+        // previous one is saved to 'previousRequire'. Repeat this as
+        // many times as there are bundles until the module is found or
+        // we exhaust the require chain.
+        if (previousRequire) {
+          return previousRequire(name, true);
+        }
+
+        // Try the node require function if it exists.
+        if (nodeRequire && typeof name === 'string') {
+          return nodeRequire(name);
+        }
+
+        var err = new Error('Cannot find module \'' + name + '\'');
+        err.code = 'MODULE_NOT_FOUND';
+        throw err;
+      }
+
+      localRequire.resolve = resolve;
+      localRequire.cache = {};
+
+      var module = cache[name] = new newRequire.Module(name);
+
+      modules[name][0].call(module.exports, localRequire, module, module.exports, this);
+    }
+
+    return cache[name].exports;
+
+    function localRequire(x){
+      return newRequire(localRequire.resolve(x));
+    }
+
+    function resolve(x){
+      return modules[name][1][x] || x;
+    }
+  }
+
+  function Module(moduleName) {
+    this.id = moduleName;
+    this.bundle = newRequire;
+    this.exports = {};
+  }
+
+  newRequire.isParcelRequire = true;
+  newRequire.Module = Module;
+  newRequire.modules = modules;
+  newRequire.cache = cache;
+  newRequire.parent = previousRequire;
+  newRequire.register = function (id, exports) {
+    modules[id] = [function (require, module) {
+      module.exports = exports;
+    }, {}];
+  };
+
+  var error;
+  for (var i = 0; i < entry.length; i++) {
+    try {
+      newRequire(entry[i]);
+    } catch (e) {
+      // Save first error but execute all entries
+      if (!error) {
+        error = e;
+      }
+    }
+  }
+
+  if (entry.length) {
+    // Expose entry point to Node, AMD or browser globals
+    // Based on https://github.com/ForbesLindesay/umd/blob/master/template.js
+    var mainExports = newRequire(entry[entry.length - 1]);
+
+    // CommonJS
+    if (typeof exports === "object" && typeof module !== "undefined") {
+      module.exports = mainExports;
+
+    // RequireJS
+    } else if (typeof define === "function" && define.amd) {
+     define(function () {
+       return mainExports;
+     });
+
+    // <script>
+    } else if (globalName) {
+      this[globalName] = mainExports;
+    }
+  }
+
+  // Override the current require with this new one
+  parcelRequire = newRequire;
+
+  if (error) {
+    // throw error from earlier, _after updating parcelRequire_
+    throw error;
+  }
+
+  return newRequire;
+})({"core/services/list.service.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : new P(function (resolve) {
+        resolve(result.value);
+      }).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const core_1 = require("@rxdi/core");
+
+const util_1 = require("util");
+
+const fs_1 = require("fs");
+
+const os_1 = require("os");
+
+let ListService = class ListService {
+  constructor() {
+    this.linkedList = [];
+    this.gapiFolder = `${os_1.homedir()}/.gapi`;
+    this.daemonFolder = `${this.gapiFolder}/daemon`;
+    this.processListFile = `${this.daemonFolder}/process-list`;
+  }
+
+  readList() {
+    return __awaiter(this, void 0, void 0, function* () {
+      try {
+        this.linkedList = JSON.parse((yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+          encoding: 'utf-8'
+        })));
+      } catch (e) {}
+
+      return this.linkedList;
+    });
+  }
+
+  findByRepoPath(repoPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+      return (yield this.readList()).filter(l => l.repoPath === repoPath);
+    });
+  }
+
+  findByLinkName(linkName, notLike) {
+    return __awaiter(this, void 0, void 0, function* () {
+      return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
+    });
+  }
+
+};
+ListService = __decorate([core_1.Injectable()], ListService);
+exports.ListService = ListService;
+},{}],"types/server-metadata.type.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const graphql_1 = require("graphql");
+
+exports.ServerMetadataType = new graphql_1.GraphQLObjectType({
+  name: 'ServerMetadataType',
+  fields: () => ({
+    port: {
+      type: graphql_1.GraphQLInt
+    }
+  })
+});
+exports.ServerMetadataInputType = new graphql_1.GraphQLInputObjectType({
+  name: 'ServerMetadataInputType',
+  fields: () => ({
+    port: {
+      type: graphql_1.GraphQLInt
+    }
+  })
+});
+},{}],"types/link-list.type.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const graphql_1 = require("graphql");
+
+const server_metadata_type_1 = require("./server-metadata.type");
+
+exports.LinkListType = new graphql_1.GraphQLObjectType({
+  name: 'LinkListType',
+  fields: () => ({
+    repoPath: {
+      type: graphql_1.GraphQLString
+    },
+    introspectionPath: {
+      type: graphql_1.GraphQLString
+    },
+    linkName: {
+      type: graphql_1.GraphQLString
+    },
+    serverMetadata: {
+      type: server_metadata_type_1.ServerMetadataType
+    }
+  })
+});
+},{"./server-metadata.type":"types/server-metadata.type.ts"}],"api-introspection/index.ts":[function(require,module,exports) {
+"use strict"; // tslint:disable
+// graphql typescript definitions
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+}); // tslint:enable
+},{}],"core/services/daemon.service.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : new P(function (resolve) {
+        resolve(result.value);
+      }).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const core_1 = require("@rxdi/core");
+
+const fs_1 = require("fs");
+
+const util_1 = require("util");
+
+const child_process_1 = require("child_process");
+
+let DaemonService = class DaemonService {
+  trigger(payload) {
+    return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+      const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
+      const args = ['schema', 'introspect', '--collect-documents', '--collect-types'];
+
+      if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
+        yield this.writeGapiCliConfig(gapiLocalConfig);
+      }
+
+      const child = child_process_1.spawn('gapi', args, {
+        cwd: payload.repoPath
+      });
+      child.stdout.on('data', data => process.stdout.write(data));
+      child.stderr.on('data', data => process.stderr.write(data));
+      child.on('close', code => {
+        if (!code) {
+          resolve(payload);
+        } else {
+          reject(payload);
+        }
+      });
+    }));
+  }
+
+  writeGapiCliConfig(gapiLocalConfig) {
+    return util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
+config:
+schema:
+  introspectionEndpoint: http://localhost:9000/graphql
+  introspectionOutputFolder: ./api-introspection
+`);
+  }
+
+};
+DaemonService = __decorate([core_1.Service()], DaemonService);
+exports.DaemonService = DaemonService;
+},{}],"server.controller.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __metadata = this && this.__metadata || function (k, v) {
+  if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _a, _b, _c, _d;
+
+const core_1 = require("@gapi/core");
+
+const list_service_1 = require("./core/services/list.service");
+
+const link_list_type_1 = require("./types/link-list.type");
+
+const api_introspection_1 = require("./api-introspection");
+
+const daemon_service_1 = require("./core/services/daemon.service");
+
+const rxjs_1 = require("rxjs");
+
+const operators_1 = require("rxjs/operators");
+
+const server_metadata_type_1 = require("./types/server-metadata.type");
+
+let ServerController = class ServerController {
+  constructor(listService, daemonService) {
+    this.listService = listService;
+    this.daemonService = daemonService;
+  }
+
+  getLinkList() {
+    return this.listService.readList();
+  }
+
+  notifyDaemon(root, payload) {
+    return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length ? this.listService.findByRepoPath(payload.repoPath) : rxjs_1.of([])), operators_1.switchMap(([repo]) => {
+      if (repo && repo.linkName) {
+        return this.listService.findByLinkName(repo.linkName, repo.repoPath);
+      }
+
+      return rxjs_1.of([]);
+    }), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([this.daemonService.trigger(payload), ...otherRepos.map(r => this.daemonService.trigger(r))])), operators_1.map(() => payload));
+  }
+
+};
+
+__decorate([core_1.Type(new core_1.GraphQLList(link_list_type_1.LinkListType)), core_1.Query(), __metadata("design:type", Function), __metadata("design:paramtypes", []), __metadata("design:returntype", void 0)], ServerController.prototype, "getLinkList", null);
+
+__decorate([core_1.Type(link_list_type_1.LinkListType), core_1.Mutation({
+  repoPath: {
+    type: core_1.GraphQLString
+  },
+  introspectionPath: {
+    type: core_1.GraphQLString
+  },
+  linkName: {
+    type: core_1.GraphQLString
+  },
+  serverMetadata: {
+    type: server_metadata_type_1.ServerMetadataInputType
+  }
+}), __metadata("design:type", Function), __metadata("design:paramtypes", [Object, typeof (_a = typeof api_introspection_1.ILinkListType !== "undefined" && api_introspection_1.ILinkListType) === "function" ? _a : Object]), __metadata("design:returntype", typeof (_b = typeof rxjs_1.Observable !== "undefined" && rxjs_1.Observable) === "function" ? _b : Object)], ServerController.prototype, "notifyDaemon", null);
+
+ServerController = __decorate([core_1.Controller(), __metadata("design:paramtypes", [typeof (_c = typeof list_service_1.ListService !== "undefined" && list_service_1.ListService) === "function" ? _c : Object, typeof (_d = typeof daemon_service_1.DaemonService !== "undefined" && daemon_service_1.DaemonService) === "function" ? _d : Object])], ServerController);
+exports.ServerController = ServerController;
+},{"./core/services/list.service":"core/services/list.service.ts","./types/link-list.type":"types/link-list.type.ts","./api-introspection":"api-introspection/index.ts","./core/services/daemon.service":"core/services/daemon.service.ts","./types/server-metadata.type":"types/server-metadata.type.ts"}],"core/core.module.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const core_1 = require("@rxdi/core");
+
+const list_service_1 = require("./services/list.service");
+
+const daemon_service_1 = require("./services/daemon.service");
+
+let CoreModule = class CoreModule {};
+CoreModule = __decorate([core_1.Module({
+  services: [list_service_1.ListService, daemon_service_1.DaemonService]
+})], CoreModule);
+exports.CoreModule = CoreModule;
+},{"./services/list.service":"core/services/list.service.ts","./services/daemon.service":"core/services/daemon.service.ts"}],"server.module.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const core_1 = require("@gapi/core");
+
+const server_controller_1 = require("./server.controller");
+
+const core_module_1 = require("./core/core.module");
+
+let ServerModule = class ServerModule {};
+ServerModule = __decorate([core_1.Module({
+  imports: [core_module_1.CoreModule],
+  controllers: [server_controller_1.ServerController]
+})], ServerModule);
+exports.ServerModule = ServerModule;
+},{"./server.controller":"server.controller.ts","./core/core.module":"core/core.module.ts"}],"main.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const core_1 = require("@rxdi/core");
+
+const server_module_1 = require("./server.module");
+
+const core_2 = require("@gapi/core");
+
+core_1.BootstrapFramework(server_module_1.ServerModule, [core_2.CoreModule.forRoot({
+  server: {
+    hapi: {
+      port: 42001
+    }
+  },
+  graphql: {
+    graphiql: true,
+    openBrowser: false,
+    graphiQlPlayground: false
+  },
+  daemon: {
+    activated: true
+  }
+})]).subscribe(() => console.log('Server started'), console.error.bind(console));
+},{"./server.module":"server.module.ts"}]},{},["main.ts"], null)
+//# sourceMappingURL=/main.js.map
