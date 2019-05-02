@@ -94,7 +94,12 @@ let DaemonTask = class DaemonTask {
         });
         this.list = () => __awaiter(this, void 0, void 0, function* () {
             const linkList = yield this.daemonExecutorService.getLinkList();
-            console.log(linkList.data.getLinkList);
+            const chalk = require('chalk');
+            [...new Set(linkList.data.getLinkList.map(l => l.linkName))].forEach(l => {
+                const list = linkList.data.getLinkList.filter(i => i.linkName === l);
+                console.log(chalk.green(`\n--- Link name: '${l}' --- \n--- Linked projects ${list.length} ---`));
+                list.forEach((i, index) => console.log(`\n${chalk.blue(`(${index})(${l})`)} \n  Path: ${chalk.yellow(i.repoPath)}`, `\n  Introspection folder: ${chalk.yellow(i.introspectionPath)}`));
+            });
         });
         this.kill = (pid) => process.kill(Number(pid));
         this.status = () => __awaiter(this, void 0, void 0, function* () {
@@ -127,12 +132,18 @@ let DaemonTask = class DaemonTask {
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
             let processList = [];
             const encoding = 'utf-8';
+            let linkName = helpers_1.nextOrDefault('unlink', null, t => t !== '--all' ? t : null);
             try {
                 processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
-            if (helpers_1.includes('--all') && processList.length) {
+            if (linkName) {
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {
+                    encoding
+                });
+            }
+            else if (helpers_1.includes('--all') && processList.length) {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), {
                     encoding
                 });
@@ -145,7 +156,13 @@ let DaemonTask = class DaemonTask {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
             }
             if (currentProcess) {
-                console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+                if (linkName) {
+                    const unlinkedProcesses = processList.filter(p => p.linkName === linkName);
+                    console.log(`Projects unlinked ${JSON.stringify(unlinkedProcesses, null, 2)} link name: ${currentProcess.linkName}`);
+                }
+                else {
+                    console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+                }
             }
         });
         this.clean = () => __awaiter(this, void 0, void 0, function* () {
@@ -168,7 +185,7 @@ let DaemonTask = class DaemonTask {
             [exports.DaemonTasks.link, this.genericRunner(exports.DaemonTasks.link)],
             [exports.DaemonTasks.unlink, this.genericRunner(exports.DaemonTasks.unlink)],
             [exports.DaemonTasks.list, this.genericRunner(exports.DaemonTasks.list)],
-            [exports.DaemonTasks.status, this.genericRunner(exports.DaemonTasks.status)],
+            [exports.DaemonTasks.status, this.genericRunner(exports.DaemonTasks.status)]
         ]);
         this.bootstrap = (options) => __awaiter(this, void 0, void 0, function* () {
             return yield this.bootstrapTask.run(options);

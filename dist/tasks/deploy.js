@@ -24,11 +24,7 @@ function strEnum(o) {
         return res;
     }, Object.create(null));
 }
-exports.QuestionsType = strEnum([
-    'username',
-    'password',
-    'project'
-]);
+exports.QuestionsType = strEnum(['username', 'password', 'project']);
 class UserConfig {
 }
 let DeployTask = class DeployTask {

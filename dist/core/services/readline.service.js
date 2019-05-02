@@ -30,9 +30,9 @@ let ReadlineService = class ReadlineService {
     }
     createQuestion(question, task) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 this.readline = this.createReadlineInterface();
-                this.readline.question(question, (answer) => {
+                this.readline.question(question, answer => {
                     try {
                         task(answer);
                     }

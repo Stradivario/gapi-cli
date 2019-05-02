@@ -31,10 +31,18 @@ let SchemaTask = class SchemaTask {
         return __awaiter(this, void 0, void 0, function* () {
             const originalConsole = console.log.bind(console);
             console.log = function () {
-                return originalConsole.apply(console, ['\x1b[36m%s\x1b[0m', `${process.cwd()} =>`, ...arguments]);
+                return originalConsole.apply(console, [
+                    '\x1b[36m%s\x1b[0m',
+                    `${process.cwd()} =>`,
+                    ...arguments
+                ]);
             };
-            this.folder = introspectionOutputFolder || this.configService.config.config.schema.introspectionOutputFolder;
-            this.endpoint = introspectionEndpoint || this.configService.config.config.schema.introspectionEndpoint;
+            this.folder =
+                introspectionOutputFolder ||
+                    this.configService.config.config.schema.introspectionOutputFolder;
+            this.endpoint =
+                introspectionEndpoint ||
+                    this.configService.config.config.schema.introspectionEndpoint;
             this.pattern = pattern || this.configService.config.config.schema.pattern;
             this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
             this.bashFolder = __dirname.replace('dist/tasks', 'bash');
@@ -103,7 +111,9 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
         return res;
     }, Object.create(null));
 }
-export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
+export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments)
+                .replace(/'/g, `'`)
+                .replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
             yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8');
         });

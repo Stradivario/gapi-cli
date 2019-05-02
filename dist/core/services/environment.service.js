@@ -12,7 +12,7 @@ let EnvironmentVariableService = class EnvironmentVariableService {
         let buildedEnvironments = ``;
         const conf = Object.keys(config);
         let count = 0;
-        conf.forEach((key) => {
+        conf.forEach(key => {
             count++;
             if (conf.length === count) {
                 buildedEnvironments += `export ${key}=${config[key]}`;

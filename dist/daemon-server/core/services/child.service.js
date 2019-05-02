@@ -13,7 +13,8 @@ let ChildService = class ChildService {
         return new Promise((resolve, reject) => {
             const child = child_process_1.spawn(command, args, { cwd, detached: true });
             const timeout = setTimeout(() => {
-                const message = `${command} ${args.toString()} exited with timeout after ${wait / 1000} seconds`;
+                const message = `${command} ${args.toString()} exited with timeout after ${wait /
+                    1000} seconds`;
                 child.kill(message);
                 reject(message);
                 clearTimeout(timeout);

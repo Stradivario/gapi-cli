@@ -22,49 +22,49 @@ let NewTask = class NewTask {
         this.execService = core_1.Container.get(exec_service_1.ExecService);
         this.argsService = core_1.Container.get(args_service_1.ArgsService);
         this.repoLinks = {
-            basic: 'https://github.com/Stradivario/gapi-starter',
-            advanced: 'https://github.com/Stradivario/gapi-starter-postgres-sequelize',
-            microservices: 'https://github.com/Stradivario/gapi-starter-microservices',
-            serverless: 'https://github.com/Stradivario/gapi-starter-serverless',
-            serverlessSequelize: 'https://github.com/Stradivario/gapi-starter-serverless-sequelize',
-            rxdiServer: 'https://github.com/rxdi/starter-server-side',
-            rxdiClient: 'https://github.com/rxdi/starter-client-side',
-            rxdiClientAdvanced: 'https://github.com/rxdi/starter-client-side-advanced',
-            rxdiNeoTypescript: 'https://github.com/rxdi/starter-neo4j-typescript',
-            rxdiNeoJavascript: 'https://github.com/rxdi/starter-neo4j-javascript',
-            rxdiNeoComplex: 'https://github.com/rxdi/starter-neo4j-typescript-complex',
+            basic: "https://github.com/Stradivario/gapi-starter",
+            advanced: "https://github.com/Stradivario/gapi-starter-postgres-sequelize",
+            microservices: "https://github.com/Stradivario/gapi-starter-microservices",
+            serverless: "https://github.com/Stradivario/gapi-starter-serverless",
+            serverlessSequelize: "https://github.com/Stradivario/gapi-starter-serverless-sequelize",
+            rxdiServer: "https://github.com/rxdi/starter-server-side",
+            rxdiClient: "https://github.com/rxdi/starter-client-side",
+            rxdiClientAdvanced: "https://github.com/rxdi/starter-client-side-advanced",
+            rxdiNeoTypescript: "https://github.com/rxdi/starter-neo4j-typescript",
+            rxdiNeoJavascript: "https://github.com/rxdi/starter-neo4j-javascript",
+            rxdiNeoComplex: "https://github.com/rxdi/starter-neo4j-typescript-complex"
         };
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.argsService.args.toString().includes('--advanced')) {
+            if (this.argsService.args.toString().includes("--advanced")) {
                 yield this.exec(this.repoLinks.advanced);
             }
-            else if (this.argsService.args.toString().includes('--microservices')) {
+            else if (this.argsService.args.toString().includes("--microservices")) {
                 yield this.exec(this.repoLinks.microservices);
             }
-            else if (this.argsService.args.toString().includes('--serverless-sequelize')) {
+            else if (this.argsService.args.toString().includes("--serverless-sequelize")) {
                 yield this.exec(this.repoLinks.serverlessSequelize);
             }
-            else if (this.argsService.args.toString().includes('--serverless')) {
+            else if (this.argsService.args.toString().includes("--serverless")) {
                 yield this.exec(this.repoLinks.serverless);
             }
-            else if (this.argsService.args.toString().includes('--rxdi-server')) {
+            else if (this.argsService.args.toString().includes("--rxdi-server")) {
                 yield this.exec(this.repoLinks.rxdiServer);
             }
-            else if (this.argsService.args.toString().includes('--rxdi-client')) {
+            else if (this.argsService.args.toString().includes("--rxdi-client")) {
                 yield this.exec(this.repoLinks.rxdiClient);
             }
-            else if (this.argsService.args.toString().includes('--rxdi-client-advanced')) {
+            else if (this.argsService.args.toString().includes("--rxdi-client-advanced")) {
                 yield this.exec(this.repoLinks.rxdiClientAdvanced);
             }
-            else if (this.argsService.args.toString().includes('--neo4j-typescript')) {
+            else if (this.argsService.args.toString().includes("--neo4j-typescript")) {
                 yield this.exec(this.repoLinks.rxdiNeoTypescript);
             }
-            else if (this.argsService.args.toString().includes('--neo4j-javascript')) {
+            else if (this.argsService.args.toString().includes("--neo4j-javascript")) {
                 yield this.exec(this.repoLinks.rxdiNeoJavascript);
             }
-            else if (this.argsService.args.toString().includes('--neo4j-complex')) {
+            else if (this.argsService.args.toString().includes("--neo4j-complex")) {
                 yield this.exec(this.repoLinks.rxdiNeoComplex);
             }
             else {
@@ -72,9 +72,9 @@ let NewTask = class NewTask {
             }
         });
     }
-    exec(repoLink, args = '') {
+    exec(repoLink, args = "") {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install ${args ? `&& ${args}` : ''}`);
+            yield this.execService.call(`git clone ${repoLink} ${process.argv[3]} && cd ./${process.argv[3]} && npm install ${args ? `&& ${args}` : ""}`);
         });
     }
 };

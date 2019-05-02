@@ -60,11 +60,11 @@ let ConfigService = class ConfigService {
             },
             prod: {
                 GAPI_VERSION: ''
-            },
+            }
         };
     }
     genericError(command) {
-        throw new Error(`You cannot define command "${command}" they are restricted!`);
+        throw new Error(`You cannot define command '${command}' they are restricted!`);
     }
 };
 ConfigService = __decorate([

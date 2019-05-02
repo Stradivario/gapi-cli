@@ -81,11 +81,11 @@ let TestTask = class TestTask {
             const currentConfiguration = this.configService.config.config.test[currentConfigKey];
             if (currentConfiguration) {
                 this.extendOrDefault(currentConfiguration);
-                console.log(`"${currentConfigKey}" configuration loaded!`);
+                console.log(`'${currentConfigKey}' configuration loaded!`);
             }
             else {
                 if (currentConfigKey !== 'watch' && currentConfigKey !== 'before') {
-                    console.log(`Missing "${currentConfigKey}" argument configuration inside gapi-cli.conf.yml > config > test switching to "local" configuration.`);
+                    console.log(`Missing '${currentConfigKey}' argument configuration inside gapi-cli.conf.yml > config > test switching to 'local' configuration.`);
                 }
                 this.extendOrDefault(this.configService.config.config.test.local);
             }
@@ -95,7 +95,8 @@ let TestTask = class TestTask {
         }
     }
     extendOrDefault(currentConfiguration) {
-        if (currentConfiguration.constructor === String && currentConfiguration.includes('extends')) {
+        if (currentConfiguration.constructor === String &&
+            currentConfiguration.includes('extends')) {
             this.config = this.environmentService.setVariables(this.extendConfig(currentConfiguration));
         }
         else {

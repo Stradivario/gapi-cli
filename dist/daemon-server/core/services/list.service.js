@@ -44,7 +44,9 @@ let ListService = class ListService {
     findByLinkName(linkName) {
         return {
             results: () => __awaiter(this, void 0, void 0, function* () { return (yield this.readList()).filter(l => l.linkName === linkName); }),
-            exclude: (isNotLike) => __awaiter(this, void 0, void 0, function* () { return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== isNotLike); })
+            exclude: (isNotLike) => __awaiter(this, void 0, void 0, function* () {
+                return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== isNotLike);
+            })
         };
     }
 };

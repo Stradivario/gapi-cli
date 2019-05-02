@@ -87,7 +87,23 @@ export class DaemonTask {
 
   private list = async () => {
     const linkList = await this.daemonExecutorService.getLinkList();
-    console.log(linkList.data.getLinkList);
+    const chalk = require('chalk');
+    [...new Set(linkList.data.getLinkList.map(l => l.linkName))].forEach(l => {
+      const list = linkList.data.getLinkList.filter(i => i.linkName === l);
+      console.log(
+        chalk.green(
+          `\n--- Link name: '${l}' --- \n--- Linked projects ${list.length} ---`
+        )
+      );
+      list.forEach((i, index) =>
+        console.log(
+          `\n${chalk.blue(`(${index})(${l})`)} \n  Path: ${chalk.yellow(
+            i.repoPath
+          )}`,
+          `\n  Introspection folder: ${chalk.yellow(i.introspectionPath)}`
+        )
+      );
+    });
   };
 
   private kill = (pid: number) => process.kill(Number(pid));

@@ -15,7 +15,9 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 const windows = () => __awaiter(this, void 0, void 0, function* () {
     // Source: https://github.com/MarkTiedemann/fastlist
     const bin = path_1.join(__dirname, 'fastlist.exe');
-    const { stdout } = yield util_1.promisify(child_process_1.execFile)(bin, { maxBuffer: TEN_MEGABYTES });
+    const { stdout } = yield util_1.promisify(child_process_1.execFile)(bin, {
+        maxBuffer: TEN_MEGABYTES
+    });
     return stdout
         .trim()
         .split('\r\n')
@@ -31,7 +33,10 @@ const main = (options = { all: null }) => __awaiter(this, void 0, void 0, functi
     const ret = {};
     yield Promise.all(['comm', 'args', 'ppid', 'uid', '%cpu', '%mem'].map((cmd) => __awaiter(this, void 0, void 0, function* () {
         const { stdout } = yield util_1.promisify(child_process_1.execFile)('ps', [flags, `pid,${cmd}`], { maxBuffer: TEN_MEGABYTES });
-        for (let line of stdout.trim().split('\n').slice(1)) {
+        for (let line of stdout
+            .trim()
+            .split('\n')
+            .slice(1)) {
             line = line.trim();
             const [pid] = line.split(' ', 1);
             const val = line.slice(pid.length + 1).trim();
@@ -44,7 +49,12 @@ const main = (options = { all: null }) => __awaiter(this, void 0, void 0, functi
     // Filter out inconsistencies as there might be race
     // issues due to differences in `ps` between the spawns
     return Object.entries(ret)
-        .filter(([, value]) => value.comm && value.args && value.ppid && value.uid && value['%cpu'] && value['%mem'])
+        .filter(([, value]) => value.comm &&
+        value.args &&
+        value.ppid &&
+        value.uid &&
+        value['%cpu'] &&
+        value['%mem'])
         .map(([key, value]) => ({
         pid: Number.parseInt(key, 10),
         name: path_1.basename(value.comm),
