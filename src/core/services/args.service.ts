@@ -2,11 +2,9 @@ import { Service } from '@rxdi/core';
 
 @Service()
 export class ArgsService {
-    args: string[];
+  args: string[];
 
-    setArguments(args: string[]) {
-        this.args = args;
-    }
-
-
+  setArguments(args: string[]) {
+    this.args = args;
+  }
 }

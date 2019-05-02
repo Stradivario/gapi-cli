@@ -242,7 +242,7 @@ export class StartTask {
     };
     bundler.on('buildStart', async () => {
       if (child) {
-          killChild();
+        killChild();
       }
     });
     bundler.on('bundled', compiledBundle => (bundle = compiledBundle));
@@ -252,12 +252,12 @@ export class StartTask {
         process.stdout.write(`Bundle source: ${bundle.name}`);
         process.exit(0);
       }
-    //   const isDaemonInRunningcondition = await this.isDaemonRunning();
-    //   if (!isFirstTimeRun && isDaemonInRunningcondition) {
-    //     try {
-    //       await this.notifyDaemon({ repoPath: process.cwd() });
-    //     } catch (e) {}
-    //   }
+      //   const isDaemonInRunningcondition = await this.isDaemonRunning();
+      //   if (!isFirstTimeRun && isDaemonInRunningcondition) {
+      //     try {
+      //       await this.notifyDaemon({ repoPath: process.cwd() });
+      //     } catch (e) {}
+      //   }
       if (start && bundle !== null) {
         if (child) {
           killChild();
@@ -273,9 +273,9 @@ export class StartTask {
             return;
           }
         } else {
-        //   if (isDaemonInRunningcondition) {
-        //     await this.execService.call('sleep 1');
-        //   }
+          //   if (isDaemonInRunningcondition) {
+          //     await this.execService.call('sleep 1');
+          //   }
         }
         const childArguments = [];
         if (this.argsService.args.toString().includes('--inspect-brk')) {

@@ -29,6 +29,13 @@ let DaemonService = class DaemonService {
     constructor(listService, childService) {
         this.listService = listService;
         this.childService = childService;
+        this.noop = rxjs_1.of([]);
+    }
+    notifyDaemon(payload) {
+        return this.findByRepoPath(payload).pipe(operators_1.switchMap(([repo]) => this.findByLinkName(repo)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
+            this.trigger(payload),
+            ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
+        ])), operators_1.map(() => payload));
     }
     trigger(payload) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,7 +57,9 @@ let DaemonService = class DaemonService {
         });
     }
     writeGapiCliConfig(gapiLocalConfig, payload) {
-        const port = payload.serverMetadata.port ? payload.serverMetadata.port : '9000';
+        const port = payload.serverMetadata.port
+            ? payload.serverMetadata.port
+            : '9000';
         return util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
 config:
   schema:
@@ -58,17 +67,15 @@ config:
     introspectionOutputFolder: ./api-introspection
 `);
     }
-    notifyDaemon(payload) {
+    findByRepoPath(payload) {
         return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length
             ? this.listService.findByRepoPath(payload.repoPath)
-            : rxjs_1.of([])), operators_1.switchMap(([repo]) => repo && repo.linkName
-            ? this.listService
-                .findByLinkName(repo.linkName)
-                .exclude(repo.repoPath)
-            : rxjs_1.of([])), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
-            this.trigger(payload),
-            ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
-        ])), operators_1.map(() => payload));
+            : this.noop));
+    }
+    findByLinkName(repo) {
+        return repo && repo.linkName
+            ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
+            : this.noop;
     }
     mergeServerMetadata(repo, serverMetadata) {
         return Object.assign({}, repo, { serverMetadata });

@@ -7,12 +7,17 @@ import { CoreModule, CoreModuleConfig } from '@gapi/core';
 export class BootstrapTask {
   async run(options?: CoreModuleConfig) {
     BootstrapFramework(ServerModule, [
-      CoreModule.forRoot(options || {
-        graphql: {
-          graphiql: true,
-          graphiQlPlayground: false
+      CoreModule.forRoot(
+        options || {
+          graphql: {
+            graphiql: true,
+            graphiQlPlayground: false
+          }
         }
-      })
-    ]).subscribe(() => console.log('Daemon started'), console.error.bind(console));
+      )
+    ]).subscribe(
+      () => console.log('Daemon started'),
+      console.error.bind(console)
+    );
   }
 }

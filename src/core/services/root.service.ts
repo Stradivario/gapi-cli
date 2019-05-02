@@ -91,7 +91,11 @@ export class RootService {
       const introspectionEndpoint = nextOrDefault('--url', '');
       const introspectionFolder = nextOrDefault('--folder', '');
       const pattern = nextOrDefault('--pattern', '');
-      return await this.schemaTask.run(introspectionEndpoint, introspectionFolder, pattern);
+      return await this.schemaTask.run(
+        introspectionEndpoint,
+        introspectionFolder,
+        pattern
+      );
     }
 
     if (argsService.args[2] === 'deploy') {

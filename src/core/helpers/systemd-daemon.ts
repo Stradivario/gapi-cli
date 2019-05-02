@@ -1,5 +1,5 @@
-import { Container } from "@rxdi/core";
-import { BootstrapTask } from "../../tasks/bootstrap";
+import { Container } from '@rxdi/core';
+import { BootstrapTask } from '../../tasks/bootstrap';
 
 Container.get(BootstrapTask).run({
   server: {

@@ -92,7 +92,9 @@ export class DaemonTask {
 
   private kill = (pid: number) => process.kill(Number(pid));
   private status = async () => {
-    console.log(`Daemon status: ${await this.isDaemonRunning() ? 'active' : 'stopped'}`)
+    console.log(
+      `Daemon status: ${(await this.isDaemonRunning()) ? 'active' : 'stopped'}`
+    );
   };
 
   private link = async (linkName: string = 'default') => {
@@ -105,8 +107,8 @@ export class DaemonTask {
       );
     } catch (e) {}
     config = await this.readGapiConfig();
-    config.config = config.config || {} as any;
-    config.config.schema = config.config.schema || {} as any;
+    config.config = config.config || ({} as any);
+    config.config.schema = config.config.schema || ({} as any);
     const introspectionPath =
       config.config.schema.introspectionOutputFolder || `./api-introspection`;
     linkName = config.config.schema.linkName || linkName;
@@ -143,6 +145,9 @@ export class DaemonTask {
   private unlink = async () => {
     let processList: ILinkListType[] = [];
     const encoding = 'utf-8';
+    let linkName = nextOrDefault('unlink', null, t =>
+      t !== '--all' ? t : null
+    );
     try {
       processList = JSON.parse(
         await promisify(readFile)(this.processListFile, { encoding })
@@ -151,7 +156,15 @@ export class DaemonTask {
     const [currentProcess] = processList.filter(
       p => p.repoPath === process.cwd()
     );
-    if (includes('--all') && processList.length) {
+    if (linkName) {
+      await promisify(writeFile)(
+        this.processListFile,
+        JSON.stringify(processList.filter(p => p.linkName !== linkName)),
+        {
+          encoding
+        }
+      );
+    } else if (includes('--all') && processList.length) {
       await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
         encoding
       });
@@ -170,9 +183,24 @@ export class DaemonTask {
       );
     }
     if (currentProcess) {
-      console.log(
-        `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
-      ); 
+      if (linkName) {
+        const unlinkedProcesses = processList.filter(
+          p => p.linkName === linkName
+        );
+        console.log(
+          `Projects unlinked ${JSON.stringify(
+            unlinkedProcesses,
+            null,
+            2
+          )} link name: ${currentProcess.linkName}`
+        );
+      } else {
+        console.log(
+          `Project unlinked ${process.cwd()} link name: ${
+            currentProcess.linkName
+          }`
+        );
+      }
     }
   };
 
@@ -203,7 +231,7 @@ export class DaemonTask {
     [DaemonTasks.link, this.genericRunner(DaemonTasks.link)],
     [DaemonTasks.unlink, this.genericRunner(DaemonTasks.unlink)],
     [DaemonTasks.list, this.genericRunner(DaemonTasks.list)],
-    [DaemonTasks.status, this.genericRunner(DaemonTasks.status)],
+    [DaemonTasks.status, this.genericRunner(DaemonTasks.status)]
   ]);
 
   bootstrap = async (options: CoreModuleConfig) => {

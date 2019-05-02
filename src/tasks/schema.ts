@@ -2,12 +2,7 @@ import { Service, Container } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
-import {
-  exists,
-  readFile,
-  writeFile,
-  unlink
-} from 'fs';
+import { exists, readFile, writeFile, unlink } from 'fs';
 import { promisify } from 'util';
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
@@ -22,13 +17,25 @@ export class SchemaTask {
   private argsService: ArgsService = Container.get(ArgsService);
   private configService: ConfigService = Container.get(ConfigService);
 
-  async run(introspectionEndpoint?: string, introspectionOutputFolder?: string, pattern?: string) {
+  async run(
+    introspectionEndpoint?: string,
+    introspectionOutputFolder?: string,
+    pattern?: string
+  ) {
     const originalConsole = console.log.bind(console);
     console.log = function() {
-        return originalConsole.apply(console, ['\x1b[36m%s\x1b[0m', `${process.cwd()} =>`, ...arguments]);
-    }
-    this.folder = introspectionOutputFolder || this.configService.config.config.schema.introspectionOutputFolder;
-    this.endpoint = introspectionEndpoint || this.configService.config.config.schema.introspectionEndpoint;
+      return originalConsole.apply(console, [
+        '\x1b[36m%s\x1b[0m',
+        `${process.cwd()} =>`,
+        ...arguments
+      ]);
+    };
+    this.folder =
+      introspectionOutputFolder ||
+      this.configService.config.config.schema.introspectionOutputFolder;
+    this.endpoint =
+      introspectionEndpoint ||
+      this.configService.config.config.schema.introspectionEndpoint;
     this.pattern = pattern || this.configService.config.config.schema.pattern;
     this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
     this.bashFolder = __dirname.replace('dist/tasks', 'bash');
@@ -58,7 +65,7 @@ export class SchemaTask {
     );
   }
   private async createDir() {
-    if (!await promisify(exists)(this.folder)) {
+    if (!(await promisify(exists)(this.folder))) {
       await promisify(mkdirp)(this.folder);
     }
   }
@@ -78,12 +85,16 @@ export class SchemaTask {
       await this.generateTypes(readDocumentsTemp);
     }
     const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp};`;
-    await promisify(writeFile)(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
+    await promisify(writeFile)(
+      `${this.folder}/documents.ts`,
+      parsedDocuments,
+      'utf8'
+    );
     await promisify(unlink)(`${this.folder}/documents-temp.json`);
   }
 
   public async generateSchema() {
-    console.log(`Trying to hit ${this.endpoint} ...`)
+    console.log(`Trying to hit ${this.endpoint} ...`);
     await this.execService.call(
       `export NODE_TLS_REJECT_UNAUTHORIZED=0 && node ${
         this.node_modules
@@ -92,7 +103,7 @@ export class SchemaTask {
       }/schema.json`,
       { async: true }
     );
-    console.log(`Endpoint ${this.endpoint} hit!`)
+    console.log(`Endpoint ${this.endpoint} hit!`);
     await this.execService.call(
       `export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${
         this.bashFolder
@@ -125,8 +136,14 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
         return res;
     }, Object.create(null));
 }
-export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
+export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments)
+      .replace(/'/g, `'`)
+      .replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
-  await promisify(writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8')
+    await promisify(writeFile)(
+      `${this.folder}/documentTypes.ts`,
+      types,
+      'utf8'
+    );
   }
 }

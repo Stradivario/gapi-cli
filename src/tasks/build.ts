@@ -1,7 +1,7 @@
-import { Container, Service } from "@rxdi/core";
-import { ConfigService } from "../core/services/config.service";
-import { existsSync } from "fs";
-import { StartTask } from "./start";
+import { Container, Service } from '@rxdi/core';
+import { ConfigService } from '../core/services/config.service';
+import { existsSync } from 'fs';
+import { StartTask } from './start';
 
 @Service()
 export class BuildTask {
@@ -11,13 +11,13 @@ export class BuildTask {
   async run() {
     const cwd = process.cwd();
     const customPath = process.argv[4]
-      ? process.argv[4].split("--path=")[1]
+      ? process.argv[4].split('--path=')[1]
       : null;
     const customPathExists = existsSync(`${cwd}/${customPath}`);
     this.startTask.prepareBundler(
       `${
         customPathExists
-          ? `${cwd}/${customPathExists ? customPath : "index.ts"}`
+          ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
           : `${cwd}/src/main.ts`
       }`,
       {

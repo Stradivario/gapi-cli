@@ -4,9 +4,12 @@ import { ChildService } from './child.service';
 export declare class DaemonService {
     private listService;
     private childService;
+    private noop;
     constructor(listService: ListService, childService: ChildService);
+    notifyDaemon(payload: ILinkListType): import("rxjs").Observable<ILinkListType>;
     private trigger;
     private writeGapiCliConfig;
-    notifyDaemon(payload: ILinkListType): import("rxjs").Observable<ILinkListType>;
+    private findByRepoPath;
+    private findByLinkName;
     private mergeServerMetadata;
 }

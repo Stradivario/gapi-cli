@@ -1,10 +1,16 @@
 import { gql } from 'apollo-server-core';
-import { subscribeToTopic, createWebsocketLink, sendRequest, Container, HAPI_SERVER } from '@gapi/core';
+import {
+  subscribeToTopic,
+  createWebsocketLink,
+  sendRequest,
+  Container,
+  HAPI_SERVER
+} from '@gapi/core';
 // import { ISubscription } from './api-introspection';
 
 Container.set(HAPI_SERVER, { info: { port: '42000' } });
 
-const subscription = subscribeToTopic<{data: any}>(gql`
+const subscription = subscribeToTopic<{ data: any }>(gql`
   subscription {
     statusSubscription {
       status
@@ -15,14 +21,14 @@ const subscription = subscribeToTopic<{data: any}>(gql`
 });
 
 sendRequest({
-    query: `
+  query: `
         query {
             status {
                 status
             }
         }
     `
-}).then((stat) => console.log(stat))
+}).then(stat => console.log(stat));
 // setTimeout(() => {
 //   subscription.unsubscribe();
 // }, 5000);
