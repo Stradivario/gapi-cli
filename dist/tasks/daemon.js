@@ -98,7 +98,7 @@ let DaemonTask = class DaemonTask {
             [...new Set(linkList.data.getLinkList.map(l => l.linkName))].forEach(l => {
                 const list = linkList.data.getLinkList.filter(i => i.linkName === l);
                 console.log(chalk.green(`\n--- Link name: '${l}' --- \n--- Linked projects ${list.length} ---`));
-                list.forEach((i, index) => console.log(`\n${chalk.blue(`(${index})(${l})`)} \n  Path: ${chalk.yellow(i.repoPath)}`, `\n  Introspection folder: ${chalk.yellow(i.introspectionPath)}`));
+                list.forEach((i, index) => console.log(`\n${chalk.blue(`(${index + 1})(${l})${i.serverMetadata.port ? `(Main Graph with port ${i.serverMetadata.port})` : ''}`)} \n  Path: ${chalk.yellow(i.repoPath)}`, `\n  Introspection folder: ${chalk.yellow(i.introspectionPath)}`));
             });
         });
         this.kill = (pid) => process.kill(Number(pid));
@@ -133,10 +133,23 @@ let DaemonTask = class DaemonTask {
             let processList = [];
             const encoding = 'utf-8';
             let linkName = helpers_1.nextOrDefault('unlink', null, t => t !== '--all' ? t : null);
+            let isDirectoryAvailable;
+            try {
+                isDirectoryAvailable = yield util_1.promisify(fs_1.exists)(linkName);
+            }
+            catch (e) { }
             try {
                 processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
+            if (isDirectoryAvailable) {
+                const [currentProcess] = processList.filter(p => p.repoPath === linkName);
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
+                    encoding
+                });
+                console.log(`Project unlinked ${linkName} link name: ${currentProcess.linkName}`);
+                return;
+            }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
             if (linkName) {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {

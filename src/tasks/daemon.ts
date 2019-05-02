@@ -1,5 +1,5 @@
 import { Container, Service } from '@rxdi/core';
-import { openSync, writeFile, readFile } from 'fs';
+import { openSync, writeFile, readFile, exists } from 'fs';
 import { spawn } from 'child_process';
 import mkdirp = require('mkdirp');
 import { homedir } from 'os';
@@ -97,7 +97,7 @@ export class DaemonTask {
       );
       list.forEach((i, index) =>
         console.log(
-          `\n${chalk.blue(`(${index})(${l})`)} \n  Path: ${chalk.yellow(
+          `\n${chalk.blue(`(${index + 1})(${l})${i.serverMetadata.port ? `(Main Graph with port ${i.serverMetadata.port})` : ''}`)} \n  Path: ${chalk.yellow(
             i.repoPath
           )}`,
           `\n  Introspection folder: ${chalk.yellow(i.introspectionPath)}`
@@ -161,14 +161,36 @@ export class DaemonTask {
   private unlink = async () => {
     let processList: ILinkListType[] = [];
     const encoding = 'utf-8';
+
     let linkName = nextOrDefault('unlink', null, t =>
       t !== '--all' ? t : null
     );
+    let isDirectoryAvailable: boolean;
+    try {
+      isDirectoryAvailable = await promisify(exists)(linkName);
+    } catch (e) {}
+
     try {
       processList = JSON.parse(
         await promisify(readFile)(this.processListFile, { encoding })
       );
     } catch (e) {}
+
+    if (isDirectoryAvailable) {
+      const [currentProcess] = processList.filter(p => p.repoPath === linkName);
+      await promisify(writeFile)(
+        this.processListFile,
+        JSON.stringify(processList.filter(p => p.repoPath !== linkName)),
+        {
+          encoding
+        });
+        console.log(
+          `Project unlinked ${linkName} link name: ${
+            currentProcess.linkName
+          }`
+        );
+        return;
+    }
     const [currentProcess] = processList.filter(
       p => p.repoPath === process.cwd()
     );

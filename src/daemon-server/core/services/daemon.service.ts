@@ -1,16 +1,20 @@
 import { Service } from '@rxdi/core';
-import { exists, writeFile } from 'fs';
+import { exists, writeFile, readFile } from 'fs';
 import { promisify } from 'util';
 import { ILinkListType, IServerMetadataType } from '../../api-introspection';
 import { from, of, combineLatest } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { ListService } from './list.service';
 import { ChildService } from './child.service';
+import { homedir } from 'os';
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
 export class DaemonService {
   private noop = of([] as ILinkListType[]);
+  private gapiFolder: string = `${homedir()}/.gapi`;
+  private daemonFolder: string = `${this.gapiFolder}/daemon`;
+  private processListFile: string = `${this.daemonFolder}/process-list`;
   constructor(
     private listService: ListService,
     private childService: ChildService
@@ -18,6 +22,7 @@ export class DaemonService {
 
   notifyDaemon(payload: ILinkListType) {
     return this.findByRepoPath(payload).pipe(
+      tap(([mainNode]) => this.saveMainNode({ ...mainNode, serverMetadata: payload.serverMetadata })),
       switchMap(([repo]) => this.findByLinkName(repo)),
       switchMap(otherRepos =>
         combineLatest([
@@ -48,11 +53,32 @@ export class DaemonService {
     await this.childService.spawn('gapi', args, payload.repoPath);
     return payload;
   }
-  private writeGapiCliConfig(gapiLocalConfig, payload: ILinkListType) {
-    const port = payload.serverMetadata.port
-      ? payload.serverMetadata.port
-      : '9000';
-    return promisify(writeFile)(
+
+  private async saveMainNode(payload: ILinkListType) {
+    let processList: ILinkListType[] = [];
+    const encoding = 'utf8';
+    try {
+      processList = JSON.parse(
+        await promisify(readFile)(this.processListFile, { encoding })
+      );
+    } catch (e) {}
+    await promisify(writeFile)(
+      this.processListFile,
+      JSON.stringify(
+        processList
+          .filter(p => p.repoPath !== payload.repoPath)
+          .concat(payload)
+      ),
+      { encoding }
+    );
+  }
+  private async writeGapiCliConfig(gapiLocalConfig, payload: ILinkListType) {
+      let port = 9000;
+      if (payload.serverMetadata.port) {
+        port = payload.serverMetadata.port;
+        await this.saveMainNode(payload);
+      }
+    return await promisify(writeFile)(
       gapiLocalConfig,
       `
 config:

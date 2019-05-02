@@ -1,11 +1,12 @@
 import { Service } from '@rxdi/core';
 import { sendRequest } from '@rxdi/graphql';
+import { IQuery } from '../../../daemon-server/api-introspection';
 
 @Service()
 export class DaemonExecutorService {
   daemonLink: string = 'http://localhost:42000/graphql';
   getLinkList() {
-    return sendRequest<any>(
+    return sendRequest<IQuery>(
       {
         query: `
               query {
@@ -13,6 +14,9 @@ export class DaemonExecutorService {
                   repoPath
                   introspectionPath
                   linkName
+                  serverMetadata {
+                    port
+                  }
                 }
               }
             `

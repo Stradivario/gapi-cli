@@ -20,6 +20,9 @@ let DaemonExecutorService = class DaemonExecutorService {
                   repoPath
                   introspectionPath
                   linkName
+                  serverMetadata {
+                    port
+                  }
                 }
               }
             `

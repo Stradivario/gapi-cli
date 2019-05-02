@@ -24,15 +24,19 @@ const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const list_service_1 = require("./list.service");
 const child_service_1 = require("./child.service");
+const os_1 = require("os");
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 let DaemonService = class DaemonService {
     constructor(listService, childService) {
         this.listService = listService;
         this.childService = childService;
         this.noop = rxjs_1.of([]);
+        this.gapiFolder = `${os_1.homedir()}/.gapi`;
+        this.daemonFolder = `${this.gapiFolder}/daemon`;
+        this.processListFile = `${this.daemonFolder}/process-list`;
     }
     notifyDaemon(payload) {
-        return this.findByRepoPath(payload).pipe(operators_1.switchMap(([repo]) => this.findByLinkName(repo)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
+        return this.findByRepoPath(payload).pipe(operators_1.tap(([mainNode]) => this.saveMainNode(Object.assign({}, mainNode, { serverMetadata: payload.serverMetadata }))), operators_1.switchMap(([repo]) => this.findByLinkName(repo)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
             this.trigger(payload),
             ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
         ])), operators_1.map(() => payload));
@@ -56,16 +60,33 @@ let DaemonService = class DaemonService {
             return payload;
         });
     }
+    saveMainNode(payload) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let processList = [];
+            const encoding = 'utf8';
+            try {
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
+            }
+            catch (e) { }
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
+                .filter(p => p.repoPath !== payload.repoPath)
+                .concat(payload)), { encoding });
+        });
+    }
     writeGapiCliConfig(gapiLocalConfig, payload) {
-        const port = payload.serverMetadata.port
-            ? payload.serverMetadata.port
-            : '9000';
-        return util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
+        return __awaiter(this, void 0, void 0, function* () {
+            let port = 9000;
+            if (payload.serverMetadata.port) {
+                port = payload.serverMetadata.port;
+                yield this.saveMainNode(payload);
+            }
+            return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
 config:
   schema:
     introspectionEndpoint: http://localhost:${port}/graphql
     introspectionOutputFolder: ./api-introspection
 `);
+        });
     }
     findByRepoPath(payload) {
         return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length
