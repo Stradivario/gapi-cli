@@ -9,11 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const list_service_1 = require("./services/list.service");
 const daemon_service_1 = require("./services/daemon.service");
+const child_service_1 = require("./services/child.service");
 let CoreModule = class CoreModule {
 };
 CoreModule = __decorate([
     core_1.Module({
-        services: [list_service_1.ListService, daemon_service_1.DaemonService]
+        services: [list_service_1.ListService, daemon_service_1.DaemonService, child_service_1.ChildService]
     })
 ], CoreModule);
 exports.CoreModule = CoreModule;

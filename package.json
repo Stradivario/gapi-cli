@@ -59,6 +59,7 @@
     "yamljs": "0.3.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^5.0.5",
     "@types/hapi": "^18.0.2",
     "@types/mkdirp": "^0.5.2",
     "@types/rimraf": "^2.0.2",

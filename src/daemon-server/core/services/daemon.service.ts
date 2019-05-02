@@ -1,54 +1,44 @@
 import { Service } from '@rxdi/core';
 import { exists, writeFile } from 'fs';
 import { promisify } from 'util';
-import { spawn } from 'child_process';
 import { ILinkListType } from '../../api-introspection';
-import { from, of, combineLatest, Observable } from 'rxjs';
+import { from, of, combineLatest } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { ListService } from './list.service';
+import { ChildService } from './child.service';
+const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
 export class DaemonService {
-  constructor(private listService: ListService) {}
-  private trigger(payload: ILinkListType): Promise<ILinkListType> {
-    return new Promise(async (resolve, reject) => {
-      const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
-      const args = [
-        'schema',
-        'introspect',
-        '--collect-documents',
-        '--collect-types'
-      ];
-      if (!(promisify(exists)(gapiLocalConfig))) {
-        await this.writeGapiCliConfig(gapiLocalConfig);
-      }
-      const child = spawn('gapi', args, { cwd: payload.repoPath, detached: true });
-      const timeout = setTimeout(() => {
-        child.kill('Schema introspection exited with timeout after 20 seconds');
-        reject(payload);
-        clearTimeout(timeout);
-      }, 20 * 1000);
-      child.stdout.on('data', data => process.stdout.write(data));
-      child.stderr.on('data', data => process.stderr.write(data));
-      child.on('close', code => {
-        clearTimeout(timeout);
-        if (!code) {
-          resolve(payload);
-        } else {
-          reject(payload);
-        }
-      });
-    });
+  constructor(
+    private listService: ListService,
+    private childService: ChildService
+  ) {}
+  private async trigger(payload: ILinkListType): Promise<ILinkListType> {
+    if (!(await promisify(exists)(payload.repoPath))) {
+      await promisify(mkdirp)(payload.repoPath);
+    }
+    const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
+    if (!(await promisify(exists)(gapiLocalConfig))) {
+      await this.writeGapiCliConfig(gapiLocalConfig);
+    }
+    const args = [
+      'schema',
+      'introspect',
+      '--collect-documents',
+      '--collect-types'
+    ];
+    await this.childService.spawn('gapi', args, payload.repoPath);
+    return payload;
   }
-
-  writeGapiCliConfig(gapiLocalConfig: string) {
+  private writeGapiCliConfig(gapiLocalConfig: string) {
     return promisify(writeFile)(
       gapiLocalConfig,
       `
 config:
-schema:
-  introspectionEndpoint: http://localhost:9000/graphql
-  introspectionOutputFolder: ./api-introspection
+  schema:
+    introspectionEndpoint: http://localhost:9000/graphql
+    introspectionOutputFolder: ./api-introspection
 `
     );
   }

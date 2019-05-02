@@ -1,10 +1,11 @@
 import { ILinkListType } from '../../api-introspection';
-import { Observable } from 'rxjs';
 import { ListService } from './list.service';
+import { ChildService } from './child.service';
 export declare class DaemonService {
     private listService;
-    constructor(listService: ListService);
+    private childService;
+    constructor(listService: ListService, childService: ChildService);
     private trigger;
-    writeGapiCliConfig(gapiLocalConfig: string): Promise<void>;
-    notifyDaemon(payload: ILinkListType): Observable<ILinkListType>;
+    private writeGapiCliConfig;
+    notifyDaemon(payload: ILinkListType): import("rxjs").Observable<ILinkListType>;
 }
