@@ -127,12 +127,18 @@ let DaemonTask = class DaemonTask {
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
             let processList = [];
             const encoding = 'utf-8';
+            let linkName = helpers_1.nextOrDefault('unlink', null, (t) => t !== '--all' ? t : null);
             try {
                 processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
-            if (helpers_1.includes('--all') && processList.length) {
+            if (linkName) {
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {
+                    encoding
+                });
+            }
+            else if (helpers_1.includes('--all') && processList.length) {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), {
                     encoding
                 });
@@ -141,11 +147,17 @@ let DaemonTask = class DaemonTask {
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
             }
             else if (helpers_1.includes('--link-name') && processList.length) {
-                const linkName = helpers_1.nextOrDefault('--link-name');
+                linkName = helpers_1.nextOrDefault('--link-name');
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
             }
             if (currentProcess) {
-                console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+                if (linkName) {
+                    const unlinkedProcesses = processList.filter(p => p.linkName === linkName);
+                    console.log(`Projects unlinked ${JSON.stringify(unlinkedProcesses, null, 2)} link name: ${currentProcess.linkName}`);
+                }
+                else {
+                    console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+                }
             }
         });
         this.clean = () => __awaiter(this, void 0, void 0, function* () {

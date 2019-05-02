@@ -143,6 +143,7 @@ export class DaemonTask {
   private unlink = async () => {
     let processList: ILinkListType[] = [];
     const encoding = 'utf-8';
+    let linkName = nextOrDefault('unlink', null, (t) => t !== '--all' ? t : null);
     try {
       processList = JSON.parse(
         await promisify(readFile)(this.processListFile, { encoding })
@@ -151,7 +152,11 @@ export class DaemonTask {
     const [currentProcess] = processList.filter(
       p => p.repoPath === process.cwd()
     );
-    if (includes('--all') && processList.length) {
+    if (linkName) {
+      await promisify(writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {
+        encoding
+      });
+    } else if (includes('--all') && processList.length) {
       await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
         encoding
       });
@@ -162,7 +167,7 @@ export class DaemonTask {
         { encoding }
       );
     } else if (includes('--link-name') && processList.length) {
-      const linkName = nextOrDefault('--link-name');
+      linkName = nextOrDefault('--link-name');
       await promisify(writeFile)(
         this.processListFile,
         JSON.stringify(processList.filter(p => p.linkName !== linkName)),
@@ -170,9 +175,17 @@ export class DaemonTask {
       );
     }
     if (currentProcess) {
-      console.log(
-        `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
-      ); 
+      if (linkName) {
+        const unlinkedProcesses = processList.filter(p => p.linkName === linkName);
+        console.log(
+          `Projects unlinked ${JSON.stringify(unlinkedProcesses, null, 2)} link name: ${currentProcess.linkName}`
+        ); 
+      } else {
+        console.log(
+          `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
+        ); 
+      }
+
     }
   };
 
