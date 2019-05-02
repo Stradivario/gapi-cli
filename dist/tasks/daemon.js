@@ -109,13 +109,15 @@ let DaemonTask = class DaemonTask {
             }
             catch (e) { }
             config = yield this.readGapiConfig();
-            const introspectionPath = config.config.schema.introspectionOutputFolder ||
-                `${process.cwd()}/api-introspection`;
+            config.config = config.config || {};
+            config.config.schema = config.config.schema || {};
+            const introspectionPath = config.config.schema.introspectionOutputFolder || `./api-introspection`;
             linkName = config.config.schema.linkName || linkName;
             const currentRepoProcess = {
                 repoPath: process.cwd(),
                 introspectionPath,
-                linkName
+                linkName,
+                serverMetadata: {}
             };
             yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
                 .filter(p => p.repoPath !== process.cwd())

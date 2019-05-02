@@ -41,10 +41,11 @@ let ListService = class ListService {
             return (yield this.readList()).filter(l => l.repoPath === repoPath);
         });
     }
-    findByLinkName(linkName, notLike) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
-        });
+    findByLinkName(linkName) {
+        return {
+            results: () => __awaiter(this, void 0, void 0, function* () { return (yield this.readList()).filter(l => l.linkName === linkName); }),
+            exclude: (isNotLike) => __awaiter(this, void 0, void 0, function* () { return (yield this.readList()).filter(l => l.linkName === linkName && l.repoPath !== isNotLike); })
+        };
     }
 };
 ListService = __decorate([

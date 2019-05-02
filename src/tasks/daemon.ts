@@ -105,14 +105,16 @@ export class DaemonTask {
       );
     } catch (e) {}
     config = await this.readGapiConfig();
+    config.config = config.config || {} as any;
+    config.config.schema = config.config.schema || {} as any;
     const introspectionPath =
-      config.config.schema.introspectionOutputFolder ||
-      `${process.cwd()}/api-introspection`;
+      config.config.schema.introspectionOutputFolder || `./api-introspection`;
     linkName = config.config.schema.linkName || linkName;
     const currentRepoProcess = {
       repoPath: process.cwd(),
       introspectionPath,
-      linkName
+      linkName,
+      serverMetadata: {} as any
     };
     await promisify(writeFile)(
       this.processListFile,

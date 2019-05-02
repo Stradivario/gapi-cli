@@ -28,6 +28,11 @@ export interface ILinkListType {
     repoPath: string | null;
     introspectionPath: string | null;
     linkName: string | null;
+    serverMetadata: IServerMetadataType | null;
+}
+export interface IServerMetadataType {
+    __typename?: "ServerMetadataType";
+    port: number | null;
 }
 /**
   description: Mutation type for all requests which will change persistent data
@@ -35,4 +40,7 @@ export interface ILinkListType {
 export interface IMutation {
     __typename?: "Mutation";
     notifyDaemon: ILinkListType | null;
+}
+export interface IServerMetadataInputType {
+    port?: number | null;
 }

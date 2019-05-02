@@ -14,7 +14,6 @@ const list_service_1 = require("./core/services/list.service");
 const link_list_type_1 = require("./types/link-list.type");
 const daemon_service_1 = require("./core/services/daemon.service");
 const rxjs_1 = require("rxjs");
-const operators_1 = require("rxjs/operators");
 const server_metadata_type_1 = require("./types/server-metadata.type");
 let ServerController = class ServerController {
     constructor(listService, daemonService) {
@@ -25,17 +24,7 @@ let ServerController = class ServerController {
         return this.listService.readList();
     }
     notifyDaemon(root, payload) {
-        return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length
-            ? this.listService.findByRepoPath(payload.repoPath)
-            : rxjs_1.of([])), operators_1.switchMap(([repo]) => {
-            if (repo && repo.linkName) {
-                return this.listService.findByLinkName(repo.linkName, repo.repoPath);
-            }
-            return rxjs_1.of([]);
-        }), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
-            this.daemonService.trigger(payload),
-            ...otherRepos.map(r => this.daemonService.trigger(r))
-        ])), operators_1.map(() => payload));
+        return this.daemonService.notifyDaemon(payload);
     }
 };
 __decorate([

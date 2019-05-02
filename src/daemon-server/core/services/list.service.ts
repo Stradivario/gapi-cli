@@ -24,8 +24,11 @@ export class ListService {
       return (await this.readList()).filter(l => l.repoPath === repoPath);
     }
 
-    async findByLinkName(linkName: string, notLike: string) {
-      return (await this.readList()).filter(l => l.linkName === linkName && l.repoPath !== notLike);
+    findByLinkName(linkName: string) {
+      return {
+        results: async () => (await this.readList()).filter(l => l.linkName === linkName),
+        exclude: async (isNotLike: string) => (await this.readList()).filter(l => l.linkName === linkName && l.repoPath !== isNotLike)
+      }
     }
 
 
