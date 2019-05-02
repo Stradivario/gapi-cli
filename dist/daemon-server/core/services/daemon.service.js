@@ -36,7 +36,7 @@ let DaemonService = class DaemonService {
         this.processListFile = `${this.daemonFolder}/process-list`;
     }
     notifyDaemon(payload) {
-        return this.findByRepoPath(payload).pipe(operators_1.tap(([mainNode]) => this.saveMainNode(Object.assign({}, mainNode, { serverMetadata: payload.serverMetadata }))), operators_1.switchMap(([repo]) => this.findByLinkName(repo)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
+        return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, payload))), operators_1.switchMap((mainNode) => this.findLinkedRepos(mainNode)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
             this.trigger(payload),
             ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
         ])), operators_1.map(() => payload));
@@ -71,6 +71,7 @@ let DaemonService = class DaemonService {
             yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
                 .filter(p => p.repoPath !== payload.repoPath)
                 .concat(payload)), { encoding });
+            return payload;
         });
     }
     writeGapiCliConfig(gapiLocalConfig, payload) {
@@ -78,7 +79,6 @@ let DaemonService = class DaemonService {
             let port = 9000;
             if (payload.serverMetadata.port) {
                 port = payload.serverMetadata.port;
-                yield this.saveMainNode(payload);
             }
             return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
 config:
@@ -93,7 +93,7 @@ config:
             ? this.listService.findByRepoPath(payload.repoPath)
             : this.noop));
     }
-    findByLinkName(repo) {
+    findLinkedRepos(repo) {
         return repo && repo.linkName
             ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
             : this.noop;

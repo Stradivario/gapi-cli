@@ -3,7 +3,7 @@ import { ArgsService } from '../core/services/args.service';
 import { ConfigService, MainConfig } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';
 import { ExecService } from '../core/services/exec.service';
-import { existsSync } from 'fs';
+import { exists } from 'fs';
 import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
 import { nextOrDefault, includes } from '../core/helpers';
@@ -11,6 +11,7 @@ import { sendRequest, HAPI_SERVER } from '@gapi/core';
 import { IQuery } from '../daemon-server/api-introspection';
 import { Container as rxdiContainer } from '@gapi/core';
 import { normalize } from 'path';
+import { promisify } from 'util';
 
 @Service()
 export class StartTask {
@@ -84,11 +85,11 @@ export class StartTask {
     }
     const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
     const cwd = process.cwd();
-    const mainExists = existsSync(`${cwd}/src/main.ts`);
+    // const mainExists = existsSync(`${cwd}/src/main.ts`);
     const customPath = process.argv[4]
       ? process.argv[4].split('--path=')[1]
       : null;
-    const customPathExists = existsSync(`${cwd}/${customPath}`);
+    const customPathExists = await promisify(exists)(`${cwd}/${customPath}`);
     const isLintEnabled = this.argsService.args.toString().includes('--lint');
     if (this.argsService.args.toString().includes('--docker')) {
       return await this.execService.call(

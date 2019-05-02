@@ -3,7 +3,7 @@ import { exists, writeFile, readFile } from 'fs';
 import { promisify } from 'util';
 import { ILinkListType, IServerMetadataType } from '../../api-introspection';
 import { from, of, combineLatest } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, switchMap, tap, filter } from 'rxjs/operators';
 import { ListService } from './list.service';
 import { ChildService } from './child.service';
 import { homedir } from 'os';
@@ -22,8 +22,8 @@ export class DaemonService {
 
   notifyDaemon(payload: ILinkListType) {
     return this.findByRepoPath(payload).pipe(
-      tap(([mainNode]) => this.saveMainNode({ ...mainNode, serverMetadata: payload.serverMetadata })),
-      switchMap(([repo]) => this.findByLinkName(repo)),
+      switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, payload))),
+      switchMap((mainNode) => this.findLinkedRepos(mainNode)),
       switchMap(otherRepos =>
         combineLatest([
           this.trigger(payload),
@@ -71,13 +71,13 @@ export class DaemonService {
       ),
       { encoding }
     );
+    return payload;
   }
   private async writeGapiCliConfig(gapiLocalConfig, payload: ILinkListType) {
-      let port = 9000;
-      if (payload.serverMetadata.port) {
-        port = payload.serverMetadata.port;
-        await this.saveMainNode(payload);
-      }
+    let port = 9000;
+    if (payload.serverMetadata.port) {
+      port = payload.serverMetadata.port;
+    }
     return await promisify(writeFile)(
       gapiLocalConfig,
       `
@@ -97,7 +97,7 @@ config:
       )
     );
   }
-  private findByLinkName(repo: ILinkListType) {
+  private findLinkedRepos(repo: ILinkListType) {
     return repo && repo.linkName
       ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
       : this.noop;

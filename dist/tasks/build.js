@@ -18,6 +18,7 @@ const core_1 = require("@rxdi/core");
 const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
 const start_1 = require("./start");
+const util_1 = require("util");
 let BuildTask = class BuildTask {
     constructor() {
         this.startTask = core_1.Container.get(start_1.StartTask);
@@ -29,8 +30,8 @@ let BuildTask = class BuildTask {
             const customPath = process.argv[4]
                 ? process.argv[4].split('--path=')[1]
                 : null;
-            const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
-            this.startTask.prepareBundler(`${customPathExists
+            const customPathExists = yield util_1.promisify(fs_1.exists)(`${cwd}/${customPath}`);
+            yield this.startTask.prepareBundler(`${customPathExists
                 ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
                 : `${cwd}/src/main.ts`}`, {
                 original: this.configService.config.config.app.local,

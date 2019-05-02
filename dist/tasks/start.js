@@ -26,6 +26,7 @@ const helpers_1 = require("../core/helpers");
 const core_2 = require("@gapi/core");
 const core_3 = require("@gapi/core");
 const path_1 = require("path");
+const util_1 = require("util");
 let StartTask = class StartTask {
     constructor() {
         this.argsService = core_1.Container.get(args_service_1.ArgsService);
@@ -81,11 +82,11 @@ let StartTask = class StartTask {
             }
             const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
             const cwd = process.cwd();
-            const mainExists = fs_1.existsSync(`${cwd}/src/main.ts`);
+            // const mainExists = existsSync(`${cwd}/src/main.ts`);
             const customPath = process.argv[4]
                 ? process.argv[4].split('--path=')[1]
                 : null;
-            const customPathExists = fs_1.existsSync(`${cwd}/${customPath}`);
+            const customPathExists = yield util_1.promisify(fs_1.exists)(`${cwd}/${customPath}`);
             const isLintEnabled = this.argsService.args.toString().includes('--lint');
             if (this.argsService.args.toString().includes('--docker')) {
                 return yield this.execService.call(`${this.config} && pm2-docker ${cwd}/${customPathExists ? customPath : 'process.yml'} --only APP`);

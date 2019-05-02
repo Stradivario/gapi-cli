@@ -18,6 +18,7 @@ const service = require('service-systemd');
 const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const os_1 = require("os");
+const util_1 = require("util");
 let SystemDService = class SystemDService {
     constructor() {
         this.gapiFolder = `${os_1.homedir()}/.gapi`;
@@ -41,7 +42,7 @@ let SystemDService = class SystemDService {
         return __awaiter(this, void 0, void 0, function* () {
             yield service.add(options);
             this.services.push(options);
-            fs_1.writeFileSync(`${this.daemonFolder}/services`, JSON.stringify(this.services), { encoding: 'utf8' });
+            yield util_1.promisify(fs_1.writeFile)(`${this.daemonFolder}/services`, JSON.stringify(this.services), { encoding: 'utf8' });
         });
     }
 };

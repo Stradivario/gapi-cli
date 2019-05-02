@@ -1,7 +1,8 @@
 const service = require('service-systemd');
 import { Service } from '@rxdi/core';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFile } from 'fs';
 import { homedir } from 'os';
+import { promisify } from 'util';
 
 interface SystemDServiceInterface {
   name: string;
@@ -36,7 +37,7 @@ export class SystemDService {
   async register(options: SystemDServiceInterface) {
     await service.add(options);
     this.services.push(options);
-    writeFileSync(
+    await promisify(writeFile)(
       `${this.daemonFolder}/services`,
       JSON.stringify(this.services),
       { encoding: 'utf8' }

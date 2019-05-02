@@ -14,6 +14,6 @@ export declare class DaemonService {
     private saveMainNode;
     private writeGapiCliConfig;
     private findByRepoPath;
-    private findByLinkName;
+    private findLinkedRepos;
     private mergeServerMetadata;
 }
