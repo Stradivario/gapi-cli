@@ -4,6 +4,7 @@ import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
 import { exists, readFile, writeFile, unlink } from 'fs';
 import { promisify } from 'util';
+import { homedir } from 'os';
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
@@ -16,6 +17,9 @@ export class SchemaTask {
   private execService: ExecService = Container.get(ExecService);
   private argsService: ArgsService = Container.get(ArgsService);
   private configService: ConfigService = Container.get(ConfigService);
+  private gapiFolder: string = `${homedir()}/.gapi`;
+  private daemonFolder: string = `${this.gapiFolder}/daemon`;
+  private cacheFolder: string = `${this.daemonFolder}/.cache`;
 
   async run(
     introspectionEndpoint?: string,
@@ -68,19 +72,22 @@ export class SchemaTask {
     if (!(await promisify(exists)(this.folder))) {
       await promisify(mkdirp)(this.folder);
     }
+    await promisify(mkdirp)(this.cacheFolder);
   }
   public async collectQueries() {
+    const randomString = Math.random().toString(36).substring(2);
     await this.execService.call(
       `node ${
         this.node_modules
       }/graphql-document-collector/bin/graphql-document-collector '${
         this.pattern ? this.pattern : '**/*.graphql'
-      }' > ${this.folder}/documents-temp.json`
+      }' > ${this.cacheFolder}/${randomString}.json`
     );
     const readDocumentsTemp = await promisify(readFile)(
-      `${this.folder}/documents-temp.json`,
+      `${this.cacheFolder}/${randomString}.json`,
       'utf-8'
     );
+    await promisify(unlink)(`${this.cacheFolder}/${randomString}.json`);
     if (this.argsService.args.includes('--collect-types')) {
       await this.generateTypes(readDocumentsTemp);
     }
@@ -90,7 +97,6 @@ export class SchemaTask {
       parsedDocuments,
       'utf8'
     );
-    await promisify(unlink)(`${this.folder}/documents-temp.json`);
   }
 
   public async generateSchema() {
@@ -113,22 +119,21 @@ export class SchemaTask {
   }
 
   public async generateTypes(readDocumentsTemp) {
-    const savedDocuments = [];
-    Object.keys(JSON.parse(readDocumentsTemp)).forEach(key => {
-      const n = key.lastIndexOf('/');
-      const result = key.substring(n + 1);
-      if (result === 'ListMovies.graphql') {
-        return;
-      }
-      if (result === 'Place.graphql') {
-        return;
-      }
-      if (result === 'Movie.graphql') {
-        return;
-      }
-      savedDocuments.push(result);
-    });
-
+    const savedDocuments = Object.keys(JSON.parse(readDocumentsTemp))
+      .map(key => {
+        const n = key.lastIndexOf('/');
+        const result = key.substring(n + 1);
+        if (result === 'ListMovies.graphql') {
+          return;
+        }
+        if (result === 'Place.graphql') {
+          return;
+        }
+        if (result === 'Movie.graphql') {
+          return;
+        }
+        return result;
+      }).filter(i => !!i);
     const types = `
 function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
     return o.reduce((res, key) => {
@@ -137,10 +142,10 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
     }, Object.create(null));
 }
 export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments)
-      .replace(/'/g, `'`)
+      .replace(/"/g, `'`)
       .replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
-    await promisify(writeFile)(
+    return await promisify(writeFile)(
       `${this.folder}/documentTypes.ts`,
       types,
       'utf8'

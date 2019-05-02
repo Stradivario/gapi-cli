@@ -20,12 +20,16 @@ const exec_service_1 = require("../core/services/exec.service");
 const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
 const util_1 = require("util");
+const os_1 = require("os");
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 let SchemaTask = class SchemaTask {
     constructor() {
         this.execService = core_1.Container.get(exec_service_1.ExecService);
         this.argsService = core_1.Container.get(args_service_1.ArgsService);
         this.configService = core_1.Container.get(config_service_1.ConfigService);
+        this.gapiFolder = `${os_1.homedir()}/.gapi`;
+        this.daemonFolder = `${this.gapiFolder}/daemon`;
+        this.cacheFolder = `${this.daemonFolder}/.cache`;
     }
     run(introspectionEndpoint, introspectionOutputFolder, pattern) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -65,18 +69,20 @@ let SchemaTask = class SchemaTask {
             if (!(yield util_1.promisify(fs_1.exists)(this.folder))) {
                 yield util_1.promisify(mkdirp)(this.folder);
             }
+            yield util_1.promisify(mkdirp)(this.cacheFolder);
         });
     }
     collectQueries() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.folder}/documents-temp.json`);
-            const readDocumentsTemp = yield util_1.promisify(fs_1.readFile)(`${this.folder}/documents-temp.json`, 'utf-8');
+            const randomString = Math.random().toString(36).substring(2);
+            yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.cacheFolder}/${randomString}.json`);
+            const readDocumentsTemp = yield util_1.promisify(fs_1.readFile)(`${this.cacheFolder}/${randomString}.json`, 'utf-8');
+            yield util_1.promisify(fs_1.unlink)(`${this.cacheFolder}/${randomString}.json`);
             if (this.argsService.args.includes('--collect-types')) {
                 yield this.generateTypes(readDocumentsTemp);
             }
             const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp};`;
             yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
-            yield util_1.promisify(fs_1.unlink)(`${this.folder}/documents-temp.json`);
         });
     }
     generateSchema() {
@@ -89,8 +95,8 @@ let SchemaTask = class SchemaTask {
     }
     generateTypes(readDocumentsTemp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const savedDocuments = [];
-            Object.keys(JSON.parse(readDocumentsTemp)).forEach(key => {
+            const savedDocuments = Object.keys(JSON.parse(readDocumentsTemp))
+                .map(key => {
                 const n = key.lastIndexOf('/');
                 const result = key.substring(n + 1);
                 if (result === 'ListMovies.graphql') {
@@ -102,8 +108,8 @@ let SchemaTask = class SchemaTask {
                 if (result === 'Movie.graphql') {
                     return;
                 }
-                savedDocuments.push(result);
-            });
+                return result;
+            }).filter(i => !!i);
             const types = `
 function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
     return o.reduce((res, key) => {
@@ -112,10 +118,10 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
     }, Object.create(null));
 }
 export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments)
-                .replace(/'/g, `'`)
+                .replace(/"/g, `'`)
                 .replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
-            yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8');
+            return yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8');
         });
     }
 };
