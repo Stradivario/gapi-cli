@@ -81,7 +81,8 @@ export class SchemaTask {
         this.node_modules
       }/graphql-document-collector/bin/graphql-document-collector '${
         this.pattern ? this.pattern : '**/*.graphql'
-      }' > ${this.cacheFolder}/${randomString}.json`
+      }' > ${this.cacheFolder}/${randomString}.json`,
+      { async: true }
     );
     const readDocumentsTemp = await promisify(readFile)(
       `${this.cacheFolder}/${randomString}.json`,

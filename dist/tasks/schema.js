@@ -75,7 +75,7 @@ let SchemaTask = class SchemaTask {
     collectQueries() {
         return __awaiter(this, void 0, void 0, function* () {
             const randomString = Math.random().toString(36).substring(2);
-            yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.cacheFolder}/${randomString}.json`);
+            yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.cacheFolder}/${randomString}.json`, { async: true });
             const readDocumentsTemp = yield util_1.promisify(fs_1.readFile)(`${this.cacheFolder}/${randomString}.json`, 'utf-8');
             yield util_1.promisify(fs_1.unlink)(`${this.cacheFolder}/${randomString}.json`);
             if (this.argsService.args.includes('--collect-types')) {
