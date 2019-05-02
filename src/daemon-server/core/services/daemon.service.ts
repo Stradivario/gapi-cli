@@ -1,9 +1,9 @@
 import { Service } from '@rxdi/core';
 import { exists, writeFile, readFile } from 'fs';
 import { promisify } from 'util';
-import { ILinkListType, IServerMetadataType } from '../../api-introspection';
+import { ILinkListType } from '../../api-introspection';
 import { from, of, combineLatest } from 'rxjs';
-import { map, switchMap, tap, filter } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { ListService } from './list.service';
 import { ChildService } from './child.service';
 import { homedir } from 'os';
@@ -22,13 +22,21 @@ export class DaemonService {
 
   notifyDaemon(payload: ILinkListType) {
     return this.findByRepoPath(payload).pipe(
-      switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, payload))),
-      switchMap((mainNode) => this.findLinkedRepos(mainNode)),
+      switchMap(([mainNode]) =>
+        this.saveMainNode(
+          Object.assign(mainNode ? mainNode : ({} as any), {
+            serverMetadata: payload.serverMetadata
+          })
+        )
+      ),
+      switchMap(mainNode => this.findLinkedRepos(mainNode)),
       switchMap(otherRepos =>
         combineLatest([
           this.trigger(payload),
           ...otherRepos.map(r =>
-            this.trigger(this.mergeServerMetadata(r, payload.serverMetadata))
+            this.trigger(
+              Object.assign(r, { serverMetadata: payload.serverMetadata })
+            )
           )
         ])
       ),
@@ -65,9 +73,7 @@ export class DaemonService {
     await promisify(writeFile)(
       this.processListFile,
       JSON.stringify(
-        processList
-          .filter(p => p.repoPath !== payload.repoPath)
-          .concat(payload)
+        processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)
       ),
       { encoding }
     );
@@ -101,12 +107,5 @@ config:
     return repo && repo.linkName
       ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
       : this.noop;
-  }
-
-  private mergeServerMetadata(
-    repo: ILinkListType,
-    serverMetadata: IServerMetadataType
-  ) {
-    return { ...repo, serverMetadata };
   }
 }

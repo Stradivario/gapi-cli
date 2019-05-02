@@ -38,7 +38,7 @@ __decorate([
     core_1.Type(link_list_type_1.LinkListType),
     core_1.Mutation({
         repoPath: {
-            type: core_1.GraphQLString
+            type: new core_1.GraphQLNonNull(core_1.GraphQLString)
         },
         introspectionPath: {
             type: core_1.GraphQLString

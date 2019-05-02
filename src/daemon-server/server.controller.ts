@@ -5,7 +5,8 @@ import {
   Query,
   GraphQLList,
   Mutation,
-  GraphQLString
+  GraphQLString,
+  GraphQLNonNull
 } from '@gapi/core';
 import { ListService } from './core/services/list.service';
 import { LinkListType } from './types/link-list.type';
@@ -30,7 +31,7 @@ export class ServerController {
   @Type(LinkListType)
   @Mutation({
     repoPath: {
-      type: GraphQLString
+      type: new GraphQLNonNull(GraphQLString)
     },
     introspectionPath: {
       type: GraphQLString

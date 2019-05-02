@@ -38,7 +38,7 @@ let DaemonService = class DaemonService {
     notifyDaemon(payload) {
         return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, payload))), operators_1.switchMap((mainNode) => this.findLinkedRepos(mainNode)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
             this.trigger(payload),
-            ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
+            ...otherRepos.map(r => this.trigger(Object.assign(r, payload)))
         ])), operators_1.map(() => payload));
     }
     trigger(payload) {
