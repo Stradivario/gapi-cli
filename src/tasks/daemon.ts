@@ -169,9 +169,11 @@ export class DaemonTask {
         { encoding }
       );
     }
-    console.log(
-      `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
-    );
+    if (currentProcess) {
+      console.log(
+        `Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`
+      ); 
+    }
   };
 
   private clean = async () => {

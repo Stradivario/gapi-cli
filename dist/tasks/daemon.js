@@ -144,7 +144,9 @@ let DaemonTask = class DaemonTask {
                 const linkName = helpers_1.nextOrDefault('--link-name');
                 yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
             }
-            console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+            if (currentProcess) {
+                console.log(`Project unlinked ${process.cwd()} link name: ${currentProcess.linkName}`);
+            }
         });
         this.clean = () => __awaiter(this, void 0, void 0, function* () {
             const isRunning = yield this.isDaemonRunning();
