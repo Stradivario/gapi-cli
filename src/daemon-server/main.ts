@@ -14,7 +14,8 @@ BootstrapFramework(ServerModule, [CoreModule.forRoot({
         graphiQlPlayground: false
     },
     daemon: {
-        activated: true
+        activated: true,
+        link: 'http://localhost:42001/graphql'
     }
 })]).subscribe(
     () => console.log('Server started'),

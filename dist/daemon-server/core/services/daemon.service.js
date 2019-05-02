@@ -37,7 +37,7 @@ let DaemonService = class DaemonService {
             }
             const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
             if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
-                yield this.writeGapiCliConfig(gapiLocalConfig);
+                yield this.writeGapiCliConfig(gapiLocalConfig, payload);
             }
             const args = [
                 'schema',
@@ -49,11 +49,12 @@ let DaemonService = class DaemonService {
             return payload;
         });
     }
-    writeGapiCliConfig(gapiLocalConfig) {
+    writeGapiCliConfig(gapiLocalConfig, payload) {
+        const port = payload.serverMetadata.port ? payload.serverMetadata.port : '9000';
         return util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
 config:
   schema:
-    introspectionEndpoint: http://localhost:9000/graphql
+    introspectionEndpoint: http://localhost:${port}/graphql
     introspectionOutputFolder: ./api-introspection
 `);
     }

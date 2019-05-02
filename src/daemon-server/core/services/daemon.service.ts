@@ -20,7 +20,7 @@ export class DaemonService {
     }
     const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
     if (!(await promisify(exists)(gapiLocalConfig))) {
-      await this.writeGapiCliConfig(gapiLocalConfig);
+      await this.writeGapiCliConfig(gapiLocalConfig, payload);
     }
     const args = [
       'schema',
@@ -31,13 +31,14 @@ export class DaemonService {
     await this.childService.spawn('gapi', args, payload.repoPath);
     return payload;
   }
-  private writeGapiCliConfig(gapiLocalConfig: string) {
+  private writeGapiCliConfig(gapiLocalConfig, payload: ILinkListType) {
+    const port = payload.serverMetadata.port ? payload.serverMetadata.port : '9000';
     return promisify(writeFile)(
       gapiLocalConfig,
       `
 config:
   schema:
-    introspectionEndpoint: http://localhost:9000/graphql
+    introspectionEndpoint: http://localhost:${port}/graphql
     introspectionOutputFolder: ./api-introspection
 `
     );
@@ -60,7 +61,7 @@ config:
       switchMap(otherRepos =>
         combineLatest([
           this.trigger(payload),
-          ...otherRepos.map(r => this.trigger(r))
+          ...otherRepos.map(r => this.trigger({ ...r, serverMetadata: payload.serverMetadata }))
         ])
       ),
       map(() => payload)
