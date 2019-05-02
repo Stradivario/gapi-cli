@@ -108,11 +108,7 @@ let DaemonTask = class DaemonTask {
         this.link = (linkName = 'default') => __awaiter(this, void 0, void 0, function* () {
             const encoding = 'utf-8';
             let config = { config: { schema: {} } };
-            let processList = [];
-            try {
-                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
-            }
-            catch (e) { }
+            let processList = yield this.getProcessList();
             config = yield this.readGapiConfig();
             config.config = config.config || {};
             config.config.schema = config.config.schema || {};
@@ -130,24 +126,10 @@ let DaemonTask = class DaemonTask {
             console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
         });
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
-            let processList = [];
+            let processList = yield this.getProcessList();
             const encoding = 'utf-8';
             let linkName = helpers_1.nextOrDefault('unlink', null, t => t !== '--all' ? t : null);
-            let isDirectoryAvailable;
-            try {
-                isDirectoryAvailable = yield util_1.promisify(fs_1.exists)(linkName);
-            }
-            catch (e) { }
-            try {
-                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
-            }
-            catch (e) { }
-            if (isDirectoryAvailable) {
-                const [currentProcess] = processList.filter(p => p.repoPath === linkName);
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
-                    encoding
-                });
-                console.log(`Project unlinked ${linkName} link name: ${currentProcess.linkName}`);
+            if (yield this.isDirectoryAvailable(linkName)) {
                 return;
             }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
@@ -212,6 +194,38 @@ let DaemonTask = class DaemonTask {
             }
             catch (e) { }
             return file;
+        });
+    }
+    isDirectoryAvailable(linkName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const encoding = 'utf-8';
+            let isDirectoryAvailable;
+            try {
+                isDirectoryAvailable = yield util_1.promisify(fs_1.exists)(linkName);
+            }
+            catch (e) { }
+            if (isDirectoryAvailable) {
+                let processList = yield this.getProcessList();
+                const [currentProcess] = processList.filter(p => p.repoPath === linkName);
+                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
+                    encoding
+                });
+                console.log(`Project unlinked ${linkName} link name: ${currentProcess.linkName}`);
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+    getProcessList() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let processList = [];
+            try {
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding: 'utf8' }));
+            }
+            catch (e) { }
+            return processList;
         });
     }
     run() {

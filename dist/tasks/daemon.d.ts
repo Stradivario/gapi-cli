@@ -30,6 +30,8 @@ export declare class DaemonTask {
     private status;
     private link;
     private readGapiConfig;
+    private isDirectoryAvailable;
+    private getProcessList;
     private unlink;
     private clean;
     private genericRunner;

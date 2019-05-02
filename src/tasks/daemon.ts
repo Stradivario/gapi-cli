@@ -116,12 +116,7 @@ export class DaemonTask {
   private link = async (linkName: string = 'default') => {
     const encoding = 'utf-8';
     let config: GapiConfig = { config: { schema: {} } } as any;
-    let processList: ILinkListType[] = [];
-    try {
-      processList = JSON.parse(
-        await promisify(readFile)(this.processListFile, { encoding })
-      );
-    } catch (e) {}
+    let processList: ILinkListType[] = await this.getProcessList();
     config = await this.readGapiConfig();
     config.config = config.config || ({} as any);
     config.config.schema = config.config.schema || ({} as any);
@@ -157,26 +152,15 @@ export class DaemonTask {
     } catch (e) {}
     return file;
   }
-
-  private unlink = async () => {
-    let processList: ILinkListType[] = [];
+ 
+  private async isDirectoryAvailable(linkName: string) {
     const encoding = 'utf-8';
-
-    let linkName = nextOrDefault('unlink', null, t =>
-      t !== '--all' ? t : null
-    );
     let isDirectoryAvailable: boolean;
     try {
       isDirectoryAvailable = await promisify(exists)(linkName);
     } catch (e) {}
-
-    try {
-      processList = JSON.parse(
-        await promisify(readFile)(this.processListFile, { encoding })
-      );
-    } catch (e) {}
-
     if (isDirectoryAvailable) {
+      let processList: ILinkListType[] = await this.getProcessList();
       const [currentProcess] = processList.filter(p => p.repoPath === linkName);
       await promisify(writeFile)(
         this.processListFile,
@@ -189,7 +173,31 @@ export class DaemonTask {
             currentProcess.linkName
           }`
         );
-        return;
+        return true;
+    } else {
+      return false;
+    }
+  }
+
+  private async getProcessList() {
+    let processList: ILinkListType[] = [];
+    try {
+      processList = JSON.parse(
+        await promisify(readFile)(this.processListFile, { encoding: 'utf8' })
+      );
+    } catch (e) {}
+    return processList;
+  }
+
+  private unlink = async () => {
+    let processList: ILinkListType[] = await this.getProcessList();
+    const encoding = 'utf-8';
+
+    let linkName = nextOrDefault('unlink', null, t =>
+      t !== '--all' ? t : null
+    );
+    if (await this.isDirectoryAvailable(linkName)) {
+      return;
     }
     const [currentProcess] = processList.filter(
       p => p.repoPath === process.cwd()
