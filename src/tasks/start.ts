@@ -124,21 +124,7 @@ export class StartTask {
         );
       }
     } else {
-      if (process.argv.toString().includes('--parcel')) {
-        return this.prepareBundler(
-          `${
-            customPathExists
-              ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
-              : `${cwd}/src/main.ts`
-          }`,
-          {
-            original: this.configOriginal,
-            schema: this.configService.config.config.schema
-          },
-          true,
-          false
-        );
-      } else {
+      if (process.argv.toString().includes('--ts-node')) {
         return await this.execService.call(
           `nodemon --watch '${cwd}/src/**/*.ts' ${
             this.quiet ? '--quiet' : ''
@@ -151,6 +137,20 @@ export class StartTask {
               ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
               : `${cwd}/src/main.ts`
           }  ${this.verbose}`
+        );
+      } else {
+        return await this.prepareBundler(
+          `${
+            customPathExists
+              ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
+              : `${cwd}/src/main.ts`
+          }`,
+          {
+            original: this.configOriginal,
+            schema: this.configService.config.config.schema
+          },
+          true,
+          false
         );
       }
     }
@@ -233,7 +233,7 @@ export class StartTask {
 
     let bundle = null;
     let child = null;
-    let isFirstTimeRun = true;
+    // let isFirstTimeRun = true;
     const killChild = () => {
       child.stdout.removeAllListeners('data');
       child.stderr.removeAllListeners('data');
@@ -288,7 +288,7 @@ export class StartTask {
         child = childProcess.spawn('node', [...childArguments, bundle.name]);
         child.stdout.on('data', (data: Buffer) => {
           process.stdout.write(data);
-          isFirstTimeRun = false;
+          // isFirstTimeRun = false;
         });
         child.stderr.on('data', data => process.stdout.write(data));
         child.on('exit', code => {
