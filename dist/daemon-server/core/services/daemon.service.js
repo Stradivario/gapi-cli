@@ -36,9 +36,11 @@ let DaemonService = class DaemonService {
         this.processListFile = `${this.daemonFolder}/process-list`;
     }
     notifyDaemon(payload) {
-        return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, payload))), operators_1.switchMap((mainNode) => this.findLinkedRepos(mainNode)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
+        return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, {
+            serverMetadata: payload.serverMetadata
+        }))), operators_1.switchMap(mainNode => this.findLinkedRepos(mainNode)), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
             this.trigger(payload),
-            ...otherRepos.map(r => this.trigger(Object.assign(r, payload)))
+            ...otherRepos.map(r => this.trigger(Object.assign(r, { serverMetadata: payload.serverMetadata })))
         ])), operators_1.map(() => payload));
     }
     trigger(payload) {
@@ -68,9 +70,7 @@ let DaemonService = class DaemonService {
                 processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
             }
             catch (e) { }
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
-                .filter(p => p.repoPath !== payload.repoPath)
-                .concat(payload)), { encoding });
+            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)), { encoding });
             return payload;
         });
     }
@@ -97,9 +97,6 @@ config:
         return repo && repo.linkName
             ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
             : this.noop;
-    }
-    mergeServerMetadata(repo, serverMetadata) {
-        return Object.assign({}, repo, { serverMetadata });
     }
 };
 DaemonService = __decorate([

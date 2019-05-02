@@ -15,5 +15,4 @@ export declare class DaemonService {
     private writeGapiCliConfig;
     private findByRepoPath;
     private findLinkedRepos;
-    private mergeServerMetadata;
 }

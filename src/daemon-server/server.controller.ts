@@ -6,7 +6,8 @@ import {
   GraphQLList,
   Mutation,
   GraphQLString,
-  GraphQLNonNull
+  GraphQLNonNull,
+  Interceptor
 } from '@gapi/core';
 import { ListService } from './core/services/list.service';
 import { LinkListType } from './types/link-list.type';
@@ -14,6 +15,7 @@ import { ILinkListType } from './api-introspection';
 import { DaemonService } from './core/services/daemon.service';
 import { Observable } from 'rxjs';
 import { ServerMetadataInputType } from './types/server-metadata.type';
+import { NotifyInterceptor } from './core/interceptors/notify.interceptor';
 
 @Controller()
 export class ServerController {
@@ -29,6 +31,7 @@ export class ServerController {
   }
 
   @Type(LinkListType)
+  @Interceptor(NotifyInterceptor)
   @Mutation({
     repoPath: {
       type: new GraphQLNonNull(GraphQLString)

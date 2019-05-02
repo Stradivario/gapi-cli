@@ -15,6 +15,7 @@ const link_list_type_1 = require("./types/link-list.type");
 const daemon_service_1 = require("./core/services/daemon.service");
 const rxjs_1 = require("rxjs");
 const server_metadata_type_1 = require("./types/server-metadata.type");
+const notify_interceptor_1 = require("./core/interceptors/notify.interceptor");
 let ServerController = class ServerController {
     constructor(listService, daemonService) {
         this.listService = listService;
@@ -36,6 +37,7 @@ __decorate([
 ], ServerController.prototype, "getLinkList", null);
 __decorate([
     core_1.Type(link_list_type_1.LinkListType),
+    core_1.Interceptor(notify_interceptor_1.NotifyInterceptor),
     core_1.Mutation({
         repoPath: {
             type: new core_1.GraphQLNonNull(core_1.GraphQLString)
