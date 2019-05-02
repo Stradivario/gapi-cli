@@ -67,8 +67,11 @@ config:
                 .exclude(repo.repoPath)
             : rxjs_1.of([])), operators_1.switchMap(otherRepos => rxjs_1.combineLatest([
             this.trigger(payload),
-            ...otherRepos.map(r => this.trigger(r))
+            ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
         ])), operators_1.map(() => payload));
+    }
+    mergeServerMetadata(repo, serverMetadata) {
+        return Object.assign({}, repo, { serverMetadata });
     }
 };
 DaemonService = __decorate([

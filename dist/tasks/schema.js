@@ -19,6 +19,8 @@ const args_service_1 = require("../core/services/args.service");
 const exec_service_1 = require("../core/services/exec.service");
 const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
+const util_1 = require("util");
+const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 let SchemaTask = class SchemaTask {
     constructor() {
         this.execService = core_1.Container.get(exec_service_1.ExecService);
@@ -37,13 +39,13 @@ let SchemaTask = class SchemaTask {
             this.node_modules = __dirname.replace('dist/tasks', 'node_modules');
             this.bashFolder = __dirname.replace('dist/tasks', 'bash');
             if (process.argv[3] === 'introspect') {
-                this.createDir();
+                yield this.createDir();
                 yield this.generateSchema();
                 console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
             }
             if (process.argv[3] === 'collect' ||
                 this.argsService.args.includes('--collect-documents')) {
-                this.createDir();
+                yield this.createDir();
                 yield this.collectQueries();
                 console.log(`Schema documents created inside folder: ${this.folder}/documents.json`);
             }
@@ -51,20 +53,22 @@ let SchemaTask = class SchemaTask {
         });
     }
     createDir() {
-        if (!fs_1.existsSync(this.folder)) {
-            fs_1.mkdirSync(this.folder);
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(yield util_1.promisify(fs_1.exists)(this.folder))) {
+                yield util_1.promisify(mkdirp)(this.folder);
+            }
+        });
     }
     collectQueries() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.execService.call(`node ${this.node_modules}/graphql-document-collector/bin/graphql-document-collector '${this.pattern ? this.pattern : '**/*.graphql'}' > ${this.folder}/documents-temp.json`);
-            const readDocumentsTemp = fs_1.readFileSync(`${this.folder}/documents-temp.json`, 'utf-8');
+            const readDocumentsTemp = yield util_1.promisify(fs_1.readFile)(`${this.folder}/documents-temp.json`, 'utf-8');
             if (this.argsService.args.includes('--collect-types')) {
-                this.generateTypes(readDocumentsTemp);
+                yield this.generateTypes(readDocumentsTemp);
             }
             const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp};`;
-            fs_1.writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
-            fs_1.unlinkSync(`${this.folder}/documents-temp.json`);
+            yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
+            yield util_1.promisify(fs_1.unlink)(`${this.folder}/documents-temp.json`);
         });
     }
     generateSchema() {
@@ -101,7 +105,7 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
 }
 export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
-            fs_1.writeFileSync(`${this.folder}/documentTypes.ts`, types, 'utf8');
+            yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8');
         });
     }
 };

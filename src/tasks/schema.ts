@@ -3,12 +3,13 @@ import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
 import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-  unlinkSync
+  exists,
+  readFile,
+  writeFile,
+  unlink
 } from 'fs';
+import { promisify } from 'util';
+const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
 export class SchemaTask {
@@ -33,7 +34,7 @@ export class SchemaTask {
     this.bashFolder = __dirname.replace('dist/tasks', 'bash');
 
     if (process.argv[3] === 'introspect') {
-      this.createDir();
+      await this.createDir();
       await this.generateSchema();
       console.log(
         `Typings introspection based on GAPI Schema created inside folder: ${
@@ -46,7 +47,7 @@ export class SchemaTask {
       process.argv[3] === 'collect' ||
       this.argsService.args.includes('--collect-documents')
     ) {
-      this.createDir();
+      await this.createDir();
       await this.collectQueries();
       console.log(
         `Schema documents created inside folder: ${this.folder}/documents.json`
@@ -56,9 +57,9 @@ export class SchemaTask {
       `To change export folder for this command you need to check this link https://github.com/Stradivario/gapi-cli/wiki/schema`
     );
   }
-  private createDir() {
-    if (!existsSync(this.folder)) {
-      mkdirSync(this.folder);
+  private async createDir() {
+    if (!await promisify(exists)(this.folder)) {
+      await promisify(mkdirp)(this.folder);
     }
   }
   public async collectQueries() {
@@ -69,16 +70,16 @@ export class SchemaTask {
         this.pattern ? this.pattern : '**/*.graphql'
       }' > ${this.folder}/documents-temp.json`
     );
-    const readDocumentsTemp = readFileSync(
+    const readDocumentsTemp = await promisify(readFile)(
       `${this.folder}/documents-temp.json`,
       'utf-8'
     );
     if (this.argsService.args.includes('--collect-types')) {
-      this.generateTypes(readDocumentsTemp);
+      await this.generateTypes(readDocumentsTemp);
     }
     const parsedDocuments = `/* tslint:disable */ \n export const DOCUMENTS = ${readDocumentsTemp};`;
-    writeFileSync(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
-    unlinkSync(`${this.folder}/documents-temp.json`);
+    await promisify(writeFile)(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
+    await promisify(unlink)(`${this.folder}/documents-temp.json`);
   }
 
   public async generateSchema() {
@@ -101,7 +102,6 @@ export class SchemaTask {
   }
 
   public async generateTypes(readDocumentsTemp) {
-
     const savedDocuments = [];
     Object.keys(JSON.parse(readDocumentsTemp)).forEach(key => {
       const n = key.lastIndexOf('/');
@@ -127,6 +127,6 @@ function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
 }
 export const DocumentTypes = strEnum(${JSON.stringify(savedDocuments).replace(/"/g, `'`).replace(/,/g, ',\n')});
 export type DocumentTypes = keyof typeof DocumentTypes;`;
-    writeFileSync(`${this.folder}/documentTypes.ts`, types, 'utf8');
+  await promisify(writeFile)(`${this.folder}/documentTypes.ts`, types, 'utf8')
   }
 }

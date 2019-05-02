@@ -8,4 +8,5 @@ export declare class DaemonService {
     private trigger;
     private writeGapiCliConfig;
     notifyDaemon(payload: ILinkListType): import("rxjs").Observable<ILinkListType>;
+    private mergeServerMetadata;
 }

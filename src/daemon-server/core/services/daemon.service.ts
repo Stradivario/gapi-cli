@@ -1,7 +1,7 @@
 import { Service } from '@rxdi/core';
 import { exists, writeFile } from 'fs';
 import { promisify } from 'util';
-import { ILinkListType } from '../../api-introspection';
+import { ILinkListType, IServerMetadataType } from '../../api-introspection';
 import { from, of, combineLatest } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { ListService } from './list.service';
@@ -61,10 +61,15 @@ config:
       switchMap(otherRepos =>
         combineLatest([
           this.trigger(payload),
-          ...otherRepos.map(r => this.trigger({ ...r, serverMetadata: payload.serverMetadata }))
+          ...otherRepos.map(r => this.trigger(this.mergeServerMetadata(r, payload.serverMetadata)))
         ])
       ),
       map(() => payload)
     );
   }
+
+  private mergeServerMetadata(repo: ILinkListType, serverMetadata: IServerMetadataType) {
+    return { ...repo, serverMetadata };
+  }
+
 }
