@@ -107,20 +107,18 @@ let StartTask = class StartTask {
                     return yield this.execService.call(`${sleep} ts-node ${cwd}/src/main.ts`);
                 }
             }
+            else if (process.argv.toString().includes('--ts-node')) {
+                return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && ${isLintEnabled ? 'npm run lint &&' : ''} ${sleep} ts-node' ${customPathExists
+                    ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
+                    : `${cwd}/src/main.ts`}  ${this.verbose}`);
+            }
             else {
-                if (process.argv.toString().includes('--ts-node')) {
-                    return yield this.execService.call(`nodemon --watch '${cwd}/src/**/*.ts' ${this.quiet ? '--quiet' : ''}  --ignore '${this.configService.config.config.schema.introspectionOutputFolder}/' --ignore '${cwd}/src/**/*.spec.ts' --exec '${this.config} && ${isLintEnabled ? 'npm run lint &&' : ''} ${sleep} ts-node' ${customPathExists
-                        ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
-                        : `${cwd}/src/main.ts`}  ${this.verbose}`);
-                }
-                else {
-                    return yield this.prepareBundler(`${customPathExists
-                        ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
-                        : `${cwd}/src/main.ts`}`, {
-                        original: this.configOriginal,
-                        schema: this.configService.config.config.schema
-                    }, true, false);
-                }
+                return yield this.prepareBundler(`${customPathExists
+                    ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
+                    : `${cwd}/src/main.ts`}`, {
+                    original: this.configOriginal,
+                    schema: this.configService.config.config.schema
+                }, true, false);
             }
         });
     }

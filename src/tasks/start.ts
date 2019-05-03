@@ -124,7 +124,7 @@ export class StartTask {
           `${sleep} ts-node ${cwd}/src/main.ts`
         );
       }
-    } else {
+    } else 
       if (process.argv.toString().includes('--ts-node')) {
         return await this.execService.call(
           `nodemon --watch '${cwd}/src/**/*.ts' ${
@@ -154,7 +154,6 @@ export class StartTask {
           false
         );
       }
-    }
   }
   async isDaemonRunning() {
     this.setFakeHapiServer();
