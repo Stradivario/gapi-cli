@@ -8,7 +8,6 @@ import { PluginLoader } from '../daemon-server/core/services/plugin-loader.servi
 export class BootstrapTask {
   constructor(private pluginLoader: PluginLoader) {}
   async run(options?: CoreModuleConfig) {
-    
     this.pluginLoader
       .loadPlugins(['QmV6yQAwHjtBF7uB4jsyAGGTTiq1Wfz4eNK7WPLKMwFahC'])
       .pipe(

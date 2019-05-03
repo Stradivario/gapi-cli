@@ -117,7 +117,22 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"core/services/list.service.ts":[function(require,module,exports) {
+})({"daemon.config.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const os_1 = require("os");
+
+exports.GAPI_MAIN_FOLDER = `${os_1.homedir()}/.gapi`;
+exports.GAPI_DAEMON_FOLDER = `${exports.GAPI_MAIN_FOLDER}/daemon`;
+exports.GAPI_DAEMON_PROCESS_LIST_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/process-list`;
+exports.GAPI_DAEMON_PLUGINS_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/plugins`;
+exports.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/external-plugins`;
+exports.GAPI_DAEMON_CACHE_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/.cache`;
+},{}],"core/services/list.service.ts":[function(require,module,exports) {
 "use strict";
 
 var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
@@ -166,20 +181,17 @@ const util_1 = require("util");
 
 const fs_1 = require("fs");
 
-const os_1 = require("os");
+const daemon_config_1 = require("../../daemon.config");
 
 let ListService = class ListService {
   constructor() {
     this.linkedList = [];
-    this.gapiFolder = `${os_1.homedir()}/.gapi`;
-    this.daemonFolder = `${this.gapiFolder}/daemon`;
-    this.processListFile = `${this.daemonFolder}/process-list`;
   }
 
   readList() {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        this.linkedList = JSON.parse((yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+        this.linkedList = JSON.parse((yield util_1.promisify(fs_1.readFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, {
           encoding: 'utf-8'
         })));
       } catch (e) {}
@@ -208,7 +220,7 @@ let ListService = class ListService {
 };
 ListService = __decorate([core_1.Injectable()], ListService);
 exports.ListService = ListService;
-},{}],"types/server-metadata.type.ts":[function(require,module,exports) {
+},{"../../daemon.config":"daemon.config.ts"}],"types/server-metadata.type.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -380,7 +392,7 @@ const list_service_1 = require("./list.service");
 
 const child_service_1 = require("./child.service");
 
-const os_1 = require("os");
+const daemon_config_1 = require("../../daemon.config");
 
 const {
   mkdirp
@@ -391,9 +403,6 @@ let DaemonService = class DaemonService {
     this.listService = listService;
     this.childService = childService;
     this.noop = rxjs_1.of([]);
-    this.gapiFolder = `${os_1.homedir()}/.gapi`;
-    this.daemonFolder = `${this.gapiFolder}/daemon`;
-    this.processListFile = `${this.daemonFolder}/process-list`;
   }
 
   notifyDaemon(payload) {
@@ -428,12 +437,12 @@ let DaemonService = class DaemonService {
       const encoding = 'utf8';
 
       try {
-        processList = JSON.parse((yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+        processList = JSON.parse((yield util_1.promisify(fs_1.readFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, {
           encoding
         })));
       } catch (e) {}
 
-      yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)), {
+      yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)), {
         encoding
       });
       return payload;
@@ -468,7 +477,7 @@ config:
 };
 DaemonService = __decorate([core_1.Service(), __metadata("design:paramtypes", [typeof (_a = typeof list_service_1.ListService !== "undefined" && list_service_1.ListService) === "function" ? _a : Object, typeof (_b = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _b : Object])], DaemonService);
 exports.DaemonService = DaemonService;
-},{"./list.service":"core/services/list.service.ts","./child.service":"core/services/child.service.ts"}],"core/interceptors/notify.interceptor.ts":[function(require,module,exports) {
+},{"./list.service":"core/services/list.service.ts","./child.service":"core/services/child.service.ts","../../daemon.config":"daemon.config.ts"}],"core/interceptors/notify.interceptor.ts":[function(require,module,exports) {
 "use strict";
 
 var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
@@ -660,6 +669,34 @@ var __metadata = this && this.__metadata || function (k, v) {
   if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : new P(function (resolve) {
+        resolve(result.value);
+      }).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -668,77 +705,59 @@ var _a, _b;
 
 const core_1 = require("@rxdi/core");
 
-const rxjs_1 = require("rxjs");
-
 const operators_1 = require("rxjs/operators");
 
-const rxjs_2 = require("rxjs");
+const rxjs_1 = require("rxjs");
 
-const os_1 = require("os");
+const daemon_config_1 = require("../../daemon.config");
 
 let PluginLoader = class PluginLoader {
   constructor(externalImporterService, fileService) {
     this.externalImporterService = externalImporterService;
     this.fileService = fileService;
     this.hashCache = {};
-    this.defaultPluginsFolder = `${os_1.homedir()}/.gapi/daemon/plugins`;
-    this.defaultExternalPluginsFolder = '/plugins/';
-    this.defaultIpfsProvider = 'https://ipfs.io/ipfs/';
-    this.defaultDownloadFilename = 'gapi-plugin';
+    this.defaultIpfsProvider = "https://ipfs.io/ipfs/";
+    this.defaultDownloadFilename = "gapi-plugin";
+  }
 
-    this.getModule = (hash, provider = this.defaultIpfsProvider) => {
-      if (this.hashCache[hash]) {
-        return this.hashCache[hash];
-      }
+  getModule(hash, provider = this.defaultIpfsProvider) {
+    if (this.hashCache[hash]) {
+      return this.hashCache[hash];
+    }
 
-      return new rxjs_1.Observable(o => {
-        this.externalImporterService.downloadIpfsModuleConfig({
-          hash,
-          provider
-        }).pipe(operators_1.take(1), operators_1.tap(em => console.log(`Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`)), operators_1.switchMap(externalModule => this.externalImporterService.importModule({
-          fileName: this.defaultDownloadFilename,
-          namespace: externalModule.name,
-          extension: 'js',
-          outputFolder: this.defaultExternalPluginsFolder,
-          link: `${this.defaultIpfsProvider}${externalModule.module}`
-        }, externalModule.name))).subscribe(data => {
-          const currentModule = this.loadModule(data);
-          this.hashCache[hash] = currentModule;
-          console.log(currentModule.metadata.moduleHash);
-          o.next(currentModule);
-          o.complete();
-        }, e => {
-          o.error(e);
-          o.complete();
-        });
-      });
-    };
+    return this.externalImporterService.downloadIpfsModuleConfig({
+      hash,
+      provider
+    }).pipe(operators_1.take(1), operators_1.tap(em => console.log(`Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`)), operators_1.switchMap(externalModule => this.externalImporterService.importModule({
+      fileName: this.defaultDownloadFilename,
+      namespace: externalModule.name,
+      extension: "js",
+      outputFolder: `${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
+      link: `${this.defaultIpfsProvider}${externalModule.module}`
+    }, externalModule.name, {
+      folderOverride: `//`
+    })), operators_1.map(data => {
+      const currentModule = this.loadModule(data);
+      this.hashCache[hash] = currentModule;
+      console.log(currentModule.metadata.moduleHash);
+      return currentModule;
+    }));
   }
 
   loadModule(m) {
     return m[Object.keys(m)[0]];
   }
 
-  loadPlugins(modules = [], pluginsFolder = this.defaultPluginsFolder) {
-    let plugins = rxjs_2.of([]);
-
-    if (this.fileService.isPresent(pluginsFolder)) {
-      plugins = this.fileService.fileWalker(pluginsFolder);
-    }
-
-    return plugins.pipe(operators_1.map(p => {
-      return [...new Set(p)].map(path => {
-        if (!new RegExp(/^(.(?!.*\.js$))*$/g).test(path)) {
-          return this.loadModule(require(path));
-        }
-      }).filter(p => !!p);
-    }), operators_1.switchMap(pluginModules => rxjs_2.of(null).pipe(operators_1.combineLatest([...new Set(modules)].map(hash => this.getModule(hash))), operators_1.map(externalModules => [...new Set([...externalModules, ...pluginModules])]), operators_1.map(m => m.filter(i => !!i)))));
+  loadPlugins(ipfsHashes = [], pluginsFolder = daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER) {
+    return this.fileService.mkdirp(pluginsFolder).pipe(operators_1.switchMap(() => this.fileService.fileWalker(pluginsFolder)), operators_1.switchMap(p => Promise.all([...new Set(p)].map(path => __awaiter(this, void 0, void 0, function* () {
+      return !new RegExp(/^(.(?!.*\.js$))*$/g).test(path) ? yield this.loadModule(require(path)) : null;
+    })).filter(p => !!p))), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(ipfsHashes)].map(hash => this.getModule(hash))), operators_1.map(externalModules => [...new Set([...externalModules, ...pluginModules])]), operators_1.map(m => m.filter(i => !!i)))));
   }
 
 };
 PluginLoader = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof core_1.ExternalImporter !== "undefined" && core_1.ExternalImporter) === "function" ? _a : Object, typeof (_b = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _b : Object])], PluginLoader);
 exports.PluginLoader = PluginLoader;
-},{}],"main.ts":[function(require,module,exports) {
+},{"../../daemon.config":"daemon.config.ts"}],"main.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

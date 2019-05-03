@@ -5,9 +5,6 @@ export declare class DaemonService {
     private listService;
     private childService;
     private noop;
-    private gapiFolder;
-    private daemonFolder;
-    private processListFile;
     constructor(listService: ListService, childService: ChildService);
     notifyDaemon(payload: ILinkListType): import("rxjs").Observable<ILinkListType>;
     private trigger;

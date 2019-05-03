@@ -12,6 +12,7 @@ import { IQuery } from '../daemon-server/api-introspection';
 import { Container as rxdiContainer } from '@gapi/core';
 import { normalize } from 'path';
 import { promisify } from 'util';
+import { homedir } from 'os';
 
 @Service()
 export class StartTask {

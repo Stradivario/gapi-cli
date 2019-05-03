@@ -17,18 +17,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const util_1 = require("util");
 const fs_1 = require("fs");
-const os_1 = require("os");
+const daemon_config_1 = require("../../daemon.config");
 let ListService = class ListService {
     constructor() {
         this.linkedList = [];
-        this.gapiFolder = `${os_1.homedir()}/.gapi`;
-        this.daemonFolder = `${this.gapiFolder}/daemon`;
-        this.processListFile = `${this.daemonFolder}/process-list`;
     }
     readList() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.linkedList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, {
+                this.linkedList = JSON.parse(yield util_1.promisify(fs_1.readFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, {
                     encoding: 'utf-8'
                 }));
             }

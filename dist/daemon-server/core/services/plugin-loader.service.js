@@ -8,68 +8,62 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
-const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
-const rxjs_2 = require("rxjs");
-const os_1 = require("os");
+const rxjs_1 = require("rxjs");
+const daemon_config_1 = require("../../daemon.config");
 let PluginLoader = class PluginLoader {
     constructor(externalImporterService, fileService) {
         this.externalImporterService = externalImporterService;
         this.fileService = fileService;
         this.hashCache = {};
-        this.defaultPluginsFolder = `${os_1.homedir()}/.gapi/daemon/plugins`;
-        this.defaultExternalPluginsFolder = '/plugins/';
-        this.defaultIpfsProvider = 'https://ipfs.io/ipfs/';
-        this.defaultDownloadFilename = 'gapi-plugin';
-        this.getModule = (hash, provider = this.defaultIpfsProvider) => {
-            if (this.hashCache[hash]) {
-                return this.hashCache[hash];
-            }
-            return new rxjs_1.Observable(o => {
-                this.externalImporterService
-                    .downloadIpfsModuleConfig({
-                    hash,
-                    provider
-                })
-                    .pipe(operators_1.take(1), operators_1.tap((em) => console.log(`Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`)), operators_1.switchMap((externalModule) => this.externalImporterService.importModule({
-                    fileName: this.defaultDownloadFilename,
-                    namespace: externalModule.name,
-                    extension: 'js',
-                    outputFolder: this.defaultExternalPluginsFolder,
-                    link: `${this.defaultIpfsProvider}${externalModule.module}`
-                }, externalModule.name)))
-                    .subscribe(data => {
-                    const currentModule = this.loadModule(data);
-                    this.hashCache[hash] = currentModule;
-                    console.log(currentModule.metadata.moduleHash);
-                    o.next(currentModule);
-                    o.complete();
-                }, e => {
-                    o.error(e);
-                    o.complete();
-                });
-            });
-        };
+        this.defaultIpfsProvider = "https://ipfs.io/ipfs/";
+        this.defaultDownloadFilename = "gapi-plugin";
+    }
+    getModule(hash, provider = this.defaultIpfsProvider) {
+        if (this.hashCache[hash]) {
+            return this.hashCache[hash];
+        }
+        return this.externalImporterService
+            .downloadIpfsModuleConfig({
+            hash,
+            provider
+        })
+            .pipe(operators_1.take(1), operators_1.tap((em) => console.log(`Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`)), operators_1.switchMap((externalModule) => this.externalImporterService.importModule({
+            fileName: this.defaultDownloadFilename,
+            namespace: externalModule.name,
+            extension: "js",
+            outputFolder: `${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
+            link: `${this.defaultIpfsProvider}${externalModule.module}`
+        }, externalModule.name, { folderOverride: `//` })), operators_1.map(data => {
+            const currentModule = this.loadModule(data);
+            this.hashCache[hash] = currentModule;
+            console.log(currentModule.metadata.moduleHash);
+            return currentModule;
+        }));
     }
     loadModule(m) {
         return m[Object.keys(m)[0]];
     }
-    loadPlugins(modules = [], pluginsFolder = this.defaultPluginsFolder) {
-        let plugins = rxjs_2.of([]);
-        if (this.fileService.isPresent(pluginsFolder)) {
-            plugins = this.fileService.fileWalker(pluginsFolder);
-        }
-        return plugins.pipe(operators_1.map(p => {
-            return [...new Set(p)]
-                .map(path => {
-                if (!(new RegExp(/^(.(?!.*\.js$))*$/g).test(path))) {
-                    return this.loadModule(require(path));
-                }
-            })
-                .filter(p => !!p);
-        }), operators_1.switchMap(pluginModules => rxjs_2.of(null).pipe(operators_1.combineLatest([...new Set(modules)].map(hash => this.getModule(hash))), operators_1.map(externalModules => [...new Set([...externalModules, ...pluginModules])]), operators_1.map(m => m.filter(i => !!i)))));
+    loadPlugins(ipfsHashes = [], pluginsFolder = daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER) {
+        return this.fileService.mkdirp(pluginsFolder).pipe(operators_1.switchMap(() => this.fileService.fileWalker(pluginsFolder)), operators_1.switchMap(p => Promise.all([...new Set(p)]
+            .map((path) => __awaiter(this, void 0, void 0, function* () {
+            return !new RegExp(/^(.(?!.*\.js$))*$/g).test(path)
+                ? yield this.loadModule(require(path))
+                : null;
+        }))
+            .filter(p => !!p))), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(ipfsHashes)].map(hash => this.getModule(hash))), operators_1.map(externalModules => [
+            ...new Set([...externalModules, ...pluginModules])
+        ]), operators_1.map(m => m.filter(i => !!i)))));
     }
 };
 PluginLoader = __decorate([

@@ -7,9 +7,6 @@ export declare class SchemaTask {
     private execService;
     private argsService;
     private configService;
-    private gapiFolder;
-    private daemonFolder;
-    private cacheFolder;
     run(introspectionEndpoint?: string, introspectionOutputFolder?: string, pattern?: string): Promise<void>;
     private createDir;
     collectQueries(): Promise<void>;

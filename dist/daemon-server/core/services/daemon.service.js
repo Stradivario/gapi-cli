@@ -24,16 +24,13 @@ const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const list_service_1 = require("./list.service");
 const child_service_1 = require("./child.service");
-const os_1 = require("os");
+const daemon_config_1 = require("../../daemon.config");
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 let DaemonService = class DaemonService {
     constructor(listService, childService) {
         this.listService = listService;
         this.childService = childService;
         this.noop = rxjs_1.of([]);
-        this.gapiFolder = `${os_1.homedir()}/.gapi`;
-        this.daemonFolder = `${this.gapiFolder}/daemon`;
-        this.processListFile = `${this.daemonFolder}/process-list`;
     }
     notifyDaemon(payload) {
         return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, {
@@ -67,10 +64,10 @@ let DaemonService = class DaemonService {
             let processList = [];
             const encoding = 'utf8';
             try {
-                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding }));
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, { encoding }));
             }
             catch (e) { }
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)), { encoding });
+            yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)), { encoding });
             return payload;
         });
     }

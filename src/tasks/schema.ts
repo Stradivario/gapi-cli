@@ -4,7 +4,7 @@ import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
 import { exists, readFile, writeFile, unlink } from 'fs';
 import { promisify } from 'util';
-import { homedir } from 'os';
+import { GAPI_DAEMON_CACHE_FOLDER } from '../daemon-server/daemon.config';
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
@@ -17,9 +17,6 @@ export class SchemaTask {
   private execService: ExecService = Container.get(ExecService);
   private argsService: ArgsService = Container.get(ArgsService);
   private configService: ConfigService = Container.get(ConfigService);
-  private gapiFolder: string = `${homedir()}/.gapi`;
-  private daemonFolder: string = `${this.gapiFolder}/daemon`;
-  private cacheFolder: string = `${this.daemonFolder}/.cache`;
 
   async run(
     introspectionEndpoint?: string,
@@ -72,7 +69,7 @@ export class SchemaTask {
     if (!(await promisify(exists)(this.folder))) {
       await promisify(mkdirp)(this.folder);
     }
-    await promisify(mkdirp)(this.cacheFolder);
+    await promisify(mkdirp)(GAPI_DAEMON_CACHE_FOLDER);
   }
   public async collectQueries() {
     const randomString = Math.random().toString(36).substring(2);
@@ -81,14 +78,14 @@ export class SchemaTask {
         this.node_modules
       }/graphql-document-collector/bin/graphql-document-collector '${
         this.pattern ? this.pattern : '**/*.graphql'
-      }' > ${this.cacheFolder}/${randomString}.json`,
+      }' > ${GAPI_DAEMON_CACHE_FOLDER}/${randomString}.json`,
       { async: true }
     );
     const readDocumentsTemp = await promisify(readFile)(
-      `${this.cacheFolder}/${randomString}.json`,
+      `${GAPI_DAEMON_CACHE_FOLDER}/${randomString}.json`,
       'utf-8'
     );
-    await promisify(unlink)(`${this.cacheFolder}/${randomString}.json`);
+    await promisify(unlink)(`${GAPI_DAEMON_CACHE_FOLDER}/${randomString}.json`);
     if (this.argsService.args.includes('--collect-types')) {
       await this.generateTypes(readDocumentsTemp);
     }

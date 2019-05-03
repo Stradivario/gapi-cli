@@ -1,21 +1,16 @@
-import { ExternalImporter, FileService, Metadata } from '@rxdi/core';
-import { Observable } from 'rxjs';
+import { ExternalImporter, FileService, Metadata } from "@rxdi/core";
 export declare class PluginLoader {
     private externalImporterService;
     private fileService;
-    hashCache: {
-        [key: string]: {
-            metadata: Metadata;
-        };
-    };
-    defaultPluginsFolder: string;
-    defaultExternalPluginsFolder: string;
-    defaultIpfsProvider: string;
-    defaultDownloadFilename: string;
+    private hashCache;
+    private defaultIpfsProvider;
+    private defaultDownloadFilename;
     constructor(externalImporterService: ExternalImporter, fileService: FileService);
-    getModule: (hash: string, provider?: string) => {
+    getModule(hash: string, provider?: string): {
         metadata: Metadata;
-    } | Observable<{}>;
+    } | import("rxjs").Observable<{
+        metadata: Metadata;
+    }>;
     private loadModule;
-    loadPlugins(modules?: string[], pluginsFolder?: string): Observable<any[]>;
+    loadPlugins(ipfsHashes?: string[], pluginsFolder?: string): import("rxjs").Observable<any[]>;
 }

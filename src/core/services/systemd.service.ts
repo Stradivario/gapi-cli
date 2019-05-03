@@ -1,8 +1,8 @@
 const service = require('service-systemd');
 import { Service } from '@rxdi/core';
 import { readFileSync, writeFile } from 'fs';
-import { homedir } from 'os';
 import { promisify } from 'util';
+import { GAPI_DAEMON_FOLDER } from '../../daemon-server/daemon.config';
 
 interface SystemDServiceInterface {
   name: string;
@@ -16,15 +16,13 @@ interface SystemDServiceInterface {
 
 @Service()
 export class SystemDService {
-  private gapiFolder: string = `${homedir()}/.gapi`;
-  private daemonFolder: string = `${this.gapiFolder}/daemon`;
   private services: SystemDServiceInterface[] = this.readServicesFile();
 
   private readServicesFile() {
     let file: SystemDServiceInterface[] = [];
     try {
       file = JSON.parse(
-        readFileSync(`${this.daemonFolder}/services`, { encoding: 'utf8' })
+        readFileSync(`${GAPI_DAEMON_FOLDER}/services`, { encoding: 'utf8' })
       );
     } catch (e) {}
     return file;
@@ -38,7 +36,7 @@ export class SystemDService {
     await service.add(options);
     this.services.push(options);
     await promisify(writeFile)(
-      `${this.daemonFolder}/services`,
+      `${GAPI_DAEMON_FOLDER}/services`,
       JSON.stringify(this.services),
       { encoding: 'utf8' }
     );

@@ -6,15 +6,12 @@ import { from, of, combineLatest } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { ListService } from './list.service';
 import { ChildService } from './child.service';
-import { homedir } from 'os';
+import { GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../../daemon.config';
 const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 
 @Service()
 export class DaemonService {
   private noop = of([] as ILinkListType[]);
-  private gapiFolder: string = `${homedir()}/.gapi`;
-  private daemonFolder: string = `${this.gapiFolder}/daemon`;
-  private processListFile: string = `${this.daemonFolder}/process-list`;
   constructor(
     private listService: ListService,
     private childService: ChildService
@@ -67,11 +64,11 @@ export class DaemonService {
     const encoding = 'utf8';
     try {
       processList = JSON.parse(
-        await promisify(readFile)(this.processListFile, { encoding })
+        await promisify(readFile)(GAPI_DAEMON_PROCESS_LIST_FOLDER, { encoding })
       );
     } catch (e) {}
     await promisify(writeFile)(
-      this.processListFile,
+      GAPI_DAEMON_PROCESS_LIST_FOLDER,
       JSON.stringify(
         processList.filter(p => p.repoPath !== payload.repoPath).concat(payload)
       ),

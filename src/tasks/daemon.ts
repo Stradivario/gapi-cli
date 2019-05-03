@@ -16,6 +16,7 @@ import { DaemonExecutorService } from '../core/services/daemon-executor/daemon-e
 import { load } from 'yamljs';
 import { GapiConfig } from '../core/services/config.service';
 import { ILinkListType } from '../daemon-server/api-introspection/index';
+import { GAPI_DAEMON_FOLDER, GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../daemon-server/daemon.config';
 
 export const DaemonTasks = strEnum([
   'start',
@@ -33,12 +34,9 @@ export type DaemonTasks = keyof typeof DaemonTasks;
 
 @Service()
 export class DaemonTask {
-  private gapiFolder: string = `${homedir()}/.gapi`;
-  private daemonFolder: string = `${this.gapiFolder}/daemon`;
-  private outLogFile: string = `${this.daemonFolder}/out.log`;
-  private errLogFile: string = `${this.daemonFolder}/err.log`;
-  private pidLogFile: string = `${this.daemonFolder}/pid`;
-  private processListFile: string = `${this.daemonFolder}/process-list`;
+  private outLogFile: string = `${GAPI_DAEMON_FOLDER}/out.log`;
+  private errLogFile: string = `${GAPI_DAEMON_FOLDER}/err.log`;
+  private pidLogFile: string = `${GAPI_DAEMON_FOLDER}/pid`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
   private systemDService: SystemDService = Container.get(SystemDService);
   private daemonExecutorService: DaemonExecutorService = Container.get(
@@ -46,7 +44,7 @@ export class DaemonTask {
   );
   private start = async (name?: string) => {
     await this.killDaemon();
-    await promisify(mkdirp)(this.daemonFolder);
+    await promisify(mkdirp)(GAPI_DAEMON_FOLDER);
     if (includes('--systemd')) {
       await this.systemDService.register({
         name: name || 'my-node-service',
@@ -130,7 +128,7 @@ export class DaemonTask {
       serverMetadata: {} as any
     };
     await promisify(writeFile)(
-      this.processListFile,
+      GAPI_DAEMON_PROCESS_LIST_FOLDER,
       JSON.stringify(
         processList
           .filter(p => p.repoPath !== process.cwd())
@@ -163,7 +161,7 @@ export class DaemonTask {
       let processList: ILinkListType[] = await this.getProcessList();
       const [currentProcess] = processList.filter(p => p.repoPath === linkName);
       await promisify(writeFile)(
-        this.processListFile,
+        GAPI_DAEMON_PROCESS_LIST_FOLDER,
         JSON.stringify(processList.filter(p => p.repoPath !== linkName)),
         {
           encoding
@@ -183,7 +181,7 @@ export class DaemonTask {
     let processList: ILinkListType[] = [];
     try {
       processList = JSON.parse(
-        await promisify(readFile)(this.processListFile, { encoding: 'utf8' })
+        await promisify(readFile)(GAPI_DAEMON_PROCESS_LIST_FOLDER, { encoding: 'utf8' })
       );
     } catch (e) {}
     return processList;
@@ -204,26 +202,26 @@ export class DaemonTask {
     );
     if (linkName) {
       await promisify(writeFile)(
-        this.processListFile,
+        GAPI_DAEMON_PROCESS_LIST_FOLDER,
         JSON.stringify(processList.filter(p => p.linkName !== linkName)),
         {
           encoding
         }
       );
     } else if (includes('--all') && processList.length) {
-      await promisify(writeFile)(this.processListFile, JSON.stringify([]), {
+      await promisify(writeFile)(GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify([]), {
         encoding
       });
     } else if (currentProcess) {
       await promisify(writeFile)(
-        this.processListFile,
+        GAPI_DAEMON_PROCESS_LIST_FOLDER,
         JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())),
         { encoding }
       );
     } else if (includes('--link-name') && processList.length) {
       const linkName = nextOrDefault('--link-name');
       await promisify(writeFile)(
-        this.processListFile,
+        GAPI_DAEMON_PROCESS_LIST_FOLDER,
         JSON.stringify(processList.filter(p => p.linkName !== linkName)),
         { encoding }
       );
@@ -253,13 +251,13 @@ export class DaemonTask {
   private clean = async () => {
     const isRunning = await this.isDaemonRunning();
     if (!isRunning) {
-      await promisify(rimraf)(this.daemonFolder);
+      await promisify(rimraf)(GAPI_DAEMON_FOLDER);
     } else {
       console.log(
         'Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again'
       );
     }
-    console.log(`${this.daemonFolder} cleaned!`);
+    console.log(`${GAPI_DAEMON_FOLDER} cleaned!`);
   };
 
   private genericRunner = (task: DaemonTasks) => args =>
@@ -286,11 +284,11 @@ export class DaemonTask {
 
   async run() {
     if (includes(DaemonTasks.clean)) {
-      console.log(`Cleaning daemon garbage inside ${this.daemonFolder}!`);
+      console.log(`Cleaning daemon garbage inside ${GAPI_DAEMON_FOLDER}!`);
       return await this.tasks.get(DaemonTasks.clean)();
     }
     if (includes(DaemonTasks.start)) {
-      console.log(`Stating daemon! Garbage is inside ${this.daemonFolder}!`);
+      console.log(`Stating daemon! Garbage is inside ${GAPI_DAEMON_FOLDER}!`);
       return await this.tasks.get(DaemonTasks.start)();
     }
     if (includes(DaemonTasks.restart)) {
@@ -300,7 +298,7 @@ export class DaemonTask {
       return await this.tasks.get(DaemonTasks.status)();
     }
     if (includes(DaemonTasks.stop)) {
-      console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
+      console.log(`Stopping daemon! Garbage is inside ${GAPI_DAEMON_FOLDER}!`);
       return await this.tasks.get(DaemonTasks.stop)();
     }
     if (includes(DaemonTasks.kill)) {

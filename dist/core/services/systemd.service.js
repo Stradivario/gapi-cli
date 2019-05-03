@@ -17,18 +17,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const service = require('service-systemd');
 const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
-const os_1 = require("os");
 const util_1 = require("util");
+const daemon_config_1 = require("../../daemon-server/daemon.config");
 let SystemDService = class SystemDService {
     constructor() {
-        this.gapiFolder = `${os_1.homedir()}/.gapi`;
-        this.daemonFolder = `${this.gapiFolder}/daemon`;
         this.services = this.readServicesFile();
     }
     readServicesFile() {
         let file = [];
         try {
-            file = JSON.parse(fs_1.readFileSync(`${this.daemonFolder}/services`, { encoding: 'utf8' }));
+            file = JSON.parse(fs_1.readFileSync(`${daemon_config_1.GAPI_DAEMON_FOLDER}/services`, { encoding: 'utf8' }));
         }
         catch (e) { }
         return file;
@@ -42,7 +40,7 @@ let SystemDService = class SystemDService {
         return __awaiter(this, void 0, void 0, function* () {
             yield service.add(options);
             this.services.push(options);
-            yield util_1.promisify(fs_1.writeFile)(`${this.daemonFolder}/services`, JSON.stringify(this.services), { encoding: 'utf8' });
+            yield util_1.promisify(fs_1.writeFile)(`${daemon_config_1.GAPI_DAEMON_FOLDER}/services`, JSON.stringify(this.services), { encoding: 'utf8' });
         });
     }
 };

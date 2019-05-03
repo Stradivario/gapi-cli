@@ -18,7 +18,6 @@ const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
 const mkdirp = require("mkdirp");
-const os_1 = require("os");
 const util_1 = require("util");
 const rimraf = require("rimraf");
 const ps_list_1 = require("../core/helpers/ps-list");
@@ -29,6 +28,7 @@ const core_2 = require("@gapi/core");
 const systemd_service_1 = require("../core/services/systemd.service");
 const daemon_executor_service_1 = require("../core/services/daemon-executor/daemon-executor.service");
 const yamljs_1 = require("yamljs");
+const daemon_config_1 = require("../daemon-server/daemon.config");
 exports.DaemonTasks = stringEnum_1.strEnum([
     'start',
     'stop',
@@ -43,18 +43,15 @@ exports.DaemonTasks = stringEnum_1.strEnum([
 ]);
 let DaemonTask = class DaemonTask {
     constructor() {
-        this.gapiFolder = `${os_1.homedir()}/.gapi`;
-        this.daemonFolder = `${this.gapiFolder}/daemon`;
-        this.outLogFile = `${this.daemonFolder}/out.log`;
-        this.errLogFile = `${this.daemonFolder}/err.log`;
-        this.pidLogFile = `${this.daemonFolder}/pid`;
-        this.processListFile = `${this.daemonFolder}/process-list`;
+        this.outLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/out.log`;
+        this.errLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/err.log`;
+        this.pidLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/pid`;
         this.bootstrapTask = core_1.Container.get(bootstrap_1.BootstrapTask);
         this.systemDService = core_1.Container.get(systemd_service_1.SystemDService);
         this.daemonExecutorService = core_1.Container.get(daemon_executor_service_1.DaemonExecutorService);
         this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
-            yield util_1.promisify(mkdirp)(this.daemonFolder);
+            yield util_1.promisify(mkdirp)(daemon_config_1.GAPI_DAEMON_FOLDER);
             if (helpers_1.includes('--systemd')) {
                 yield this.systemDService.register({
                     name: name || 'my-node-service',
@@ -120,7 +117,7 @@ let DaemonTask = class DaemonTask {
                 linkName,
                 serverMetadata: {}
             };
-            yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList
+            yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList
                 .filter(p => p.repoPath !== process.cwd())
                 .concat(currentRepoProcess)), { encoding });
             console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
@@ -134,21 +131,21 @@ let DaemonTask = class DaemonTask {
             }
             const [currentProcess] = processList.filter(p => p.repoPath === process.cwd());
             if (linkName) {
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {
+                yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.linkName !== linkName)), {
                     encoding
                 });
             }
             else if (helpers_1.includes('--all') && processList.length) {
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify([]), {
+                yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify([]), {
                     encoding
                 });
             }
             else if (currentProcess) {
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
+                yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.repoPath !== process.cwd())), { encoding });
             }
             else if (helpers_1.includes('--link-name') && processList.length) {
                 const linkName = helpers_1.nextOrDefault('--link-name');
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
+                yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.linkName !== linkName)), { encoding });
             }
             if (currentProcess) {
                 if (linkName) {
@@ -163,12 +160,12 @@ let DaemonTask = class DaemonTask {
         this.clean = () => __awaiter(this, void 0, void 0, function* () {
             const isRunning = yield this.isDaemonRunning();
             if (!isRunning) {
-                yield util_1.promisify(rimraf)(this.daemonFolder);
+                yield util_1.promisify(rimraf)(daemon_config_1.GAPI_DAEMON_FOLDER);
             }
             else {
                 console.log('Cannot perform clean operation while daemon is running execute `gapi daemon stop` and try again');
             }
-            console.log(`${this.daemonFolder} cleaned!`);
+            console.log(`${daemon_config_1.GAPI_DAEMON_FOLDER} cleaned!`);
         });
         this.genericRunner = (task) => args => this[task](args || helpers_1.nextOrDefault(task, ''));
         this.tasks = new Map([
@@ -207,7 +204,7 @@ let DaemonTask = class DaemonTask {
             if (isDirectoryAvailable) {
                 let processList = yield this.getProcessList();
                 const [currentProcess] = processList.filter(p => p.repoPath === linkName);
-                yield util_1.promisify(fs_1.writeFile)(this.processListFile, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
+                yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
                     encoding
                 });
                 console.log(`Project unlinked ${linkName} link name: ${currentProcess.linkName}`);
@@ -222,7 +219,7 @@ let DaemonTask = class DaemonTask {
         return __awaiter(this, void 0, void 0, function* () {
             let processList = [];
             try {
-                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(this.processListFile, { encoding: 'utf8' }));
+                processList = JSON.parse(yield util_1.promisify(fs_1.readFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, { encoding: 'utf8' }));
             }
             catch (e) { }
             return processList;
@@ -231,11 +228,11 @@ let DaemonTask = class DaemonTask {
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             if (helpers_1.includes(exports.DaemonTasks.clean)) {
-                console.log(`Cleaning daemon garbage inside ${this.daemonFolder}!`);
+                console.log(`Cleaning daemon garbage inside ${daemon_config_1.GAPI_DAEMON_FOLDER}!`);
                 return yield this.tasks.get(exports.DaemonTasks.clean)();
             }
             if (helpers_1.includes(exports.DaemonTasks.start)) {
-                console.log(`Stating daemon! Garbage is inside ${this.daemonFolder}!`);
+                console.log(`Stating daemon! Garbage is inside ${daemon_config_1.GAPI_DAEMON_FOLDER}!`);
                 return yield this.tasks.get(exports.DaemonTasks.start)();
             }
             if (helpers_1.includes(exports.DaemonTasks.restart)) {
@@ -245,7 +242,7 @@ let DaemonTask = class DaemonTask {
                 return yield this.tasks.get(exports.DaemonTasks.status)();
             }
             if (helpers_1.includes(exports.DaemonTasks.stop)) {
-                console.log(`Stopping daemon! Garbage is inside ${this.daemonFolder}!`);
+                console.log(`Stopping daemon! Garbage is inside ${daemon_config_1.GAPI_DAEMON_FOLDER}!`);
                 return yield this.tasks.get(exports.DaemonTasks.stop)();
             }
             if (helpers_1.includes(exports.DaemonTasks.kill)) {

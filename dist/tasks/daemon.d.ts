@@ -13,12 +13,9 @@ export declare const DaemonTasks: {
 };
 export declare type DaemonTasks = keyof typeof DaemonTasks;
 export declare class DaemonTask {
-    private gapiFolder;
-    private daemonFolder;
     private outLogFile;
     private errLogFile;
     private pidLogFile;
-    private processListFile;
     private bootstrapTask;
     private systemDService;
     private daemonExecutorService;

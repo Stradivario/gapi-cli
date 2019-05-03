@@ -8,8 +8,6 @@ interface SystemDServiceInterface {
     engine: 'node' | 'forever' | 'pm2';
 }
 export declare class SystemDService {
-    private gapiFolder;
-    private daemonFolder;
     private services;
     private readServicesFile;
     remove(name: string): Promise<void>;
