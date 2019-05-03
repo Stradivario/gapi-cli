@@ -14,19 +14,19 @@ export class NotifyInterceptor implements InterceptResolver {
     ) {
         console.log('Before...');
         const options = { timeout: 2 }
-        // notifier.notify({
-        //     'title': `Daemon triggered!`,
-        //     'message': `${payload.repoPath}`,
-        //     ...options
-        // });
+        notifier.notify({
+            'title': `Daemon triggered!`,
+            'message': `${payload.repoPath}`,
+            ...options
+        });
         const now = Date.now();
         return chainable$.pipe(
             tap(() => console.log(`After... ${Date.now() - now}ms`)),
-            // tap(() => notifier.notify({
-            //     'title': 'Daemon finished!',
-            //     'message': `Request took ${Date.now() - now}ms`,
-            //     ...options
-            // }))
+            tap(() => notifier.notify({
+                'title': 'Daemon finished!',
+                'message': `Request took ${Date.now() - now}ms`,
+                ...options
+            }))
         );
     }
 }

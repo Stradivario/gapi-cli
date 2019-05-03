@@ -52,7 +52,9 @@ let SchemaTask = class SchemaTask {
             this.bashFolder = __dirname.replace('dist/tasks', 'bash');
             if (process.argv[3] === 'introspect') {
                 yield this.createDir();
-                yield this.generateSchema();
+                if (!(yield this.generateSchema())) {
+                    return;
+                }
                 console.log(`Typings introspection based on GAPI Schema created inside folder: ${this.folder}/index.d.ts`);
             }
             if (process.argv[3] === 'collect' ||
@@ -85,12 +87,47 @@ let SchemaTask = class SchemaTask {
             yield util_1.promisify(fs_1.writeFile)(`${this.folder}/documents.ts`, parsedDocuments, 'utf8');
         });
     }
+    /*
+     Will create integrity cache so it will trigger build every time
+     Following folder structure will be created
+     ~/.gapi/daemon/.cache/${repoPathIntegrityKey}/${schemaIntegrityKey}
+     File
+    */
+    cacheSchemaIntegrity(folder) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const schemaInterface = yield util_1.promisify(fs_1.readFile)(folder, { encoding: 'utf8' });
+            const folderCacheIntegrity = core_1.createUniqueHash(folder);
+            const schemaCacheIntegrity = core_1.createUniqueHash(schemaInterface);
+            const cacheIntegrityFolder = `${this.cacheFolder}/schema/${folderCacheIntegrity}`;
+            yield util_1.promisify(mkdirp)(cacheIntegrityFolder);
+            yield util_1.promisify(fs_1.writeFile)(`${cacheIntegrityFolder}/${schemaCacheIntegrity}.ts`, schemaInterface, { encoding: 'utf8' });
+            console.log(schemaCacheIntegrity);
+        });
+    }
+    isSchemaCached(folder) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const schemaInterface = yield util_1.promisify(fs_1.readFile)(folder, { encoding: 'utf8' });
+            const folderCacheIntegrity = core_1.createUniqueHash(folder);
+            const schemaCacheIntegrity = core_1.createUniqueHash(schemaInterface);
+            const cacheIntegrityFolder = `${this.cacheFolder}/schema/${folderCacheIntegrity}`;
+            return yield util_1.promisify(fs_1.exists)(`${cacheIntegrityFolder}/${schemaCacheIntegrity}.ts`);
+        });
+    }
     generateSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`Trying to hit ${this.endpoint} ...`);
             yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node ${this.node_modules}/apollo-codegen/lib/cli.js introspect-schema ${this.endpoint} --output ${this.folder}/schema.json`, { async: true });
+            let returnResult = true;
+            try {
+                if (yield this.isSchemaCached(`${this.folder}/schema.json`)) {
+                    return returnResult = false;
+                }
+                yield this.cacheSchemaIntegrity(`${this.folder}/schema.json`);
+            }
+            catch (e) { }
             console.log(`Endpoint ${this.endpoint} hit!`);
             yield this.execService.call(`export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${this.bashFolder}/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.ts`, { async: true });
+            return returnResult;
         });
     }
     generateTypes(readDocumentsTemp) {

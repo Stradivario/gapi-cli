@@ -15,6 +15,6 @@ export const LinkListType = new GraphQLObjectType({
     },
     serverMetadata: {
       type: ServerMetadataType
-    }
+    },
   })
 });

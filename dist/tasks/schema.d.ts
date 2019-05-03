@@ -13,6 +13,8 @@ export declare class SchemaTask {
     run(introspectionEndpoint?: string, introspectionOutputFolder?: string, pattern?: string): Promise<void>;
     private createDir;
     collectQueries(): Promise<void>;
-    generateSchema(): Promise<void>;
+    private cacheSchemaIntegrity;
+    private isSchemaCached;
+    generateSchema(): Promise<boolean>;
     generateTypes(readDocumentsTemp: any): Promise<void>;
 }

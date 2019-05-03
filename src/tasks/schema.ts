@@ -1,4 +1,4 @@
-import { Service, Container } from '@rxdi/core';
+import { Service, Container, createUniqueHash } from '@rxdi/core';
 import { ArgsService } from '../core/services/args.service';
 import { ExecService } from '../core/services/exec.service';
 import { ConfigService } from '../core/services/config.service';
@@ -46,7 +46,9 @@ export class SchemaTask {
 
     if (process.argv[3] === 'introspect') {
       await this.createDir();
-      await this.generateSchema();
+      if (!await this.generateSchema()) {
+        return
+      }
       console.log(
         `Typings introspection based on GAPI Schema created inside folder: ${
           this.folder
@@ -100,6 +102,30 @@ export class SchemaTask {
     );
   }
 
+  /*
+   Will create integrity cache so it will trigger build every time
+   Following folder structure will be created
+   ~/.gapi/daemon/.cache/${repoPathIntegrityKey}/${schemaIntegrityKey}
+   File
+  */
+  private async cacheSchemaIntegrity(folder: string) {
+    const schemaInterface = await promisify(readFile)(folder, { encoding: 'utf8' });
+    const folderCacheIntegrity = createUniqueHash(folder);
+    const schemaCacheIntegrity = createUniqueHash(schemaInterface);
+    const cacheIntegrityFolder = `${this.cacheFolder}/schema/${folderCacheIntegrity}`;
+    await promisify(mkdirp)(cacheIntegrityFolder);
+    await promisify(writeFile)(`${cacheIntegrityFolder}/${schemaCacheIntegrity}.ts`, schemaInterface, { encoding: 'utf8' });
+    console.log(schemaCacheIntegrity);
+  }
+
+  private async isSchemaCached(folder: string) {
+    const schemaInterface = await promisify(readFile)(folder, { encoding: 'utf8' });
+    const folderCacheIntegrity = createUniqueHash(folder);
+    const schemaCacheIntegrity = createUniqueHash(schemaInterface);
+    const cacheIntegrityFolder = `${this.cacheFolder}/schema/${folderCacheIntegrity}`;
+    return await promisify(exists)(`${cacheIntegrityFolder}/${schemaCacheIntegrity}.ts`);
+  }
+
   public async generateSchema() {
     console.log(`Trying to hit ${this.endpoint} ...`);
     await this.execService.call(
@@ -110,6 +136,13 @@ export class SchemaTask {
       }/schema.json`,
       { async: true }
     );
+    let returnResult: boolean = true;
+    try {
+      if (await this.isSchemaCached(`${this.folder}/schema.json`)) {
+        return returnResult = false;
+      }
+      await this.cacheSchemaIntegrity(`${this.folder}/schema.json`);
+    } catch(e) {}
     console.log(`Endpoint ${this.endpoint} hit!`);
     await this.execService.call(
       `export NODE_TLS_REJECT_UNAUTHORIZED=0 && node  ${
@@ -117,6 +150,7 @@ export class SchemaTask {
       }/gql2ts/index.js ${this.folder}/schema.json -o ${this.folder}/index.ts`,
       { async: true }
     );
+    return returnResult;
   }
 
   public async generateTypes(readDocumentsTemp) {

@@ -40,6 +40,7 @@
     introspectionPath: string | null;
     linkName: string | null;
     serverMetadata: IServerMetadataType | null;
+    serverMetadata2: IServerMetadataType | null;
 }
 
   
