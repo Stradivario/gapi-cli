@@ -1,6 +1,6 @@
 {
   "name": "@gapi/cli",
-  "version": "1.6.13",
+  "version": "1.6.14",
   "description": "Gapi command line interface",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
