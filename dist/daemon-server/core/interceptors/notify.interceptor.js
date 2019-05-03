@@ -8,14 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@gapi/core");
 const operators_1 = require("rxjs/operators");
-const notifier = require("node-notifier");
 let NotifyInterceptor = class NotifyInterceptor {
     intercept(chainable$, context, payload, descriptor) {
         console.log('Before...');
         const options = { timeout: 2 };
-        notifier.notify(Object.assign({ 'title': `Daemon triggered!`, 'message': `${payload.repoPath}` }, options));
+        // notifier.notify({
+        //     'title': `Daemon triggered!`,
+        //     'message': `${payload.repoPath}`,
+        //     ...options
+        // });
         const now = Date.now();
-        return chainable$.pipe(operators_1.tap(() => console.log(`After... ${Date.now() - now}ms`)), operators_1.tap(() => notifier.notify(Object.assign({ 'title': 'Daemon finished!', 'message': `Request took ${Date.now() - now}ms` }, options))));
+        return chainable$.pipe(operators_1.tap(() => console.log(`After... ${Date.now() - now}ms`)));
     }
 };
 NotifyInterceptor = __decorate([

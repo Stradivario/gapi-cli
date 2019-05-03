@@ -13,12 +13,12 @@ BootstrapFramework(ServerModule, [
       openBrowser: true,
       graphiQlPlayground: false
     },
-    pubsub: {
-      host: 'localhost',
-      port: 5672,
-      log: true,
-      activateRabbitMQ: true
-    },
+    // pubsub: {
+    //   host: 'localhost',
+    //   port: 5672,
+    //   log: true,
+    //   activateRabbitMQ: true
+    // },
     daemon: {
       activated: true,
       link: 'http://localhost:42001/graphql'

@@ -17,9 +17,19 @@ const rxjs_1 = require("rxjs");
 const server_metadata_type_1 = require("./types/server-metadata.type");
 const notify_interceptor_1 = require("./core/interceptors/notify.interceptor");
 let ServerController = class ServerController {
-    constructor(listService, daemonService) {
+    constructor(listService, daemonService, pubsub) {
         this.listService = listService;
         this.daemonService = daemonService;
+        this.pubsub = pubsub;
+        let count = 0;
+        setInterval(() => {
+            pubsub.publish('CREATE_SIGNAL_BASIC', count++);
+        }, 2000);
+    }
+    statusSubscription(message) {
+        return {
+            repoPath: message
+        };
     }
     getLinkList() {
         return this.listService.readList();
@@ -28,6 +38,15 @@ let ServerController = class ServerController {
         return this.daemonService.notifyDaemon(payload);
     }
 };
+__decorate([
+    core_1.Type(link_list_type_1.LinkListType),
+    core_1.Subscribe((self) => self.pubsub.asyncIterator('CREATE_SIGNAL_BASIC')),
+    core_1.Interceptor(notify_interceptor_1.NotifyInterceptor),
+    core_1.Subscription(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ServerController.prototype, "statusSubscription", null);
 __decorate([
     core_1.Type(new core_1.GraphQLList(link_list_type_1.LinkListType)),
     core_1.Query(),
@@ -59,6 +78,7 @@ __decorate([
 ServerController = __decorate([
     core_1.Controller(),
     __metadata("design:paramtypes", [list_service_1.ListService,
-        daemon_service_1.DaemonService])
+        daemon_service_1.DaemonService,
+        core_1.PubSubService])
 ], ServerController);
 exports.ServerController = ServerController;
