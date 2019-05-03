@@ -658,27 +658,53 @@ const server_module_1 = require("./server.module");
 
 const core_2 = require("@gapi/core");
 
-core_1.BootstrapFramework(server_module_1.ServerModule, [core_2.CoreModule.forRoot({
-  server: {
-    hapi: {
-      port: 42001
-    }
-  },
-  graphql: {
-    graphiql: true,
-    openBrowser: true,
-    graphiQlPlayground: false
-  },
-  // pubsub: {
-  //   host: 'localhost',
-  //   port: 5672,
-  //   log: true,
-  //   activateRabbitMQ: true
-  // },
-  daemon: {
-    activated: true,
-    link: 'http://localhost:42001/graphql'
+const core_3 = require("@gapi/core");
+
+const rxjs_1 = require("rxjs");
+
+const operators_1 = require("rxjs/operators");
+
+const os_1 = require("os");
+
+const fileService = core_3.Container.get(core_3.FileService);
+let plugins = rxjs_1.of([]);
+const pluginsFolder = `${os_1.homedir()}/.gapi/daemon/plugins`;
+
+if (fileService.isPresent(pluginsFolder)) {
+  plugins = fileService.fileWalker(pluginsFolder);
+}
+
+plugins.pipe(operators_1.switchMap(paths => rxjs_1.of(paths.map(path => {
+  if (path.includes('.js')) {
+    const {
+      MainModule
+    } = require(path);
+
+    return MainModule;
   }
-})]).subscribe(() => console.log('Server started'), console.error.bind(console));
+}).filter(p => !!p))), operators_1.switchMap(pluginModules => core_1.setup({
+  imports: [...pluginModules, core_2.CoreModule.forRoot({
+    server: {
+      hapi: {
+        port: 42001
+      }
+    },
+    graphql: {
+      graphiql: true,
+      openBrowser: true,
+      graphiQlPlayground: false
+    },
+    // pubsub: {
+    //   host: 'localhost',
+    //   port: 5672,
+    //   log: true,
+    //   activateRabbitMQ: true
+    // },
+    daemon: {
+      activated: true,
+      link: 'http://localhost:42001/graphql'
+    }
+  }), server_module_1.ServerModule]
+}))).subscribe(() => console.log('Server started'), console.error.bind(console));
 },{"./server.module":"server.module.ts"}]},{},["main.ts"], null)
 //# sourceMappingURL=/main.js.map
