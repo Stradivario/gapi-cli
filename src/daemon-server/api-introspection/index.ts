@@ -3,7 +3,7 @@
 
 
   export interface IGraphQLResponseRoot {
-    data?: IQuery | IMutation;
+    data?: IQuery | IMutation | ISubscription;
     errors?: Array<IGraphQLResponseError>;
   }
 
@@ -59,6 +59,14 @@
   
   export interface IServerMetadataInputType {
     port?: number | null;
+}
+
+  /**
+    description: Subscription type for all subscriptions via pub sub
+  */
+  export interface ISubscription {
+    __typename?: "Subscription";
+    statusSubscription: ILinkListType | null;
 }
 
 

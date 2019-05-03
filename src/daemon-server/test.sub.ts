@@ -8,17 +8,17 @@ import {
 } from '@gapi/core';
 // import { ISubscription } from './api-introspection';
 
-Container.set(HAPI_SERVER, { info: { port: '42000' } });
+Container.set(HAPI_SERVER, { info: { port: '42001' } });
 
 const subscription = subscribeToTopic<{ data: any }>(gql`
   subscription {
     statusSubscription {
-      status
+      repoPath
     }
   }
 `).subscribe(stream => {
-  console.log(stream.data.statusSubscription.status);
-});
+  console.log(stream.data);
+}, console.error.bind(console));
 
 sendRequest({
   query: `

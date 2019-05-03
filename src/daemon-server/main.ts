@@ -1,7 +1,6 @@
 import { BootstrapFramework } from '@rxdi/core';
 import { ServerModule } from './server.module';
 import { CoreModule } from '@gapi/core';
-
 BootstrapFramework(ServerModule, [
   CoreModule.forRoot({
     server: {
@@ -11,8 +10,14 @@ BootstrapFramework(ServerModule, [
     },
     graphql: {
       graphiql: true,
-      openBrowser: false,
+      openBrowser: true,
       graphiQlPlayground: false
+    },
+    pubsub: {
+      host: 'localhost',
+      port: 5672,
+      log: true,
+      activateRabbitMQ: true
     },
     daemon: {
       activated: true,
