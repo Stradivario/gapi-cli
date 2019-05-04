@@ -1,8 +1,6 @@
-import { Container, Service } from '@rxdi/core';
+import { Container, Service, FileService } from '@rxdi/core';
 import { openSync, writeFile, readFile, exists } from 'fs';
 import { spawn } from 'child_process';
-import mkdirp = require('mkdirp');
-import { homedir } from 'os';
 import { promisify } from 'util';
 import * as rimraf from 'rimraf';
 import { getProcessList } from '../core/helpers/ps-list';
@@ -12,11 +10,10 @@ import { BootstrapTask } from './bootstrap';
 import { CoreModuleConfig, HAPI_SERVER } from '@gapi/core';
 import { SystemDService } from '../core/services/systemd.service';
 import { DaemonExecutorService } from '../core/services/daemon-executor/daemon-executor.service';
-
 import { load } from 'yamljs';
 import { GapiConfig } from '../core/services/config.service';
 import { ILinkListType } from '../daemon-server/api-introspection/index';
-import { GAPI_DAEMON_FOLDER, GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../daemon-server/daemon.config';
+import { GAPI_DAEMON_FOLDER, GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER, GAPI_DAEMON_PLUGINS_FOLDER, GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../daemon-server/daemon.config';
 
 export const DaemonTasks = strEnum([
   'start',
@@ -42,9 +39,17 @@ export class DaemonTask {
   private daemonExecutorService: DaemonExecutorService = Container.get(
     DaemonExecutorService
   );
+  constructor(
+    private fileService: FileService
+  ) {}
+  private async makeSystemFolders() {
+    await this.fileService.mkdirp(GAPI_DAEMON_FOLDER).toPromise();
+    await this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER).toPromise();
+    await this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER).toPromise();
+  }
   private start = async (name?: string) => {
     await this.killDaemon();
-    await promisify(mkdirp)(GAPI_DAEMON_FOLDER);
+    await this.makeSystemFolders();
     if (includes('--systemd')) {
       await this.systemDService.register({
         name: name || 'my-node-service',

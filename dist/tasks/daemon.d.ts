@@ -1,24 +1,28 @@
+import { FileService } from '@rxdi/core';
 import { CoreModuleConfig } from '@gapi/core';
 export declare const DaemonTasks: {
     start: "start";
     stop: "stop";
+    restart: "restart";
+    unlink: "unlink";
     clean: "clean";
     kill: "kill";
     bootstrap: "bootstrap";
     link: "link";
-    unlink: "unlink";
     list: "list";
-    restart: "restart";
     status: "status";
 };
 export declare type DaemonTasks = keyof typeof DaemonTasks;
 export declare class DaemonTask {
+    private fileService;
     private outLogFile;
     private errLogFile;
     private pidLogFile;
     private bootstrapTask;
     private systemDService;
     private daemonExecutorService;
+    constructor(fileService: FileService);
+    private makeSystemFolders;
     private start;
     private restart;
     private stop;

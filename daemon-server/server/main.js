@@ -654,7 +654,7 @@ ServerModule = __decorate([core_1.Module({
   controllers: [server_controller_1.ServerController]
 })], ServerModule);
 exports.ServerModule = ServerModule;
-},{"./server.controller":"server.controller.ts","./core/core.module":"core/core.module.ts"}],"core/services/plugin-loader.service.ts":[function(require,module,exports) {
+},{"./server.controller":"server.controller.ts","./core/core.module":"core/core.module.ts"}],"core/services/plugin-watcher.service.ts":[function(require,module,exports) {
 "use strict";
 
 var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
@@ -705,30 +705,118 @@ var _a, _b;
 
 const core_1 = require("@rxdi/core");
 
+const chokidar_1 = require("chokidar");
+
+const daemon_config_1 = require("../../daemon.config");
+
+const child_service_1 = require("./child.service");
+
+const rxjs_1 = require("rxjs");
+
+let PluginWatcherService = class PluginWatcherService {
+  constructor(childService, fileService) {
+    this.childService = childService;
+    this.fileService = fileService;
+  }
+
+  watch() {
+    return new rxjs_1.Observable(observer => {
+      const initPlugins = [];
+      let isInitFinished = false;
+      const watcher = chokidar_1.watch([`${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`, `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`], {
+        ignored: /^\./,
+        persistent: true
+      });
+      watcher.on('add', path => {
+        console.log('Plugin', path, 'has been added');
+
+        if (!path.includes('external-plugins')) {
+          initPlugins.push(path);
+        }
+
+        if (isInitFinished) {
+          this.restartDaemon();
+        }
+      }).on('change', path => {
+        console.log('File', path, 'has been changed'); //   if (isInitFinished) {
+        //     this.restartDaemon();
+        //   }
+      }).on('ready', () => {
+        console.log('Initial scan complete. Ready for changes');
+        isInitFinished = true;
+        observer.next(initPlugins);
+        observer.complete();
+      }).on('unlink', path => {
+        console.log('File', path, 'has been removed');
+
+        if (isInitFinished) {
+          this.restartDaemon();
+        }
+      }).on('error', error => console.error('Error happened', error));
+    });
+  }
+
+  restartDaemon() {
+    return __awaiter(this, void 0, void 0, function* () {
+      yield this.childService.spawn('gapi', ['daemon', 'restart'], process.cwd());
+      process.exit();
+    });
+  }
+
+};
+PluginWatcherService = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _a : Object, typeof (_b = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _b : Object])], PluginWatcherService);
+exports.PluginWatcherService = PluginWatcherService;
+},{"../../daemon.config":"daemon.config.ts","./child.service":"core/services/child.service.ts"}],"core/services/plugin-loader.service.ts":[function(require,module,exports) {
+"use strict";
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __metadata = this && this.__metadata || function (k, v) {
+  if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _a, _b, _c;
+
+const core_1 = require("@rxdi/core");
+
 const operators_1 = require("rxjs/operators");
 
 const rxjs_1 = require("rxjs");
 
 const daemon_config_1 = require("../../daemon.config");
 
+const plugin_watcher_service_1 = require("./plugin-watcher.service");
+
 let PluginLoader = class PluginLoader {
-  constructor(externalImporterService, fileService) {
+  constructor(externalImporterService, fileService, pluginWatcherService) {
     this.externalImporterService = externalImporterService;
     this.fileService = fileService;
-    this.hashCache = {};
+    this.pluginWatcherService = pluginWatcherService;
     this.defaultIpfsProvider = "https://ipfs.io/ipfs/";
     this.defaultDownloadFilename = "gapi-plugin";
+    this.fileWatcher = new rxjs_1.Subject();
+    this.cache = {};
   }
 
   getModule(hash, provider = this.defaultIpfsProvider) {
-    if (this.hashCache[hash]) {
-      return this.hashCache[hash];
+    if (this.isModuleHashed(hash)) {
+      return this.cache[hash];
     }
 
     return this.externalImporterService.downloadIpfsModuleConfig({
       hash,
       provider
-    }).pipe(operators_1.take(1), operators_1.tap(em => console.log(`Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`)), operators_1.switchMap(externalModule => this.externalImporterService.importModule({
+    }).pipe(operators_1.take(1), operators_1.switchMap(externalModule => this.externalImporterService.importModule({
       fileName: this.defaultDownloadFilename,
       namespace: externalModule.name,
       extension: "js",
@@ -738,26 +826,49 @@ let PluginLoader = class PluginLoader {
       folderOverride: `//`
     })), operators_1.map(data => {
       const currentModule = this.loadModule(data);
-      this.hashCache[hash] = currentModule;
-      console.log(currentModule.metadata.moduleHash);
+      this.cache[hash] = currentModule;
       return currentModule;
     }));
   }
 
-  loadModule(m) {
-    return m[Object.keys(m)[0]];
+  isModuleHashed(hash) {
+    return !!this.cache[hash];
   }
 
-  loadPlugins(ipfsHashes = [], pluginsFolder = daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER) {
-    return this.fileService.mkdirp(pluginsFolder).pipe(operators_1.switchMap(() => this.fileService.fileWalker(pluginsFolder)), operators_1.switchMap(p => Promise.all([...new Set(p)].map(path => __awaiter(this, void 0, void 0, function* () {
-      return !new RegExp(/^(.(?!.*\.js$))*$/g).test(path) ? yield this.loadModule(require(path)) : null;
-    })).filter(p => !!p))), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(ipfsHashes)].map(hash => this.getModule(hash))), operators_1.map(externalModules => [...new Set([...externalModules, ...pluginModules])]), operators_1.map(m => m.filter(i => !!i)))));
+  cacheModule(currentModule) {
+    if (currentModule.metadata) {
+      this.cache[currentModule.metadata.moduleHash] = currentModule;
+    }
+  }
+
+  loadModule(m) {
+    const currentModule = m[Object.keys(m)[0]];
+
+    if (!currentModule) {
+      throw new Error("Missing cache module ${JSON.stringify(m)}");
+    }
+
+    this.cacheModule(currentModule);
+    return currentModule;
+  }
+
+  makePluginsDirectories() {
+    return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)));
+  }
+
+  loadPlugins(ipfsHashes = []) {
+    return this.makePluginsDirectories().pipe(operators_1.switchMap(() => this.pluginWatcherService.watch()), // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
+    operators_1.map(p => [...new Set(p)].map(path => !new RegExp(/^(.(?!.*\.js$))*$/g).test(path) ? this.loadModule(require(path)) : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(ipfsHashes)].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map(modules => this.filterDups(modules)))));
+  }
+
+  filterDups(modules) {
+    return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => this.cache[m]);
   }
 
 };
-PluginLoader = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof core_1.ExternalImporter !== "undefined" && core_1.ExternalImporter) === "function" ? _a : Object, typeof (_b = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _b : Object])], PluginLoader);
+PluginLoader = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof core_1.ExternalImporter !== "undefined" && core_1.ExternalImporter) === "function" ? _a : Object, typeof (_b = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _b : Object, typeof (_c = typeof plugin_watcher_service_1.PluginWatcherService !== "undefined" && plugin_watcher_service_1.PluginWatcherService) === "function" ? _c : Object])], PluginLoader);
 exports.PluginLoader = PluginLoader;
-},{"../../daemon.config":"daemon.config.ts"}],"main.ts":[function(require,module,exports) {
+},{"../../daemon.config":"daemon.config.ts","./plugin-watcher.service":"core/services/plugin-watcher.service.ts"}],"main.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -776,7 +887,10 @@ const operators_1 = require("rxjs/operators");
 
 const plugin_loader_service_1 = require("./core/services/plugin-loader.service");
 
-core_3.Container.get(plugin_loader_service_1.PluginLoader).loadPlugins(['QmV6yQAwHjtBF7uB4jsyAGGTTiq1Wfz4eNK7WPLKMwFahC']).pipe(operators_1.switchMap(pluginModules => core_1.setup({
+const plugin_watcher_service_1 = require("./core/services/plugin-watcher.service");
+
+;
+core_3.Container.get(plugin_loader_service_1.PluginLoader).loadPlugins([]).pipe(operators_1.switchMap(pluginModules => core_1.setup({
   imports: [...pluginModules, core_2.CoreModule.forRoot({
     server: {
       hapi: {
@@ -798,7 +912,8 @@ core_3.Container.get(plugin_loader_service_1.PluginLoader).loadPlugins(['QmV6yQA
       activated: true,
       link: 'http://localhost:42001/graphql'
     }
-  }), server_module_1.ServerModule]
+  }), server_module_1.ServerModule],
+  providers: [plugin_watcher_service_1.PluginWatcherService]
 }))).subscribe(() => console.log('Server started'), console.error.bind(console));
-},{"./server.module":"server.module.ts","./core/services/plugin-loader.service":"core/services/plugin-loader.service.ts"}]},{},["main.ts"], null)
+},{"./server.module":"server.module.ts","./core/services/plugin-loader.service":"core/services/plugin-loader.service.ts","./core/services/plugin-watcher.service":"core/services/plugin-watcher.service.ts"}]},{},["main.ts"], null)
 //# sourceMappingURL=/main.js.map

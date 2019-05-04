@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17,7 +20,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
-const mkdirp = require("mkdirp");
 const util_1 = require("util");
 const rimraf = require("rimraf");
 const ps_list_1 = require("../core/helpers/ps-list");
@@ -42,7 +44,8 @@ exports.DaemonTasks = stringEnum_1.strEnum([
     'status'
 ]);
 let DaemonTask = class DaemonTask {
-    constructor() {
+    constructor(fileService) {
+        this.fileService = fileService;
         this.outLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/out.log`;
         this.errLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/err.log`;
         this.pidLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/pid`;
@@ -51,7 +54,7 @@ let DaemonTask = class DaemonTask {
         this.daemonExecutorService = core_1.Container.get(daemon_executor_service_1.DaemonExecutorService);
         this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
-            yield util_1.promisify(mkdirp)(daemon_config_1.GAPI_DAEMON_FOLDER);
+            yield this.makeSystemFolders();
             if (helpers_1.includes('--systemd')) {
                 yield this.systemDService.register({
                     name: name || 'my-node-service',
@@ -181,6 +184,13 @@ let DaemonTask = class DaemonTask {
         ]);
         this.bootstrap = (options) => __awaiter(this, void 0, void 0, function* () {
             return yield this.bootstrapTask.run(options);
+        });
+    }
+    makeSystemFolders() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_FOLDER).toPromise();
+            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER).toPromise();
+            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER).toPromise();
         });
     }
     readGapiConfig() {
@@ -316,6 +326,7 @@ let DaemonTask = class DaemonTask {
     }
 };
 DaemonTask = __decorate([
-    core_1.Service()
+    core_1.Service(),
+    __metadata("design:paramtypes", [core_1.FileService])
 ], DaemonTask);
 exports.DaemonTask = DaemonTask;

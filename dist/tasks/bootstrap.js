@@ -22,6 +22,7 @@ const server_module_1 = require("../daemon-server/server.module");
 const core_2 = require("@gapi/core");
 const operators_1 = require("rxjs/operators");
 const plugin_loader_service_1 = require("../daemon-server/core/services/plugin-loader.service");
+const plugin_watcher_service_1 = require("../daemon-server/core/services/plugin-watcher.service");
 let BootstrapTask = class BootstrapTask {
     constructor(pluginLoader) {
         this.pluginLoader = pluginLoader;
@@ -29,7 +30,7 @@ let BootstrapTask = class BootstrapTask {
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
             this.pluginLoader
-                .loadPlugins(['QmV6yQAwHjtBF7uB4jsyAGGTTiq1Wfz4eNK7WPLKMwFahC'])
+                .loadPlugins([])
                 .pipe(operators_1.switchMap(pluginModules => core_1.setup({
                 imports: [
                     ...pluginModules,
@@ -56,6 +57,9 @@ let BootstrapTask = class BootstrapTask {
                         // }
                     }),
                     server_module_1.ServerModule
+                ],
+                providers: [
+                    plugin_watcher_service_1.PluginWatcherService
                 ]
             })))
                 .subscribe(() => console.log('Daemon started'), console.error.bind(console));

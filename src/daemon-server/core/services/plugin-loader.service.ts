@@ -6,23 +6,34 @@ import {
   Metadata
 } from "@rxdi/core";
 import { take, switchMap, map, combineLatest, tap } from "rxjs/operators";
-import { of } from "rxjs";
-import { GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER, GAPI_DAEMON_PLUGINS_FOLDER } from "../../daemon.config";
+import { of, Subject } from "rxjs";
+import {
+  GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
+  GAPI_DAEMON_PLUGINS_FOLDER
+} from "../../daemon.config";
+import { PluginWatcherService } from "./plugin-watcher.service";
+
+interface CustomMetadata extends Function {
+  metadata: Metadata;
+}
 
 @Injectable()
 export class PluginLoader {
-  private hashCache: { [key: string]: { metadata: Metadata } } = {};
   private defaultIpfsProvider = "https://ipfs.io/ipfs/";
   private defaultDownloadFilename = "gapi-plugin";
 
+  fileWatcher: Subject<string[]> = new Subject();
+  cache: { [key: string]: CustomMetadata } = {};
+
   constructor(
     private externalImporterService: ExternalImporter,
-    private fileService: FileService
+    private fileService: FileService,
+    private pluginWatcherService: PluginWatcherService
   ) {}
 
   getModule(hash: string, provider: string = this.defaultIpfsProvider) {
-    if (this.hashCache[hash]) {
-      return this.hashCache[hash];
+    if (this.isModuleHashed(hash)) {
+      return this.cache[hash];
     }
     return this.externalImporterService
       .downloadIpfsModuleConfig({
@@ -31,11 +42,7 @@ export class PluginLoader {
       })
       .pipe(
         take(1),
-        tap((em: ExternalModuleConfiguration) =>
-          console.log(
-            `Plugin loaded: ${em.name} hash: ${this.defaultIpfsProvider}${hash}`
-          )
-        ),
+
         switchMap((externalModule: ExternalModuleConfiguration) =>
           this.externalImporterService.importModule(
             {
@@ -49,34 +56,51 @@ export class PluginLoader {
             { folderOverride: `//` }
           )
         ),
-        map(data => {
+        map((data: Function) => {
           const currentModule = this.loadModule(data);
-          this.hashCache[hash] = currentModule;
-          console.log(currentModule.metadata.moduleHash);
+          this.cache[hash] = currentModule;
           return currentModule;
         })
       );
   }
 
-  private loadModule(m: any): { metadata: Metadata } {
-    return m[Object.keys(m)[0]];
+  private isModuleHashed(hash: string) {
+    return !!this.cache[hash];
   }
 
-  loadPlugins(
-    ipfsHashes: string[] = [],
-    pluginsFolder: string = GAPI_DAEMON_PLUGINS_FOLDER
-  ) {
-    return this.fileService.mkdirp(pluginsFolder).pipe(
-      switchMap(() => this.fileService.fileWalker(pluginsFolder)),
-      switchMap(p =>
-        Promise.all(
-          [...new Set(p)]
-            .map(async path =>
-              !new RegExp(/^(.(?!.*\.js$))*$/g).test(path)
-                ? await this.loadModule(require(path))
-                : null
-            )
-            .filter(p => !!p)
+  private cacheModule(currentModule: CustomMetadata) {
+    if (currentModule.metadata) {
+      this.cache[currentModule.metadata.moduleHash] = currentModule;
+    }
+  }
+
+  private loadModule(m: Function): CustomMetadata {
+    const currentModule: CustomMetadata = m[Object.keys(m)[0]];
+    if (!currentModule) {
+      throw new Error("Missing cache module ${JSON.stringify(m)}");
+    }
+    this.cacheModule(currentModule);
+    return currentModule;
+  }
+
+  private makePluginsDirectories() {
+    return of(true).pipe(
+      switchMap(() =>
+        this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
+      ),
+      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER))
+    );
+  }
+
+  loadPlugins(ipfsHashes: string[] = []) {
+    return this.makePluginsDirectories().pipe(
+      switchMap(() => this.pluginWatcherService.watch()),
+      // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
+      map(p =>
+        [...new Set(p)].map(path =>
+          !new RegExp(/^(.(?!.*\.js$))*$/g).test(path)
+            ? this.loadModule(require(path))
+            : null
         )
       ),
       switchMap(pluginModules =>
@@ -84,12 +108,17 @@ export class PluginLoader {
           combineLatest(
             [...new Set(ipfsHashes)].map(hash => this.getModule(hash))
           ),
-          map(externalModules => [
-            ...new Set([...externalModules, ...pluginModules])
-          ]),
-          map(m => m.filter(i => !!i))
+          map(externalModules => externalModules.concat(pluginModules)),
+          map(m => m.filter(i => !!i)),
+          map((modules: CustomMetadata[]) => this.filterDups(modules))
         )
       )
+    );
+  }
+
+  private filterDups(modules: CustomMetadata[]) {
+    return [...new Set(modules.map(i => i.metadata.moduleHash))].map(
+      m => this.cache[m]
     );
   }
 }
