@@ -903,7 +903,7 @@ let PluginLoader = class PluginLoader {
   }
 
   makePluginsDirectories() {
-    return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.makeIpfsHashFile()), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)));
+    return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)), operators_1.switchMap(() => this.makeIpfsHashFile()));
   }
 
   loadIpfsHashes() {

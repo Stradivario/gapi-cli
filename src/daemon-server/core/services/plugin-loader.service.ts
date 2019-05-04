@@ -94,11 +94,11 @@ export class PluginLoader {
 
   private makePluginsDirectories() {
     return of(true).pipe(
-      switchMap(() => this.makeIpfsHashFile()),
       switchMap(() =>
         this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
       ),
-      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER))
+      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER)),
+      switchMap(() => this.makeIpfsHashFile()),
     );
   }
 
