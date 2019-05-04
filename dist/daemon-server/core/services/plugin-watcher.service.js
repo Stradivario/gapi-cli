@@ -27,32 +27,39 @@ let PluginWatcherService = class PluginWatcherService {
         this.childService = childService;
         this.fileService = fileService;
     }
+    isNotFromExternalPlugins(path) {
+        return !path.includes('external-plugins');
+    }
     watch() {
         return new rxjs_1.Observable(observer => {
             const initPlugins = [];
             let isInitFinished = false;
             const watcher = chokidar_1.watch([
                 `${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`,
-                `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`
+                `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`,
+                daemon_config_1.IPFS_HASHED_MODULES,
             ], {
                 ignored: /^\./,
                 persistent: true
             });
             watcher
                 .on('add', (path) => {
-                console.log('Plugin', path, 'has been added');
-                if (!path.includes('external-plugins')) {
+                if (!isInitFinished && this.isNotFromExternalPlugins(path)) {
+                    console.log('Plugin', path, 'has been added');
                     initPlugins.push(path);
                 }
-                if (isInitFinished) {
+                else {
+                    console.log('Present external module', path);
+                }
+                if (isInitFinished && this.isNotFromExternalPlugins(path)) {
                     this.restartDaemon();
                 }
             })
                 .on('change', (path) => {
                 console.log('File', path, 'has been changed');
-                //   if (isInitFinished) {
-                //     this.restartDaemon();
-                //   }
+                if (isInitFinished) {
+                    this.restartDaemon();
+                }
             })
                 .on('ready', () => {
                 console.log('Initial scan complete. Ready for changes');

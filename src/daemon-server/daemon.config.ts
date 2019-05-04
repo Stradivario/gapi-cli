@@ -6,3 +6,4 @@ export const GAPI_DAEMON_PROCESS_LIST_FOLDER = `${GAPI_DAEMON_FOLDER}/process-li
 export const GAPI_DAEMON_PLUGINS_FOLDER = `${GAPI_DAEMON_FOLDER}/plugins`;
 export const GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER = `${GAPI_DAEMON_FOLDER}/external-plugins`;
 export const GAPI_DAEMON_CACHE_FOLDER = `${GAPI_DAEMON_FOLDER}/.cache`;
+export const IPFS_HASHED_MODULES = `${GAPI_DAEMON_FOLDER}/ipfs-hash-list`;

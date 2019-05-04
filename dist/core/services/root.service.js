@@ -28,12 +28,14 @@ const daemon_1 = require("../../tasks/daemon");
 const generate_1 = require("../../tasks/generate/generate");
 const bootstrap_1 = require("../../tasks/bootstrap");
 const helpers_1 = require("../helpers");
+const plugin_1 = require("../../tasks/plugin");
 const argsService = core_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
         this.startTask = core_1.Container.get(start_1.StartTask);
         this.newTask = core_1.Container.get(new_1.NewTask);
         this.testTask = core_1.Container.get(test_1.TestTask);
+        this.pluginTask = core_1.Container.get(plugin_1.PluginTask);
         this.configService = core_1.Container.get(config_service_1.ConfigService);
         this.schemaTask = core_1.Container.get(schema_1.SchemaTask);
         this.deployTask = core_1.Container.get(deploy_1.DeployTask);
@@ -116,6 +118,9 @@ let RootService = class RootService {
             }
             if (argsService.args[2] === 'bootstrap' || argsService.args[2] === 'b') {
                 return yield this.bootstrapTask.run();
+            }
+            if (argsService.args[2] === 'plugin') {
+                return yield this.pluginTask.run();
             }
             try {
                 yield this.checkForCustomTasks();

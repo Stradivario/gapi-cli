@@ -9,9 +9,12 @@ import { take, switchMap, map, combineLatest, tap } from "rxjs/operators";
 import { of, Subject } from "rxjs";
 import {
   GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
-  GAPI_DAEMON_PLUGINS_FOLDER
+  GAPI_DAEMON_PLUGINS_FOLDER,
+  IPFS_HASHED_MODULES
 } from "../../daemon.config";
 import { PluginWatcherService } from "./plugin-watcher.service";
+import { readFileSync, writeFile, exists } from "fs";
+import { promisify } from "util";
 
 interface CustomMetadata extends Function {
   metadata: Metadata;
@@ -83,8 +86,15 @@ export class PluginLoader {
     return currentModule;
   }
 
+  private async makeIpfsHashFile() {
+    if (!(await promisify(exists)(IPFS_HASHED_MODULES))) {
+      await promisify(writeFile)(IPFS_HASHED_MODULES, JSON.stringify([], null, 4), { encoding: 'utf8' });
+    }
+  }
+
   private makePluginsDirectories() {
     return of(true).pipe(
+      switchMap(() => this.makeIpfsHashFile()),
       switchMap(() =>
         this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
       ),
@@ -92,7 +102,15 @@ export class PluginLoader {
     );
   }
 
-  loadPlugins(ipfsHashes: string[] = []) {
+  loadIpfsHashes() {
+    let hashes = [];
+    try {
+      hashes = JSON.parse(readFileSync(IPFS_HASHED_MODULES, { encoding: 'utf8' }));
+    } catch (e) {}
+    return hashes;
+  }
+
+  loadPlugins() {
     return this.makePluginsDirectories().pipe(
       switchMap(() => this.pluginWatcherService.watch()),
       // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
@@ -106,7 +124,7 @@ export class PluginLoader {
       switchMap(pluginModules =>
         of(null).pipe(
           combineLatest(
-            [...new Set(ipfsHashes)].map(hash => this.getModule(hash))
+            [...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))
           ),
           map(externalModules => externalModules.concat(pluginModules)),
           map(m => m.filter(i => !!i)),

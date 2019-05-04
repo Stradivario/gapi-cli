@@ -12,6 +12,7 @@ import { DaemonTask } from '../../tasks/daemon';
 import { GenerateTask } from '../../tasks/generate/generate';
 import { BootstrapTask } from '../../tasks/bootstrap';
 import { nextOrDefault } from '../helpers';
+import { PluginTask } from '../../tasks/plugin';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -20,6 +21,7 @@ export class RootService {
   private startTask: StartTask = Container.get(StartTask);
   private newTask: NewTask = Container.get(NewTask);
   private testTask: TestTask = Container.get(TestTask);
+  private pluginTask: PluginTask = Container.get(PluginTask);
   private configService: ConfigService = Container.get(ConfigService);
   private schemaTask: SchemaTask = Container.get(SchemaTask);
   private deployTask: DeployTask = Container.get(DeployTask);
@@ -112,6 +114,10 @@ export class RootService {
 
     if (argsService.args[2] === 'bootstrap' || argsService.args[2] === 'b') {
       return await this.bootstrapTask.run();
+    }
+    
+    if (argsService.args[2] === 'plugin') {
+      return await this.pluginTask.run();
     }
 
     try {

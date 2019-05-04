@@ -4,3 +4,4 @@ export declare const GAPI_DAEMON_PROCESS_LIST_FOLDER: string;
 export declare const GAPI_DAEMON_PLUGINS_FOLDER: string;
 export declare const GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER: string;
 export declare const GAPI_DAEMON_CACHE_FOLDER: string;
+export declare const IPFS_HASHED_MODULES: string;

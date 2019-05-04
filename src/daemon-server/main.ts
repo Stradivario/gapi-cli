@@ -5,9 +5,9 @@ import { Container } from '@gapi/core';
 import { switchMap } from 'rxjs/operators';
 import { PluginLoader } from './core/services/plugin-loader.service';
 import { PluginWatcherService } from './core/services/plugin-watcher.service';
-;
+
 Container.get(PluginLoader)
-  .loadPlugins([])
+  .loadPlugins()
   .pipe(
     switchMap(pluginModules =>
       setup({

@@ -132,6 +132,7 @@ exports.GAPI_DAEMON_PROCESS_LIST_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/process
 exports.GAPI_DAEMON_PLUGINS_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/plugins`;
 exports.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/external-plugins`;
 exports.GAPI_DAEMON_CACHE_FOLDER = `${exports.GAPI_DAEMON_FOLDER}/.cache`;
+exports.IPFS_HASHED_MODULES = `${exports.GAPI_DAEMON_FOLDER}/ipfs-hash-list`;
 },{}],"core/services/list.service.ts":[function(require,module,exports) {
 "use strict";
 
@@ -719,28 +720,35 @@ let PluginWatcherService = class PluginWatcherService {
     this.fileService = fileService;
   }
 
+  isNotFromExternalPlugins(path) {
+    return !path.includes('external-plugins');
+  }
+
   watch() {
     return new rxjs_1.Observable(observer => {
       const initPlugins = [];
       let isInitFinished = false;
-      const watcher = chokidar_1.watch([`${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`, `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`], {
+      const watcher = chokidar_1.watch([`${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`, `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`, daemon_config_1.IPFS_HASHED_MODULES], {
         ignored: /^\./,
         persistent: true
       });
       watcher.on('add', path => {
-        console.log('Plugin', path, 'has been added');
-
-        if (!path.includes('external-plugins')) {
+        if (!isInitFinished && this.isNotFromExternalPlugins(path)) {
+          console.log('Plugin', path, 'has been added');
           initPlugins.push(path);
+        } else {
+          console.log('Present external module', path);
         }
+
+        if (isInitFinished && this.isNotFromExternalPlugins(path)) {
+          this.restartDaemon();
+        }
+      }).on('change', path => {
+        console.log('File', path, 'has been changed');
 
         if (isInitFinished) {
           this.restartDaemon();
         }
-      }).on('change', path => {
-        console.log('File', path, 'has been changed'); //   if (isInitFinished) {
-        //     this.restartDaemon();
-        //   }
       }).on('ready', () => {
         console.log('Initial scan complete. Ready for changes');
         isInitFinished = true;
@@ -781,6 +789,34 @@ var __metadata = this && this.__metadata || function (k, v) {
   if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : new P(function (resolve) {
+        resolve(result.value);
+      }).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -796,6 +832,10 @@ const rxjs_1 = require("rxjs");
 const daemon_config_1 = require("../../daemon.config");
 
 const plugin_watcher_service_1 = require("./plugin-watcher.service");
+
+const fs_1 = require("fs");
+
+const util_1 = require("util");
 
 let PluginLoader = class PluginLoader {
   constructor(externalImporterService, fileService, pluginWatcherService) {
@@ -852,13 +892,35 @@ let PluginLoader = class PluginLoader {
     return currentModule;
   }
 
-  makePluginsDirectories() {
-    return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)));
+  makeIpfsHashFile() {
+    return __awaiter(this, void 0, void 0, function* () {
+      if (!(yield util_1.promisify(fs_1.exists)(daemon_config_1.IPFS_HASHED_MODULES))) {
+        yield util_1.promisify(fs_1.writeFile)(daemon_config_1.IPFS_HASHED_MODULES, JSON.stringify([], null, 4), {
+          encoding: 'utf8'
+        });
+      }
+    });
   }
 
-  loadPlugins(ipfsHashes = []) {
+  makePluginsDirectories() {
+    return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.makeIpfsHashFile()), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)));
+  }
+
+  loadIpfsHashes() {
+    let hashes = [];
+
+    try {
+      hashes = JSON.parse(fs_1.readFileSync(daemon_config_1.IPFS_HASHED_MODULES, {
+        encoding: 'utf8'
+      }));
+    } catch (e) {}
+
+    return hashes;
+  }
+
+  loadPlugins() {
     return this.makePluginsDirectories().pipe(operators_1.switchMap(() => this.pluginWatcherService.watch()), // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
-    operators_1.map(p => [...new Set(p)].map(path => !new RegExp(/^(.(?!.*\.js$))*$/g).test(path) ? this.loadModule(require(path)) : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(ipfsHashes)].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map(modules => this.filterDups(modules)))));
+    operators_1.map(p => [...new Set(p)].map(path => !new RegExp(/^(.(?!.*\.js$))*$/g).test(path) ? this.loadModule(require(path)) : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map(modules => this.filterDups(modules)))));
   }
 
   filterDups(modules) {
@@ -889,8 +951,7 @@ const plugin_loader_service_1 = require("./core/services/plugin-loader.service")
 
 const plugin_watcher_service_1 = require("./core/services/plugin-watcher.service");
 
-;
-core_3.Container.get(plugin_loader_service_1.PluginLoader).loadPlugins([]).pipe(operators_1.switchMap(pluginModules => core_1.setup({
+core_3.Container.get(plugin_loader_service_1.PluginLoader).loadPlugins().pipe(operators_1.switchMap(pluginModules => core_1.setup({
   imports: [...pluginModules, core_2.CoreModule.forRoot({
     server: {
       hapi: {

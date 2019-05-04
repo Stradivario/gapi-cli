@@ -2,7 +2,8 @@ import { Injectable, FileService } from '@rxdi/core';
 import { watch } from 'chokidar';
 import {
   GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
-  GAPI_DAEMON_PLUGINS_FOLDER
+  GAPI_DAEMON_PLUGINS_FOLDER,
+  IPFS_HASHED_MODULES
 } from '../../daemon.config';
 import { ChildService } from './child.service';
 import { Observable } from 'rxjs';
@@ -13,7 +14,9 @@ export class PluginWatcherService {
       private childService: ChildService,
       private fileService: FileService
     ) {}
-
+    private isNotFromExternalPlugins(path: string) {
+      return !path.includes('external-plugins')
+    }
   watch() {
 
     return new Observable<string[]>(observer => {
@@ -22,7 +25,8 @@ export class PluginWatcherService {
       const watcher = watch(
         [
           `${GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`,
-          `${GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`
+          `${GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`,
+          IPFS_HASHED_MODULES,
         ],
         {
           ignored: /^\./,
@@ -31,19 +35,21 @@ export class PluginWatcherService {
       );
       watcher
         .on('add', (path: string) => {
-          console.log('Plugin', path, 'has been added');
-          if (!path.includes('external-plugins')) {
+          if (!isInitFinished && this.isNotFromExternalPlugins(path)) {
+            console.log('Plugin', path, 'has been added');
               initPlugins.push(path);
+          } else {
+            console.log('Present external module', path);
           }
-          if (isInitFinished) {
+          if (isInitFinished && this.isNotFromExternalPlugins(path)) {
             this.restartDaemon();
           }
         })
         .on('change', (path: string) => {
           console.log('File', path, 'has been changed');
-        //   if (isInitFinished) {
-        //     this.restartDaemon();
-        //   }
+          if (isInitFinished) {
+            this.restartDaemon();
+          }
         })
         .on('ready', () => {
           console.log('Initial scan complete. Ready for changes');

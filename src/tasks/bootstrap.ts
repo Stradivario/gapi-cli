@@ -10,7 +10,7 @@ export class BootstrapTask {
   constructor(private pluginLoader: PluginLoader) {}
   async run(options?: CoreModuleConfig) {
     this.pluginLoader
-      .loadPlugins([])
+      .loadPlugins()
       .pipe(
         switchMap(pluginModules =>
           setup({

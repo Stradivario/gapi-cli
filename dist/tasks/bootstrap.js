@@ -30,7 +30,7 @@ let BootstrapTask = class BootstrapTask {
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
             this.pluginLoader
-                .loadPlugins([])
+                .loadPlugins()
                 .pipe(operators_1.switchMap(pluginModules => core_1.setup({
                 imports: [
                     ...pluginModules,

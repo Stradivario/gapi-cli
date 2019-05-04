@@ -19,8 +19,10 @@ export declare class PluginLoader {
     private isModuleHashed;
     private cacheModule;
     private loadModule;
+    private makeIpfsHashFile;
     private makePluginsDirectories;
-    loadPlugins(ipfsHashes?: string[]): import("rxjs").Observable<CustomMetadata[]>;
+    loadIpfsHashes(): any[];
+    loadPlugins(): import("rxjs").Observable<CustomMetadata[]>;
     private filterDups;
 }
 export {};
