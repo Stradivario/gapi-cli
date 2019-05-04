@@ -29,6 +29,7 @@ const generate_1 = require("../../tasks/generate/generate");
 const bootstrap_1 = require("../../tasks/bootstrap");
 const helpers_1 = require("../helpers");
 const plugin_1 = require("../../tasks/plugin");
+const core_2 = require("@gapi/core");
 const argsService = core_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
     constructor() {
@@ -45,14 +46,15 @@ let RootService = class RootService {
         this.bootstrapTask = core_1.Container.get(bootstrap_1.BootstrapTask);
     }
     checkForCustomTasks() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const commands = this.configService.config.commands;
             const filteredCommands = Object.keys(commands).filter(cmd => {
                 if (cmd === argsService.args[2]) {
-                    if (commands[cmd][argsService.args[3]]) {
-                        if (commands[cmd][argsService.args[3]].constructor === Array) {
+                    const customCommand = commands[cmd][argsService.args[3]];
+                    if (customCommand) {
+                        if (customCommand.constructor === Array) {
                             let count = 0;
-                            const commandsArray = commands[cmd][argsService.args[3]];
+                            const commandsArray = customCommand;
                             const commandsToExecute = commandsArray.map(res => {
                                 count++;
                                 let item;
@@ -70,7 +72,15 @@ let RootService = class RootService {
                             resolve(shelljs_1.exec(finalCommand));
                         }
                         else {
-                            resolve(shelljs_1.exec(commands[cmd][argsService.args[3]]));
+                            if (customCommand.includes('gql')) {
+                                const query = customCommand
+                                    .replace('gql`', '')
+                                    .replace('`', '');
+                                core_2.sendRequest({ query }, 'http://localhost:42001/graphql').then(data => console.log(data), e => console.error(e));
+                            }
+                            else {
+                                resolve(shelljs_1.exec(customCommand));
+                            }
                         }
                         return true;
                     }
@@ -82,7 +92,7 @@ let RootService = class RootService {
             if (!filteredCommands.length) {
                 reject('There are no tasks related with your command!');
             }
-        });
+        }));
     }
     runTask() {
         return __awaiter(this, void 0, void 0, function* () {

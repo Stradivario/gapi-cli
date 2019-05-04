@@ -13,6 +13,7 @@ import { GenerateTask } from '../../tasks/generate/generate';
 import { BootstrapTask } from '../../tasks/bootstrap';
 import { nextOrDefault } from '../helpers';
 import { PluginTask } from '../../tasks/plugin';
+import { sendRequest } from '@gapi/core';
 
 const argsService: ArgsService = Container.get(ArgsService);
 
@@ -31,14 +32,15 @@ export class RootService {
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
 
   checkForCustomTasks(): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const commands = this.configService.config.commands;
       const filteredCommands = Object.keys(commands).filter(cmd => {
         if (cmd === argsService.args[2]) {
-          if (commands[cmd][argsService.args[3]]) {
-            if (commands[cmd][argsService.args[3]].constructor === Array) {
+          const customCommand = commands[cmd][argsService.args[3]];
+          if (customCommand) {
+            if (customCommand.constructor === Array) {
               let count = 0;
-              const commandsArray = commands[cmd][argsService.args[3]];
+              const commandsArray = customCommand;
               const commandsToExecute = commandsArray.map(res => {
                 count++;
                 let item;
@@ -54,7 +56,17 @@ export class RootService {
                 .trim();
               resolve(exec(finalCommand));
             } else {
-              resolve(exec(commands[cmd][argsService.args[3]]));
+              if (customCommand.includes('gql')) {
+                const query = (customCommand as string)
+                  .replace('gql`', '')
+                  .replace('`', '');
+                sendRequest({ query }, 'http://localhost:42001/graphql').then(
+                  data => console.log(data),
+                  e => console.error(e)
+                );
+              } else {
+                resolve(exec(customCommand));
+              }
             }
             return true;
           } else {
@@ -115,7 +127,7 @@ export class RootService {
     if (argsService.args[2] === 'bootstrap' || argsService.args[2] === 'b') {
       return await this.bootstrapTask.run();
     }
-    
+
     if (argsService.args[2] === 'plugin') {
       return await this.pluginTask.run();
     }
