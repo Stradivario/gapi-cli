@@ -1,4 +1,4 @@
-import { Injectable, FileService } from '@rxdi/core';
+import { Injectable } from '@rxdi/core';
 import { watch } from 'chokidar';
 import {
   GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
@@ -10,15 +10,15 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class PluginWatcherService {
-  constructor(
-      private childService: ChildService,
-      private fileService: FileService
-    ) {}
-    private isNotFromExternalPlugins(path: string) {
-      return !path.includes('external-plugins')
-    }
-  watch() {
 
+  constructor(
+      private childService: ChildService
+    ) {}
+
+  private isNotFromExternalPlugins(path: string) {
+    return !path.includes('external-plugins')
+  }
+  watch() {
     return new Observable<string[]>(observer => {
       const initPlugins: string[] = [];
       let isInitFinished = false;
@@ -53,9 +53,9 @@ export class PluginWatcherService {
         })
         .on('ready', () => {
           console.log('Initial scan complete. Ready for changes');
-          isInitFinished = true;
           observer.next(initPlugins);
           observer.complete();
+          isInitFinished = true;
         })
         .on('unlink', path => {
           console.log('File', path, 'has been removed');
@@ -67,7 +67,6 @@ export class PluginWatcherService {
     });
   }
 
-
   private async restartDaemon() {
     await this.childService.spawn(
       'gapi',
@@ -76,4 +75,5 @@ export class PluginWatcherService {
     );
     process.exit();
   }
+
 }

@@ -63,9 +63,9 @@ let PluginWatcherService = class PluginWatcherService {
             })
                 .on('ready', () => {
                 console.log('Initial scan complete. Ready for changes');
-                isInitFinished = true;
                 observer.next(initPlugins);
                 observer.complete();
+                isInitFinished = true;
             })
                 .on('unlink', path => {
                 console.log('File', path, 'has been removed');

@@ -66,7 +66,7 @@ let PluginLoader = class PluginLoader {
     loadModule(m) {
         const currentModule = m[Object.keys(m)[0]];
         if (!currentModule) {
-            throw new Error("Missing cache module ${JSON.stringify(m)}");
+            throw new Error(`Missing cache module ${JSON.stringify(m)}`);
         }
         this.cacheModule(currentModule);
         return currentModule;
@@ -97,7 +97,10 @@ let PluginLoader = class PluginLoader {
             : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map((modules) => this.filterDups(modules)))));
     }
     filterDups(modules) {
-        return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => this.cache[m]);
+        return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => {
+            console.log(m);
+            return this.cache[m];
+        });
     }
 };
 PluginLoader = __decorate([

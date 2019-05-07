@@ -702,7 +702,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _a, _b;
+var _a;
 
 const core_1 = require("@rxdi/core");
 
@@ -715,9 +715,8 @@ const child_service_1 = require("./child.service");
 const rxjs_1 = require("rxjs");
 
 let PluginWatcherService = class PluginWatcherService {
-  constructor(childService, fileService) {
+  constructor(childService) {
     this.childService = childService;
-    this.fileService = fileService;
   }
 
   isNotFromExternalPlugins(path) {
@@ -751,9 +750,9 @@ let PluginWatcherService = class PluginWatcherService {
         }
       }).on('ready', () => {
         console.log('Initial scan complete. Ready for changes');
-        isInitFinished = true;
         observer.next(initPlugins);
         observer.complete();
+        isInitFinished = true;
       }).on('unlink', path => {
         console.log('File', path, 'has been removed');
 
@@ -772,7 +771,7 @@ let PluginWatcherService = class PluginWatcherService {
   }
 
 };
-PluginWatcherService = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _a : Object, typeof (_b = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _b : Object])], PluginWatcherService);
+PluginWatcherService = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [typeof (_a = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _a : Object])], PluginWatcherService);
 exports.PluginWatcherService = PluginWatcherService;
 },{"../../daemon.config":"daemon.config.ts","./child.service":"core/services/child.service.ts"}],"core/services/plugin-loader.service.ts":[function(require,module,exports) {
 "use strict";
@@ -885,7 +884,7 @@ let PluginLoader = class PluginLoader {
     const currentModule = m[Object.keys(m)[0]];
 
     if (!currentModule) {
-      throw new Error("Missing cache module ${JSON.stringify(m)}");
+      throw new Error(`Missing cache module ${JSON.stringify(m)}`);
     }
 
     this.cacheModule(currentModule);
@@ -924,7 +923,10 @@ let PluginLoader = class PluginLoader {
   }
 
   filterDups(modules) {
-    return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => this.cache[m]);
+    return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => {
+      console.log(m);
+      return this.cache[m];
+    });
   }
 
 };

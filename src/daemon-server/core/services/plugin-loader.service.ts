@@ -80,7 +80,7 @@ export class PluginLoader {
   private loadModule(m: Function): CustomMetadata {
     const currentModule: CustomMetadata = m[Object.keys(m)[0]];
     if (!currentModule) {
-      throw new Error("Missing cache module ${JSON.stringify(m)}");
+      throw new Error(`Missing cache module ${JSON.stringify(m)}`);
     }
     this.cacheModule(currentModule);
     return currentModule;
@@ -136,7 +136,10 @@ export class PluginLoader {
 
   private filterDups(modules: CustomMetadata[]) {
     return [...new Set(modules.map(i => i.metadata.moduleHash))].map(
-      m => this.cache[m]
+      m => {
+        console.log(m);
+        return this.cache[m];
+      }
     );
   }
 }
