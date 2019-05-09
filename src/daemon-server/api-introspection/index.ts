@@ -24,7 +24,6 @@
   export interface IQuery {
     __typename?: "Query";
     status: IStatusQueryType | null;
-    initQuery: ICustomControllerType | null;
     getLinkList: Array<ILinkListType> | null;
 }
 
@@ -32,12 +31,6 @@
   export interface IStatusQueryType {
     __typename?: "StatusQueryType";
     status: string | null;
-}
-
-  
-  export interface ICustomControllerType {
-    __typename?: "CustomControllerType";
-    init: string | null;
 }
 
   

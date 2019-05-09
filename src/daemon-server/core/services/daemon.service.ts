@@ -1,4 +1,4 @@
-import { Service } from '@rxdi/core';
+import { Service, FileService } from '@rxdi/core';
 import { exists, writeFile, readFile } from 'fs';
 import { promisify } from 'util';
 import { ILinkListType } from '../../api-introspection';
@@ -7,14 +7,15 @@ import { map, switchMap } from 'rxjs/operators';
 import { ListService } from './list.service';
 import { ChildService } from './child.service';
 import { GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../../daemon.config';
-const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
+import { GAPI_CLI_CONFIG_TEMPLATE } from '../templates/gapi-cli-config.template';
 
 @Service()
 export class DaemonService {
-  private noop = of([] as ILinkListType[]);
+
   constructor(
     private listService: ListService,
-    private childService: ChildService
+    private childService: ChildService,
+    private fileService: FileService
   ) {}
 
   notifyDaemon(payload: ILinkListType) {
@@ -43,7 +44,7 @@ export class DaemonService {
 
   private async trigger(payload: ILinkListType): Promise<ILinkListType> {
     if (!(await promisify(exists)(payload.repoPath))) {
-      await promisify(mkdirp)(payload.repoPath);
+      await this.fileService.mkdirp(payload.repoPath).toPromise();
     }
     const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
     if (!(await promisify(exists)(gapiLocalConfig))) {
@@ -83,12 +84,7 @@ export class DaemonService {
     }
     return await promisify(writeFile)(
       gapiLocalConfig,
-      `
-config:
-  schema:
-    introspectionEndpoint: http://localhost:${port}/graphql
-    introspectionOutputFolder: ./api-introspection
-`
+      GAPI_CLI_CONFIG_TEMPLATE(port)
     );
   }
   private findByRepoPath(payload: ILinkListType) {
@@ -96,13 +92,13 @@ config:
       switchMap(list =>
         list.length
           ? this.listService.findByRepoPath(payload.repoPath)
-          : this.noop
+          : of([] as ILinkListType[])
       )
     );
   }
   private findLinkedRepos(repo: ILinkListType) {
     return repo && repo.linkName
       ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
-      : this.noop;
+      : of([] as ILinkListType[]);
   }
 }

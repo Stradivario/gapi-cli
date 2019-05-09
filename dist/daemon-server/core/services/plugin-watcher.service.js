@@ -23,9 +23,8 @@ const daemon_config_1 = require("../../daemon.config");
 const child_service_1 = require("./child.service");
 const rxjs_1 = require("rxjs");
 let PluginWatcherService = class PluginWatcherService {
-    constructor(childService, fileService) {
+    constructor(childService) {
         this.childService = childService;
-        this.fileService = fileService;
     }
     isNotFromExternalPlugins(path) {
         return !path.includes('external-plugins');
@@ -85,7 +84,6 @@ let PluginWatcherService = class PluginWatcherService {
 };
 PluginWatcherService = __decorate([
     core_1.Injectable(),
-    __metadata("design:paramtypes", [child_service_1.ChildService,
-        core_1.FileService])
+    __metadata("design:paramtypes", [child_service_1.ChildService])
 ], PluginWatcherService);
 exports.PluginWatcherService = PluginWatcherService;

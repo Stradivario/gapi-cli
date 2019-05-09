@@ -330,6 +330,19 @@ let ChildService = class ChildService {
 };
 ChildService = __decorate([core_1.Injectable()], ChildService);
 exports.ChildService = ChildService;
+},{}],"core/templates/gapi-cli-config.template.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.GAPI_CLI_CONFIG_TEMPLATE = port => `
+config:
+  schema:
+    introspectionEndpoint: http://localhost:${port}/graphql
+    introspectionOutputFolder: ./api-introspection
+`;
 },{}],"core/services/daemon.service.ts":[function(require,module,exports) {
 "use strict";
 
@@ -377,7 +390,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _a, _b;
+var _a, _b, _c;
 
 const core_1 = require("@rxdi/core");
 
@@ -395,15 +408,13 @@ const child_service_1 = require("./child.service");
 
 const daemon_config_1 = require("../../daemon.config");
 
-const {
-  mkdirp
-} = require('@rxdi/core/dist/services/file/dist');
+const gapi_cli_config_template_1 = require("../templates/gapi-cli-config.template");
 
 let DaemonService = class DaemonService {
-  constructor(listService, childService) {
+  constructor(listService, childService, fileService) {
     this.listService = listService;
     this.childService = childService;
-    this.noop = rxjs_1.of([]);
+    this.fileService = fileService;
   }
 
   notifyDaemon(payload) {
@@ -417,7 +428,7 @@ let DaemonService = class DaemonService {
   trigger(payload) {
     return __awaiter(this, void 0, void 0, function* () {
       if (!(yield util_1.promisify(fs_1.exists)(payload.repoPath))) {
-        yield util_1.promisify(mkdirp)(payload.repoPath);
+        yield this.fileService.mkdirp(payload.repoPath).toPromise();
       }
 
       const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
@@ -458,27 +469,22 @@ let DaemonService = class DaemonService {
         port = payload.serverMetadata.port;
       }
 
-      return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
-config:
-  schema:
-    introspectionEndpoint: http://localhost:${port}/graphql
-    introspectionOutputFolder: ./api-introspection
-`);
+      return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, gapi_cli_config_template_1.GAPI_CLI_CONFIG_TEMPLATE(port));
     });
   }
 
   findByRepoPath(payload) {
-    return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length ? this.listService.findByRepoPath(payload.repoPath) : this.noop));
+    return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length ? this.listService.findByRepoPath(payload.repoPath) : rxjs_1.of([])));
   }
 
   findLinkedRepos(repo) {
-    return repo && repo.linkName ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath) : this.noop;
+    return repo && repo.linkName ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath) : rxjs_1.of([]);
   }
 
 };
-DaemonService = __decorate([core_1.Service(), __metadata("design:paramtypes", [typeof (_a = typeof list_service_1.ListService !== "undefined" && list_service_1.ListService) === "function" ? _a : Object, typeof (_b = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _b : Object])], DaemonService);
+DaemonService = __decorate([core_1.Service(), __metadata("design:paramtypes", [typeof (_a = typeof list_service_1.ListService !== "undefined" && list_service_1.ListService) === "function" ? _a : Object, typeof (_b = typeof child_service_1.ChildService !== "undefined" && child_service_1.ChildService) === "function" ? _b : Object, typeof (_c = typeof core_1.FileService !== "undefined" && core_1.FileService) === "function" ? _c : Object])], DaemonService);
 exports.DaemonService = DaemonService;
-},{"./list.service":"core/services/list.service.ts","./child.service":"core/services/child.service.ts","../../daemon.config":"daemon.config.ts"}],"core/interceptors/notify.interceptor.ts":[function(require,module,exports) {
+},{"./list.service":"core/services/list.service.ts","./child.service":"core/services/child.service.ts","../../daemon.config":"daemon.config.ts","../templates/gapi-cli-config.template":"core/templates/gapi-cli-config.template.ts"}],"core/interceptors/notify.interceptor.ts":[function(require,module,exports) {
 "use strict";
 
 var __decorate = this && this.__decorate || function (decorators, target, key, desc) {

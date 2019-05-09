@@ -25,12 +25,11 @@ const operators_1 = require("rxjs/operators");
 const list_service_1 = require("./list.service");
 const child_service_1 = require("./child.service");
 const daemon_config_1 = require("../../daemon.config");
-const { mkdirp } = require('@rxdi/core/dist/services/file/dist');
 let DaemonService = class DaemonService {
-    constructor(listService, childService) {
+    constructor(listService, childService, fileService) {
         this.listService = listService;
         this.childService = childService;
-        this.noop = rxjs_1.of([]);
+        this.fileService = fileService;
     }
     notifyDaemon(payload) {
         return this.findByRepoPath(payload).pipe(operators_1.switchMap(([mainNode]) => this.saveMainNode(Object.assign(mainNode ? mainNode : {}, {
@@ -43,7 +42,7 @@ let DaemonService = class DaemonService {
     trigger(payload) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(yield util_1.promisify(fs_1.exists)(payload.repoPath))) {
-                yield util_1.promisify(mkdirp)(payload.repoPath);
+                yield this.fileService.mkdirp(payload.repoPath).toPromise();
             }
             const gapiLocalConfig = `${payload.repoPath}/gapi-cli.conf.yml`;
             if (!(yield util_1.promisify(fs_1.exists)(gapiLocalConfig))) {
@@ -88,17 +87,18 @@ config:
     findByRepoPath(payload) {
         return rxjs_1.from(this.listService.readList()).pipe(operators_1.switchMap(list => list.length
             ? this.listService.findByRepoPath(payload.repoPath)
-            : this.noop));
+            : rxjs_1.of([])));
     }
     findLinkedRepos(repo) {
         return repo && repo.linkName
             ? this.listService.findByLinkName(repo.linkName).exclude(repo.repoPath)
-            : this.noop;
+            : rxjs_1.of([]);
     }
 };
 DaemonService = __decorate([
     core_1.Service(),
     __metadata("design:paramtypes", [list_service_1.ListService,
-        child_service_1.ChildService])
+        child_service_1.ChildService,
+        core_1.FileService])
 ], DaemonService);
 exports.DaemonService = DaemonService;
