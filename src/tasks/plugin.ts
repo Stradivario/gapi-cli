@@ -2,11 +2,15 @@ import { Service } from "@rxdi/core";
 import { nextOrDefault, includes } from '../core/helpers/index';
 import { promisify } from "util";
 import { readFile, exists, writeFile } from "fs";
-import { IPFS_HASHED_MODULES } from "../daemon-server/daemon.config";
-
+import { IPFS_HASHED_MODULES, GAPI_DAEMON_IPFS_PLUGINS_FOLDER } from "../daemon-server/daemon.config";
+import { IpfsHashMapService } from "../daemon-server/core/services/ipfs-hash-map.service";
+import { sync } from 'rimraf';
 @Service()
 export class PluginTask {
- 
+  constructor(
+    private ipfsHashMapService: IpfsHashMapService
+  ) {}
+
   async run() {
     if (includes('remove')) {
       return await this.remove(nextOrDefault('remove', false))
@@ -17,18 +21,19 @@ export class PluginTask {
   }
 
   async add(hash: string) {
-    this.validateHash(hash);
-      const hashes = await this.readFile();
-      const exist = hashes.filter(h => h === hash);
-      if (exist.length) {
-        console.error(`Plugin already exist ${hash}`);
-        return;
-      }
-      await this.writeHashesToFile([...hashes, hash]);
-      console.log(`Plugin installed ${hash}`);
     if (!hash) {
       throw new Error('Missing ipfs hash');
     }
+    this.validateHash(hash);
+    const hashes = await this.readFile();
+    const exist = hashes.filter(h => h === hash);
+    if (exist.length) {
+      console.error(`Plugin already exist ${hash}`);
+      return;
+    }
+    await this.writeHashesToFile([...hashes, hash]);
+    console.log(`Plugin installed ${hash}`);
+
   }
 
   private validateHash(hash: string) {
@@ -39,7 +44,14 @@ export class PluginTask {
 
   async remove(hash: string) {
     this.validateHash(hash);
-    await this.writeHashesToFile((await this.readFile()).filter(h => h !== hash))
+    await this.ipfsHashMapService.readHashMap();
+    const ipfsModule = this.ipfsHashMapService.find(hash);
+    if (ipfsModule) {
+      sync(`${GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/${ipfsModule.module.namespace}`);
+      this.ipfsHashMapService.remove(hash);
+      await this.ipfsHashMapService.writeHashMapToFile();
+      await this.writeHashesToFile((await this.readFile()).filter(h => h !== hash));
+    }
   }
 
   private async readFile() {

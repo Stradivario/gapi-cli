@@ -24,21 +24,24 @@ const daemon_config_1 = require("../../daemon.config");
 const plugin_watcher_service_1 = require("./plugin-watcher.service");
 const fs_1 = require("fs");
 const util_1 = require("util");
+const ipfs_hash_map_service_1 = require("./ipfs-hash-map.service");
 let PluginLoader = class PluginLoader {
-    constructor(externalImporterService, fileService, pluginWatcherService) {
+    constructor(externalImporterService, fileService, pluginWatcherService, ipfsHashMapService) {
         this.externalImporterService = externalImporterService;
         this.fileService = fileService;
         this.pluginWatcherService = pluginWatcherService;
-        this.defaultIpfsProvider = "https://ipfs.io/ipfs/";
-        this.defaultDownloadFilename = "gapi-plugin";
+        this.ipfsHashMapService = ipfsHashMapService;
+        this.defaultIpfsProvider = 'https://ipfs.io/ipfs/';
+        this.defaultDownloadFilename = 'gapi-plugin';
+        this.filterDups = (modules) => [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => this.cache[m]);
         this.cache = {};
     }
     loadPlugins() {
-        return this.makePluginsDirectories().pipe(operators_1.switchMap(() => this.pluginWatcherService.watch()), 
+        return this.makePluginsDirectories().pipe(operators_1.switchMap(() => this.ipfsHashMapService.readHashMap()), operators_1.switchMap(() => this.pluginWatcherService.watch()), 
         // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
         operators_1.map(p => [...new Set(p)].map(path => !new RegExp(/^(.(?!.*\.js$))*$/g).test(path)
             ? this.loadModule(require(path))
-            : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map((modules) => this.filterDups(modules)))));
+            : null)), operators_1.switchMap(pluginModules => rxjs_1.of(null).pipe(operators_1.combineLatest([...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))), operators_1.map(externalModules => externalModules.concat(pluginModules)), operators_1.map(m => m.filter(i => !!i)), operators_1.map((modules) => this.filterDups(modules)), operators_1.tap(() => this.ipfsHashMapService.writeHashMapToFile()))));
     }
     loadIpfsHashes() {
         let hashes = [];
@@ -54,11 +57,25 @@ let PluginLoader = class PluginLoader {
             hash,
             provider
         })
-            .pipe(operators_1.take(1), operators_1.switchMap((externalModule) => this.externalImporterService.importModule({
+            .pipe(operators_1.take(1), operators_1.tap((externalModule) => {
+            const isPresent = this.ipfsHashMapService.hashMap.filter(h => h.hash === hash).length;
+            if (!isPresent) {
+                this.ipfsHashMapService.hashMap.push({
+                    hash,
+                    module: {
+                        fileName: this.defaultDownloadFilename,
+                        namespace: externalModule.name,
+                        extension: 'js',
+                        outputFolder: `${daemon_config_1.GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/`,
+                        link: `${this.defaultIpfsProvider}${externalModule.module}`
+                    }
+                });
+            }
+        }), operators_1.switchMap((externalModule) => this.externalImporterService.importModule({
             fileName: this.defaultDownloadFilename,
             namespace: externalModule.name,
-            extension: "js",
-            outputFolder: `${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
+            extension: 'js',
+            outputFolder: `${daemon_config_1.GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/`,
             link: `${this.defaultIpfsProvider}${externalModule.module}`
         }, externalModule.name, { folderOverride: `//` })), operators_1.map((data) => this.loadModule(data)));
     }
@@ -66,7 +83,7 @@ let PluginLoader = class PluginLoader {
         if (!currentModule.metadata) {
             throw new Error('Missing metadata for module maybe it is not from @rxdi infrastructure ?');
         }
-        return this.cache[currentModule.metadata.moduleHash] = currentModule;
+        return (this.cache[currentModule.metadata.moduleHash] = currentModule);
     }
     loadModule(m) {
         const currentModule = m[Object.keys(m)[0]];
@@ -83,19 +100,14 @@ let PluginLoader = class PluginLoader {
         });
     }
     makePluginsDirectories() {
-        return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)), operators_1.switchMap(() => this.makeIpfsHashFile()));
-    }
-    filterDups(modules) {
-        return [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => {
-            console.log(m);
-            return this.cache[m];
-        });
+        return rxjs_1.of(true).pipe(operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_IPFS_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_HTTP_PLUGINS_FOLDER)), operators_1.switchMap(() => this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER)), operators_1.switchMap(() => this.makeIpfsHashFile()));
     }
 };
 PluginLoader = __decorate([
     core_1.Injectable(),
     __metadata("design:paramtypes", [core_1.ExternalImporter,
         core_1.FileService,
-        plugin_watcher_service_1.PluginWatcherService])
+        plugin_watcher_service_1.PluginWatcherService,
+        ipfs_hash_map_service_1.IpfsHashMapService])
 ], PluginLoader);
 exports.PluginLoader = PluginLoader;

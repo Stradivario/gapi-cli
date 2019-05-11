@@ -189,7 +189,8 @@ let DaemonTask = class DaemonTask {
     makeSystemFolders() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_FOLDER).toPromise();
-            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER).toPromise();
+            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_IPFS_PLUGINS_FOLDER).toPromise();
+            yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_HTTP_PLUGINS_FOLDER).toPromise();
             yield this.fileService.mkdirp(daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER).toPromise();
         });
     }

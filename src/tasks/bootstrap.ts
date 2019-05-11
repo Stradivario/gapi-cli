@@ -4,6 +4,7 @@ import { CoreModule, CoreModuleConfig } from '@gapi/core';
 import { switchMap } from 'rxjs/operators';
 import { PluginLoader } from '../daemon-server/core/services/plugin-loader.service';
 import { PluginWatcherService } from '../daemon-server/core/services/plugin-watcher.service';
+import { nextOrDefault } from '../core/helpers';
 
 @Service()
 export class BootstrapTask {
@@ -20,7 +21,7 @@ export class BootstrapTask {
                 options || {
                   server: {
                     hapi: {
-                      port: 42000
+                      port: nextOrDefault('--port', 42000, (p) => Number(p))
                     }
                   },
                   graphql: {

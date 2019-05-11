@@ -4,17 +4,19 @@ import {
   ExternalModuleConfiguration,
   FileService,
   Metadata
-} from "@rxdi/core";
-import { take, switchMap, map, combineLatest, tap } from "rxjs/operators";
-import { of, Subject } from "rxjs";
+} from '@rxdi/core';
+import { take, switchMap, map, combineLatest, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import {
-  GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
+  GAPI_DAEMON_IPFS_PLUGINS_FOLDER,
   GAPI_DAEMON_PLUGINS_FOLDER,
-  IPFS_HASHED_MODULES
-} from "../../daemon.config";
-import { PluginWatcherService } from "./plugin-watcher.service";
-import { readFileSync, writeFile, exists } from "fs";
-import { promisify } from "util";
+  IPFS_HASHED_MODULES,
+  GAPI_DAEMON_HTTP_PLUGINS_FOLDER
+} from '../../daemon.config';
+import { PluginWatcherService } from './plugin-watcher.service';
+import { readFileSync, writeFile, exists } from 'fs';
+import { promisify } from 'util';
+import { IpfsHashMapService } from './ipfs-hash-map.service';
 
 interface CustomMetadata extends Function {
   metadata: Metadata;
@@ -22,19 +24,21 @@ interface CustomMetadata extends Function {
 
 @Injectable()
 export class PluginLoader {
-  private defaultIpfsProvider = "https://ipfs.io/ipfs/";
-  private defaultDownloadFilename = "gapi-plugin";
+  private defaultIpfsProvider = 'https://ipfs.io/ipfs/';
+  private defaultDownloadFilename = 'gapi-plugin';
+  private filterDups = (modules: CustomMetadata[]) => [...new Set(modules.map(i => i.metadata.moduleHash))].map(m => this.cache[m]);
 
   cache: { [key: string]: CustomMetadata } = {};
-
   constructor(
     private externalImporterService: ExternalImporter,
     private fileService: FileService,
-    private pluginWatcherService: PluginWatcherService
+    private pluginWatcherService: PluginWatcherService,
+    private ipfsHashMapService: IpfsHashMapService
   ) {}
 
   loadPlugins() {
     return this.makePluginsDirectories().pipe(
+      switchMap(() => this.ipfsHashMapService.readHashMap()),
       switchMap(() => this.pluginWatcherService.watch()),
       // switchMap(() => this.fileService.fileWalker(pluginsFolder)),
       map(p =>
@@ -47,11 +51,14 @@ export class PluginLoader {
       switchMap(pluginModules =>
         of(null).pipe(
           combineLatest(
-            [...new Set(this.loadIpfsHashes())].map(hash => this.getModule(hash))
+            [...new Set(this.loadIpfsHashes())].map(hash =>
+              this.getModule(hash)
+            )
           ),
           map(externalModules => externalModules.concat(pluginModules)),
           map(m => m.filter(i => !!i)),
-          map((modules: CustomMetadata[]) => this.filterDups(modules))
+          map((modules: CustomMetadata[]) => this.filterDups(modules)),
+          tap(() => this.ipfsHashMapService.writeHashMapToFile())
         )
       )
     );
@@ -60,7 +67,9 @@ export class PluginLoader {
   private loadIpfsHashes() {
     let hashes = [];
     try {
-      hashes = JSON.parse(readFileSync(IPFS_HASHED_MODULES, { encoding: 'utf8' }));
+      hashes = JSON.parse(
+        readFileSync(IPFS_HASHED_MODULES, { encoding: 'utf8' })
+      );
     } catch (e) {}
     return hashes;
   }
@@ -73,13 +82,30 @@ export class PluginLoader {
       })
       .pipe(
         take(1),
+        tap((externalModule: ExternalModuleConfiguration) => {
+          const isPresent = this.ipfsHashMapService.hashMap.filter(
+            h => h.hash === hash
+          ).length;
+          if (!isPresent) {
+            this.ipfsHashMapService.hashMap.push({
+              hash,
+              module: {
+                fileName: this.defaultDownloadFilename,
+                namespace: externalModule.name,
+                extension: 'js',
+                outputFolder: `${GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/`,
+                link: `${this.defaultIpfsProvider}${externalModule.module}`
+              }
+            });
+          }
+        }),
         switchMap((externalModule: ExternalModuleConfiguration) =>
           this.externalImporterService.importModule(
             {
               fileName: this.defaultDownloadFilename,
               namespace: externalModule.name,
-              extension: "js",
-              outputFolder: `${GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
+              extension: 'js',
+              outputFolder: `${GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/`,
               link: `${this.defaultIpfsProvider}${externalModule.module}`
             },
             externalModule.name,
@@ -90,12 +116,13 @@ export class PluginLoader {
       );
   }
 
-
   private cacheModule(currentModule: CustomMetadata) {
     if (!currentModule.metadata) {
-      throw new Error('Missing metadata for module maybe it is not from @rxdi infrastructure ?');
+      throw new Error(
+        'Missing metadata for module maybe it is not from @rxdi infrastructure ?'
+      );
     }
-    return this.cache[currentModule.metadata.moduleHash] = currentModule;
+    return (this.cache[currentModule.metadata.moduleHash] = currentModule);
   }
 
   private loadModule(m: Function): CustomMetadata {
@@ -108,26 +135,21 @@ export class PluginLoader {
 
   private async makeIpfsHashFile() {
     if (!(await promisify(exists)(IPFS_HASHED_MODULES))) {
-      await promisify(writeFile)(IPFS_HASHED_MODULES, JSON.stringify([], null, 4), { encoding: 'utf8' });
+      await promisify(writeFile)(
+        IPFS_HASHED_MODULES,
+        JSON.stringify([], null, 4),
+        { encoding: 'utf8' }
+      );
     }
   }
 
   private makePluginsDirectories() {
     return of(true).pipe(
-      switchMap(() =>
-        this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
-      ),
+      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_IPFS_PLUGINS_FOLDER)),
+      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_HTTP_PLUGINS_FOLDER)),
       switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER)),
-      switchMap(() => this.makeIpfsHashFile()),
+      switchMap(() => this.makeIpfsHashFile())
     );
   }
 
-  private filterDups(modules: CustomMetadata[]) {
-    return [...new Set(modules.map(i => i.metadata.moduleHash))].map(
-      m => {
-        console.log(m);
-        return this.cache[m];
-      }
-    );
-  }
 }

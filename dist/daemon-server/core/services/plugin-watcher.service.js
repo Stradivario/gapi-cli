@@ -27,14 +27,15 @@ let PluginWatcherService = class PluginWatcherService {
         this.childService = childService;
     }
     isNotFromExternalPlugins(path) {
-        return !path.includes('external-plugins');
+        return !path.includes('ipfs-plugins');
     }
     watch() {
         return new rxjs_1.Observable(observer => {
             const initPlugins = [];
             let isInitFinished = false;
             const watcher = chokidar_1.watch([
-                `${daemon_config_1.GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`,
+                `${daemon_config_1.GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/**/*.js`,
+                `${daemon_config_1.GAPI_DAEMON_HTTP_PLUGINS_FOLDER}/**/*.js`,
                 `${daemon_config_1.GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`,
                 daemon_config_1.IPFS_HASHED_MODULES,
             ], {

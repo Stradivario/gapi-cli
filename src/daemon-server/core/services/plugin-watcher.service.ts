@@ -1,9 +1,10 @@
 import { Injectable } from '@rxdi/core';
 import { watch } from 'chokidar';
 import {
-  GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER,
+  GAPI_DAEMON_IPFS_PLUGINS_FOLDER,
   GAPI_DAEMON_PLUGINS_FOLDER,
-  IPFS_HASHED_MODULES
+  IPFS_HASHED_MODULES,
+  GAPI_DAEMON_HTTP_PLUGINS_FOLDER
 } from '../../daemon.config';
 import { ChildService } from './child.service';
 import { Observable } from 'rxjs';
@@ -15,16 +16,18 @@ export class PluginWatcherService {
       private childService: ChildService
     ) {}
 
-  private isNotFromExternalPlugins(path: string) {
-    return !path.includes('external-plugins')
-  }
+    private isNotFromExternalPlugins(path: string) {
+      return !path.includes('ipfs-plugins')
+    }
+
   watch() {
     return new Observable<string[]>(observer => {
       const initPlugins: string[] = [];
       let isInitFinished = false;
       const watcher = watch(
         [
-          `${GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/**/*.js`,
+          `${GAPI_DAEMON_IPFS_PLUGINS_FOLDER}/**/*.js`,
+          `${GAPI_DAEMON_HTTP_PLUGINS_FOLDER}/**/*.js`,
           `${GAPI_DAEMON_PLUGINS_FOLDER}/**/*.js`,
           IPFS_HASHED_MODULES,
         ],

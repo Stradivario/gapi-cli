@@ -13,7 +13,7 @@ import { DaemonExecutorService } from '../core/services/daemon-executor/daemon-e
 import { load } from 'yamljs';
 import { GapiConfig } from '../core/services/config.service';
 import { ILinkListType } from '../daemon-server/api-introspection/index';
-import { GAPI_DAEMON_FOLDER, GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER, GAPI_DAEMON_PLUGINS_FOLDER, GAPI_DAEMON_PROCESS_LIST_FOLDER } from '../daemon-server/daemon.config';
+import { GAPI_DAEMON_FOLDER, GAPI_DAEMON_IPFS_PLUGINS_FOLDER, GAPI_DAEMON_PLUGINS_FOLDER, GAPI_DAEMON_PROCESS_LIST_FOLDER, GAPI_DAEMON_HTTP_PLUGINS_FOLDER } from '../daemon-server/daemon.config';
 
 export const DaemonTasks = strEnum([
   'start',
@@ -44,7 +44,8 @@ export class DaemonTask {
   ) {}
   private async makeSystemFolders() {
     await this.fileService.mkdirp(GAPI_DAEMON_FOLDER).toPromise();
-    await this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER).toPromise();
+    await this.fileService.mkdirp(GAPI_DAEMON_IPFS_PLUGINS_FOLDER).toPromise();
+    await this.fileService.mkdirp(GAPI_DAEMON_HTTP_PLUGINS_FOLDER).toPromise();
     await this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER).toPromise();
   }
   private start = async (name?: string) => {

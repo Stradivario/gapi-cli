@@ -23,6 +23,7 @@ const core_2 = require("@gapi/core");
 const operators_1 = require("rxjs/operators");
 const plugin_loader_service_1 = require("../daemon-server/core/services/plugin-loader.service");
 const plugin_watcher_service_1 = require("../daemon-server/core/services/plugin-watcher.service");
+const helpers_1 = require("../core/helpers");
 let BootstrapTask = class BootstrapTask {
     constructor(pluginLoader) {
         this.pluginLoader = pluginLoader;
@@ -37,7 +38,7 @@ let BootstrapTask = class BootstrapTask {
                     core_2.CoreModule.forRoot(options || {
                         server: {
                             hapi: {
-                                port: 42000
+                                port: helpers_1.nextOrDefault('--port', 42000, (p) => Number(p))
                             }
                         },
                         graphql: {
