@@ -25,7 +25,6 @@ export class PluginLoader {
   private defaultIpfsProvider = "https://ipfs.io/ipfs/";
   private defaultDownloadFilename = "gapi-plugin";
 
-  fileWatcher: Subject<string[]> = new Subject();
   cache: { [key: string]: CustomMetadata } = {};
 
   constructor(
@@ -33,82 +32,6 @@ export class PluginLoader {
     private fileService: FileService,
     private pluginWatcherService: PluginWatcherService
   ) {}
-
-  getModule(hash: string, provider: string = this.defaultIpfsProvider) {
-    if (this.isModuleHashed(hash)) {
-      return this.cache[hash];
-    }
-    return this.externalImporterService
-      .downloadIpfsModuleConfig({
-        hash,
-        provider
-      })
-      .pipe(
-        take(1),
-
-        switchMap((externalModule: ExternalModuleConfiguration) =>
-          this.externalImporterService.importModule(
-            {
-              fileName: this.defaultDownloadFilename,
-              namespace: externalModule.name,
-              extension: "js",
-              outputFolder: `${GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
-              link: `${this.defaultIpfsProvider}${externalModule.module}`
-            },
-            externalModule.name,
-            { folderOverride: `//` }
-          )
-        ),
-        map((data: Function) => {
-          const currentModule = this.loadModule(data);
-          this.cache[hash] = currentModule;
-          return currentModule;
-        })
-      );
-  }
-
-  private isModuleHashed(hash: string) {
-    return !!this.cache[hash];
-  }
-
-  private cacheModule(currentModule: CustomMetadata) {
-    if (currentModule.metadata) {
-      this.cache[currentModule.metadata.moduleHash] = currentModule;
-    }
-  }
-
-  private loadModule(m: Function): CustomMetadata {
-    const currentModule: CustomMetadata = m[Object.keys(m)[0]];
-    if (!currentModule) {
-      throw new Error(`Missing cache module ${JSON.stringify(m)}`);
-    }
-    this.cacheModule(currentModule);
-    return currentModule;
-  }
-
-  private async makeIpfsHashFile() {
-    if (!(await promisify(exists)(IPFS_HASHED_MODULES))) {
-      await promisify(writeFile)(IPFS_HASHED_MODULES, JSON.stringify([], null, 4), { encoding: 'utf8' });
-    }
-  }
-
-  private makePluginsDirectories() {
-    return of(true).pipe(
-      switchMap(() =>
-        this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
-      ),
-      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER)),
-      switchMap(() => this.makeIpfsHashFile()),
-    );
-  }
-
-  loadIpfsHashes() {
-    let hashes = [];
-    try {
-      hashes = JSON.parse(readFileSync(IPFS_HASHED_MODULES, { encoding: 'utf8' }));
-    } catch (e) {}
-    return hashes;
-  }
 
   loadPlugins() {
     return this.makePluginsDirectories().pipe(
@@ -131,6 +54,71 @@ export class PluginLoader {
           map((modules: CustomMetadata[]) => this.filterDups(modules))
         )
       )
+    );
+  }
+
+  private loadIpfsHashes() {
+    let hashes = [];
+    try {
+      hashes = JSON.parse(readFileSync(IPFS_HASHED_MODULES, { encoding: 'utf8' }));
+    } catch (e) {}
+    return hashes;
+  }
+
+  private getModule(hash: string, provider: string = this.defaultIpfsProvider) {
+    return this.externalImporterService
+      .downloadIpfsModuleConfig({
+        hash,
+        provider
+      })
+      .pipe(
+        take(1),
+        switchMap((externalModule: ExternalModuleConfiguration) =>
+          this.externalImporterService.importModule(
+            {
+              fileName: this.defaultDownloadFilename,
+              namespace: externalModule.name,
+              extension: "js",
+              outputFolder: `${GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER}/`,
+              link: `${this.defaultIpfsProvider}${externalModule.module}`
+            },
+            externalModule.name,
+            { folderOverride: `//` }
+          )
+        ),
+        map((data: Function) => this.loadModule(data))
+      );
+  }
+
+
+  private cacheModule(currentModule: CustomMetadata) {
+    if (!currentModule.metadata) {
+      throw new Error('Missing metadata for module maybe it is not from @rxdi infrastructure ?');
+    }
+    return this.cache[currentModule.metadata.moduleHash] = currentModule;
+  }
+
+  private loadModule(m: Function): CustomMetadata {
+    const currentModule: CustomMetadata = m[Object.keys(m)[0]];
+    if (!currentModule) {
+      throw new Error(`Missing cache module ${JSON.stringify(m)}`);
+    }
+    return this.cacheModule(currentModule);
+  }
+
+  private async makeIpfsHashFile() {
+    if (!(await promisify(exists)(IPFS_HASHED_MODULES))) {
+      await promisify(writeFile)(IPFS_HASHED_MODULES, JSON.stringify([], null, 4), { encoding: 'utf8' });
+    }
+  }
+
+  private makePluginsDirectories() {
+    return of(true).pipe(
+      switchMap(() =>
+        this.fileService.mkdirp(GAPI_DAEMON_EXTERNAL_PLUGINS_FOLDER)
+      ),
+      switchMap(() => this.fileService.mkdirp(GAPI_DAEMON_PLUGINS_FOLDER)),
+      switchMap(() => this.makeIpfsHashFile()),
     );
   }
 

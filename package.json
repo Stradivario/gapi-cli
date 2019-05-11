@@ -13,7 +13,7 @@
   "scripts": {
     "postpublish": "git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git && git push --tags && git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git --tags",
     "build": "gapi build",
-    "start": "gapi start --local --path=./src/daemon-server/main.ts --parcel --minify=false --outDir ./daemon-server/server",
+    "start": "gapi start --local --path=./src/daemon-server/main.ts --inspect --parcel --minify=false --outDir ./daemon-server/server",
     "test": "test"
   },
   "repository": {

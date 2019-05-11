@@ -25,6 +25,7 @@ const operators_1 = require("rxjs/operators");
 const list_service_1 = require("./list.service");
 const child_service_1 = require("./child.service");
 const daemon_config_1 = require("../../daemon.config");
+const gapi_cli_config_template_1 = require("../templates/gapi-cli-config.template");
 let DaemonService = class DaemonService {
     constructor(listService, childService, fileService) {
         this.listService = listService;
@@ -76,12 +77,7 @@ let DaemonService = class DaemonService {
             if (payload.serverMetadata.port) {
                 port = payload.serverMetadata.port;
             }
-            return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, `
-config:
-  schema:
-    introspectionEndpoint: http://localhost:${port}/graphql
-    introspectionOutputFolder: ./api-introspection
-`);
+            return yield util_1.promisify(fs_1.writeFile)(gapiLocalConfig, gapi_cli_config_template_1.GAPI_CLI_CONFIG_TEMPLATE(port));
         });
     }
     findByRepoPath(payload) {
