@@ -1,4 +1,4 @@
-const service = require('service-systemd');
+// const service = require('service-systemd');
 import { Service } from '@rxdi/core';
 import { readFileSync, writeFile } from 'fs';
 import { promisify } from 'util';
@@ -29,11 +29,11 @@ export class SystemDService {
   }
 
   async remove(name: string) {
-    await service.remove(name);
+    // await service.remove(name);
   }
 
   async register(options: SystemDServiceInterface) {
-    await service.add(options);
+    // await service.add(options);
     this.services.push(options);
     await promisify(writeFile)(
       `${GAPI_DAEMON_FOLDER}/services`,

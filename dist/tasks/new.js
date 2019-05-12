@@ -22,7 +22,7 @@ let NewTask = class NewTask {
         this.execService = core_1.Container.get(exec_service_1.ExecService);
         this.argsService = core_1.Container.get(args_service_1.ArgsService);
         this.repoLinks = {
-            basic: "https://github.com/Stradivario/gapi-starter",
+            basic: "https://github.com/Stradivario/gapi-starter-simple",
             advanced: "https://github.com/Stradivario/gapi-starter-postgres-sequelize",
             microservices: "https://github.com/Stradivario/gapi-starter-microservices",
             serverless: "https://github.com/Stradivario/gapi-starter-serverless",

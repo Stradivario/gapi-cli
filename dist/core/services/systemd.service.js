@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const service = require('service-systemd');
+// const service = require('service-systemd');
 const core_1 = require("@rxdi/core");
 const fs_1 = require("fs");
 const util_1 = require("util");
@@ -33,12 +33,12 @@ let SystemDService = class SystemDService {
     }
     remove(name) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield service.remove(name);
+            // await service.remove(name);
         });
     }
     register(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield service.add(options);
+            // await service.add(options);
             this.services.push(options);
             yield util_1.promisify(fs_1.writeFile)(`${daemon_config_1.GAPI_DAEMON_FOLDER}/services`, JSON.stringify(this.services), { encoding: 'utf8' });
         });

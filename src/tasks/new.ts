@@ -7,7 +7,7 @@ export class NewTask {
   private execService: ExecService = Container.get(ExecService);
   private argsService: ArgsService = Container.get(ArgsService);
   private repoLinks = {
-    basic: "https://github.com/Stradivario/gapi-starter",
+    basic: "https://github.com/Stradivario/gapi-starter-simple",
     advanced: "https://github.com/Stradivario/gapi-starter-postgres-sequelize",
     microservices: "https://github.com/Stradivario/gapi-starter-microservices",
     serverless: "https://github.com/Stradivario/gapi-starter-serverless",

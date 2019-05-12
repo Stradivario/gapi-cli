@@ -35,7 +35,7 @@ export class DaemonTask {
   private errLogFile: string = `${GAPI_DAEMON_FOLDER}/err.log`;
   private pidLogFile: string = `${GAPI_DAEMON_FOLDER}/pid`;
   private bootstrapTask: BootstrapTask = Container.get(BootstrapTask);
-  private systemDService: SystemDService = Container.get(SystemDService);
+  // private systemDService: SystemDService = Container.get(SystemDService);
   private daemonExecutorService: DaemonExecutorService = Container.get(
     DaemonExecutorService
   );
@@ -51,29 +51,29 @@ export class DaemonTask {
   private start = async (name?: string) => {
     await this.killDaemon();
     await this.makeSystemFolders();
-    if (includes('--systemd')) {
-      await this.systemDService.register({
-        name: name || 'my-node-service',
-        cwd: __dirname.replace('tasks', 'core/helpers/'),
-        app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
-        engine: 'node',
-        env: {}
-      });
-    } else {
-      const child = spawn('gapi', ['daemon', 'bootstrap'], {
-        detached: true,
-        stdio: [
-          'ignore',
-          openSync(this.outLogFile, 'a'),
-          openSync(this.errLogFile, 'a')
-        ]
-      });
-      await promisify(writeFile)(this.pidLogFile, child.pid, {
-        encoding: 'utf-8'
-      });
-      console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
-      child.unref();
-    }
+    // if (includes('--systemd')) {
+    //   await this.systemDService.register({
+    //     name: name || 'my-node-service',
+    //     cwd: __dirname.replace('tasks', 'core/helpers/'),
+    //     app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
+    //     engine: 'node',
+    //     env: {}
+    //   });
+    // } else {
+    const child = spawn('gapi', ['daemon', 'bootstrap'], {
+      detached: true,
+      stdio: [
+        'ignore',
+        openSync(this.outLogFile, 'a'),
+        openSync(this.errLogFile, 'a')
+      ]
+    });
+    await promisify(writeFile)(this.pidLogFile, child.pid, {
+      encoding: 'utf-8'
+    });
+    console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
+    child.unref();
+    // }
   };
 
   private restart = async (name: string) => {
@@ -82,11 +82,11 @@ export class DaemonTask {
   };
 
   private stop = async (name?: string) => {
-    if (includes('--systemd')) {
-      await this.systemDService.remove(name || 'my-node-service');
-    } else {
-      await this.killDaemon();
-    }
+    // if (includes('--systemd')) {
+    //   await this.systemDService.remove(name || 'my-node-service');
+    // } else {
+    await this.killDaemon();
+    // }
   };
 
   private list = async () => {

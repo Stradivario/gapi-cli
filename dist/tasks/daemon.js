@@ -27,7 +27,6 @@ const stringEnum_1 = require("../core/helpers/stringEnum");
 const helpers_1 = require("../core/helpers");
 const bootstrap_1 = require("./bootstrap");
 const core_2 = require("@gapi/core");
-const systemd_service_1 = require("../core/services/systemd.service");
 const daemon_executor_service_1 = require("../core/services/daemon-executor/daemon-executor.service");
 const yamljs_1 = require("yamljs");
 const daemon_config_1 = require("../daemon-server/daemon.config");
@@ -50,47 +49,45 @@ let DaemonTask = class DaemonTask {
         this.errLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/err.log`;
         this.pidLogFile = `${daemon_config_1.GAPI_DAEMON_FOLDER}/pid`;
         this.bootstrapTask = core_1.Container.get(bootstrap_1.BootstrapTask);
-        this.systemDService = core_1.Container.get(systemd_service_1.SystemDService);
+        // private systemDService: SystemDService = Container.get(SystemDService);
         this.daemonExecutorService = core_1.Container.get(daemon_executor_service_1.DaemonExecutorService);
         this.start = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.killDaemon();
             yield this.makeSystemFolders();
-            if (helpers_1.includes('--systemd')) {
-                yield this.systemDService.register({
-                    name: name || 'my-node-service',
-                    cwd: __dirname.replace('tasks', 'core/helpers/'),
-                    app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
-                    engine: 'node',
-                    env: {}
-                });
-            }
-            else {
-                const child = child_process_1.spawn('gapi', ['daemon', 'bootstrap'], {
-                    detached: true,
-                    stdio: [
-                        'ignore',
-                        fs_1.openSync(this.outLogFile, 'a'),
-                        fs_1.openSync(this.errLogFile, 'a')
-                    ]
-                });
-                yield util_1.promisify(fs_1.writeFile)(this.pidLogFile, child.pid, {
-                    encoding: 'utf-8'
-                });
-                console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
-                child.unref();
-            }
+            // if (includes('--systemd')) {
+            //   await this.systemDService.register({
+            //     name: name || 'my-node-service',
+            //     cwd: __dirname.replace('tasks', 'core/helpers/'),
+            //     app: __dirname.replace('tasks', 'core/helpers/systemd-daemon.js'),
+            //     engine: 'node',
+            //     env: {}
+            //   });
+            // } else {
+            const child = child_process_1.spawn('gapi', ['daemon', 'bootstrap'], {
+                detached: true,
+                stdio: [
+                    'ignore',
+                    fs_1.openSync(this.outLogFile, 'a'),
+                    fs_1.openSync(this.errLogFile, 'a')
+                ]
+            });
+            yield util_1.promisify(fs_1.writeFile)(this.pidLogFile, child.pid, {
+                encoding: 'utf-8'
+            });
+            console.log('DAEMON STARTED!', `\nPID: ${child.pid}`);
+            child.unref();
+            // }
         });
         this.restart = (name) => __awaiter(this, void 0, void 0, function* () {
             yield this.stop();
             yield this.start();
         });
         this.stop = (name) => __awaiter(this, void 0, void 0, function* () {
-            if (helpers_1.includes('--systemd')) {
-                yield this.systemDService.remove(name || 'my-node-service');
-            }
-            else {
-                yield this.killDaemon();
-            }
+            // if (includes('--systemd')) {
+            //   await this.systemDService.remove(name || 'my-node-service');
+            // } else {
+            yield this.killDaemon();
+            // }
         });
         this.list = () => __awaiter(this, void 0, void 0, function* () {
             const linkList = yield this.daemonExecutorService.getLinkList();

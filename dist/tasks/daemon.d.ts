@@ -19,7 +19,6 @@ export declare class DaemonTask {
     private errLogFile;
     private pidLogFile;
     private bootstrapTask;
-    private systemDService;
     private daemonExecutorService;
     constructor(fileService: FileService);
     private makeSystemFolders;
