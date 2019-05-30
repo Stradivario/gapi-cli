@@ -77,7 +77,7 @@ export class SchemaTask {
       `node ${
         this.node_modules
       }/graphql-document-collector/bin/graphql-document-collector '${
-        this.pattern ? this.pattern : '**/*.graphql'
+        this.pattern ? this.pattern : '**/*.{graphql,gql}'
       }' > ${GAPI_DAEMON_CACHE_FOLDER}/${randomString}.json`,
       { async: true }
     );
