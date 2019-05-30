@@ -54,6 +54,7 @@ let ConfigService = class ConfigService {
             introspectionOutputFolder: '',
             pattern: ''
         }, this.config.config.schema);
+        this.config.config.schematics = this.config.config.schematics || {};
         this.config.config.app = this.config.config.app || {
             local: {
                 GAPI_VERSION: ''
@@ -62,6 +63,9 @@ let ConfigService = class ConfigService {
                 GAPI_VERSION: ''
             }
         };
+    }
+    getSchematicsConfig() {
+        return this.config.config.schematics;
     }
     genericError(command) {
         throw new Error(`You cannot define command '${command}' they are restricted!`);

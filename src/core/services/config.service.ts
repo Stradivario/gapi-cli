@@ -13,6 +13,14 @@ export class MainConfig {
   NODE_ENV?: string;
   GAPI_VERSION?: string;
 }
+export type Platforms = 'server' | 'client';
+export interface SchematicsConfig {
+  name: string;
+  dryRun: boolean;
+  hasSpec: boolean;
+  platform: Platforms;
+}
+
 export interface GapiMainConfig {
   deploy: {
     app_name: string;
@@ -26,6 +34,7 @@ export interface GapiMainConfig {
     local: MainConfig | string;
     worker: MainConfig | string;
   };
+  schematics: SchematicsConfig;
   schema: {
     linkName: string;
     excludedFolders: string[];
@@ -89,6 +98,7 @@ export class ConfigService {
       },
       this.config.config.schema
     );
+    this.config.config.schematics = this.config.config.schematics || {} as any;
     this.config.config.app = this.config.config.app || {
       local: {
         GAPI_VERSION: ''
@@ -98,7 +108,9 @@ export class ConfigService {
       }
     };
   }
-
+  getSchematicsConfig() {
+    return this.config.config.schematics;
+  }
   genericError(command: string) {
     throw new Error(
       `You cannot define command '${command}' they are restricted!`

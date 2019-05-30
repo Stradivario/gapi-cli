@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17,19 +20,41 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const schematic_runner_1 = require("./runners/schematic.runner");
 const index_1 = require("../../core/helpers/index");
+const config_service_1 = require("../../core/services/config.service");
 let GenerateTask = class GenerateTask {
+    getPlatform() {
+        return this.configService.config.config.schematics.platform;
+    }
+    isServer() {
+        return this.getPlatform() === 'server';
+    }
+    isClient() {
+        return this.getPlatform() === 'client';
+    }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            const dryRun = index_1.includes('--dry-run');
+            let dryRun = index_1.includes('--dry-run');
             const force = index_1.includes('--force');
             let internalArguments = '';
-            var args = process.argv.slice(3);
+            const args = process.argv.slice(3);
             let method = '';
-            let sourceRoot = index_1.nextOrDefault('--source-root', 'src');
-            let language = index_1.nextOrDefault('--language', 'ts');
+            const sourceRoot = index_1.nextOrDefault('--source-root', 'src/app');
+            const language = index_1.nextOrDefault('--language', 'ts');
+            let schematicsName = index_1.nextOrDefault('--schematics-name', '@rxdi/schematics');
+            const schematicsConfig = this.configService.getSchematicsConfig();
+            if (schematicsConfig.name) {
+                schematicsName = schematicsConfig.name;
+            }
+            if (schematicsConfig.dryRun) {
+                dryRun = true;
+            }
             let hasSpec = false;
             if (args[0] === 'c' || args[0] === 'controller') {
                 method = 'controller';
+                hasSpec = true;
+            }
+            if (args[0] === '-c' || args[0] === 'component') {
+                method = 'component';
                 hasSpec = true;
             }
             if (args[0] === 's' || args[0] === 'service') {
@@ -68,7 +93,7 @@ let GenerateTask = class GenerateTask {
                 throw new Error('Method not specified');
             }
             try {
-                yield new schematic_runner_1.SchematicRunner().run(`@rxdi/schematics:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${hasSpec ? '--spec' : ''} --language='${language}' --sourceRoot='${sourceRoot}' ${internalArguments}`);
+                yield new schematic_runner_1.SchematicRunner().run(`${schematicsName}:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${schematicsConfig.hasSpec || hasSpec ? '--spec' : ''} --language='${language}' --sourceRoot='${sourceRoot}' ${internalArguments}`);
             }
             catch (e) {
                 console.log(e);
@@ -76,6 +101,10 @@ let GenerateTask = class GenerateTask {
         });
     }
 };
+__decorate([
+    core_1.Injector(config_service_1.ConfigService),
+    __metadata("design:type", config_service_1.ConfigService)
+], GenerateTask.prototype, "configService", void 0);
 GenerateTask = __decorate([
     core_1.Service()
 ], GenerateTask);

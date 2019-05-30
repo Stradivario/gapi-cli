@@ -12,6 +12,13 @@ export declare class MainConfig {
     NODE_ENV?: string;
     GAPI_VERSION?: string;
 }
+export declare type Platforms = 'server' | 'client';
+export interface SchematicsConfig {
+    name: string;
+    dryRun: boolean;
+    hasSpec: boolean;
+    platform: Platforms;
+}
 export interface GapiMainConfig {
     deploy: {
         app_name: string;
@@ -25,6 +32,7 @@ export interface GapiMainConfig {
         local: MainConfig | string;
         worker: MainConfig | string;
     };
+    schematics: SchematicsConfig;
     schema: {
         linkName: string;
         excludedFolders: string[];
@@ -49,5 +57,6 @@ export declare class GapiConfig extends Commands {
 export declare class ConfigService {
     config: GapiConfig;
     setCustomConfig(config: GapiConfig): void;
+    getSchematicsConfig(): SchematicsConfig;
     genericError(command: string): void;
 }

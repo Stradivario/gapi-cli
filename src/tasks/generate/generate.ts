@@ -1,22 +1,48 @@
-import { Service } from '@rxdi/core';
+import { Service, Injector } from '@rxdi/core';
 import { SchematicRunner } from './runners/schematic.runner';
 import { nextOrDefault, includes } from '../../core/helpers/index';
+import { ConfigService } from '../../core/services/config.service';
 
 @Service()
 export class GenerateTask {
+  @Injector(ConfigService) private configService: ConfigService;
+
+  getPlatform() {
+    return this.configService.config.config.schematics.platform;
+  }
+
+  isServer() {
+    return this.getPlatform() === 'server';
+  }
+
+  isClient() {
+    return this.getPlatform() === 'client';
+  }
 
   async run() {
-    const dryRun = includes('--dry-run');
+    let dryRun = includes('--dry-run');
     const force = includes('--force');
     let internalArguments = '';
-    var args = process.argv.slice(3);
+    const args = process.argv.slice(3);
     let method = '';
-    let sourceRoot = nextOrDefault('--source-root', 'src');
-    let language = nextOrDefault('--language', 'ts');
+    const sourceRoot = nextOrDefault('--source-root', 'src/app');
+    const language = nextOrDefault('--language', 'ts');
+    let schematicsName = nextOrDefault('--schematics-name', '@rxdi/schematics');
+    const schematicsConfig = this.configService.getSchematicsConfig();
+    if (schematicsConfig.name) {
+      schematicsName = schematicsConfig.name;
+    }
+    if (schematicsConfig.dryRun) {
+      dryRun = true;
+    }
 
     let hasSpec = false;
     if (args[0] === 'c' || args[0] === 'controller') {
       method = 'controller';
+      hasSpec = true;
+    }
+    if (args[0] === '-c' || args[0] === 'component') {
+      method = 'component';
       hasSpec = true;
     }
     if (args[0] === 's' || args[0] === 'service') {
@@ -62,11 +88,10 @@ export class GenerateTask {
     if (!method) {
       throw new Error('Method not specified');
     }
-
     try {
       await new SchematicRunner().run(
-        `@rxdi/schematics:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${
-          hasSpec ? '--spec' : ''
+        `${schematicsName}:${method} --name=${args[1]} --force=${force} --dryRun=${dryRun} ${
+          schematicsConfig.hasSpec || hasSpec ? '--spec' : ''
         } --language='${language}' --sourceRoot='${sourceRoot}' ${internalArguments}`
       );
     } catch (e) {
