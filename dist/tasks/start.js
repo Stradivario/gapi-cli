@@ -82,7 +82,7 @@ let StartTask = class StartTask {
             }
             const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
             const cwd = process.cwd();
-            // const mainExists = existsSync(`${cwd}/src/main.ts`);
+            const htmlFile = fs_1.existsSync(`${cwd}/src/index.html`);
             const customPath = process.argv[4]
                 ? process.argv[4].split('--path=')[1]
                 : null;
@@ -113,9 +113,22 @@ let StartTask = class StartTask {
                     : `${cwd}/src/main.ts`}  ${this.verbose}`);
             }
             else {
-                return yield this.prepareBundler(`${customPathExists
-                    ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
-                    : `${cwd}/src/main.ts`}`, {
+                if (htmlFile) {
+                }
+                let files;
+                if (customPathExists) {
+                    files = `${cwd}/${customPathExists ? customPath : 'index.ts'}`;
+                }
+                else if (htmlFile) {
+                    process.argv.push('--target=browser');
+                    process.argv.push('--bundle-modules');
+                    process.argv.push('--hmr true');
+                    files = `${cwd}/src/index.html`;
+                }
+                else {
+                    files = `${cwd}/src/main.ts`;
+                }
+                return yield this.prepareBundler(files, {
                     original: this.configOriginal,
                     schema: this.configService.config.config.schema
                 }, true, false);
@@ -177,6 +190,8 @@ let StartTask = class StartTask {
                 target,
                 outDir: helpers_1.nextOrDefault('--outDir', './dist'),
                 minify,
+                hmr: helpers_1.nextOrDefault('--hmr', false, v => Boolean(v)),
+                publicUrl: helpers_1.nextOrDefault('--public-url', '/'),
                 bundleNodeModules: helpers_1.includes('--bundle-modules')
             });
             const originalOnChange = bundler.onChange.bind(bundler);
@@ -234,6 +249,9 @@ let StartTask = class StartTask {
                         //     await this.execService.call('sleep 1');
                         //   }
                     }
+                    if (helpers_1.includes('--target=browser')) {
+                        return;
+                    }
                     const childArguments = [];
                     if (this.argsService.args.toString().includes('--inspect-brk')) {
                         childArguments.push('--inspect-brk');
@@ -255,7 +273,12 @@ let StartTask = class StartTask {
                 }
                 bundle = null;
             }));
-            yield bundler.bundle();
+            if (helpers_1.includes('--target=browser') && !buildOnly) {
+                yield bundler.serve();
+            }
+            else {
+                yield bundler.bundle();
+            }
         });
     }
     extendConfig(config) {

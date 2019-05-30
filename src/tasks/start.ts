@@ -3,7 +3,7 @@ import { ArgsService } from '../core/services/args.service';
 import { ConfigService, MainConfig } from '../core/services/config.service';
 import { EnvironmentVariableService } from '../core/services/environment.service';
 import { ExecService } from '../core/services/exec.service';
-import { exists } from 'fs';
+import { exists, existsSync } from 'fs';
 import Bundler = require('parcel-bundler');
 import childProcess = require('child_process');
 import { nextOrDefault, includes } from '../core/helpers';
@@ -12,7 +12,6 @@ import { IQuery } from '../daemon-server/api-introspection';
 import { Container as rxdiContainer } from '@gapi/core';
 import { normalize } from 'path';
 import { promisify } from 'util';
-import { homedir } from 'os';
 
 @Service()
 export class StartTask {
@@ -86,7 +85,7 @@ export class StartTask {
     }
     const sleep = process.argv[5] ? `${process.argv[5]} &&` : '';
     const cwd = process.cwd();
-    // const mainExists = existsSync(`${cwd}/src/main.ts`);
+    const htmlFile = existsSync(`${cwd}/src/index.html`);
     const customPath = process.argv[4]
       ? process.argv[4].split('--path=')[1]
       : null;
@@ -125,8 +124,7 @@ export class StartTask {
           `${sleep} ts-node ${cwd}/src/main.ts`
         );
       }
-    } else 
-      if (process.argv.toString().includes('--ts-node')) {
+    } else if (process.argv.toString().includes('--ts-node')) {
         return await this.execService.call(
           `nodemon --watch '${cwd}/src/**/*.ts' ${
             this.quiet ? '--quiet' : ''
@@ -141,12 +139,22 @@ export class StartTask {
           }  ${this.verbose}`
         );
       } else {
+        if (htmlFile) {
+        }
+        let files: string[] | string;
+
+        if (customPathExists) {
+          files = `${cwd}/${customPathExists ? customPath : 'index.ts'}`;
+        } else if (htmlFile) {
+          process.argv.push('--target=browser');
+          process.argv.push('--bundle-modules');
+          process.argv.push('--hmr true');
+          files =  `${cwd}/src/index.html`;
+        } else {
+          files = `${cwd}/src/main.ts`;
+        }
         return await this.prepareBundler(
-          `${
-            customPathExists
-              ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
-              : `${cwd}/src/main.ts`
-          }`,
+          files,
           {
             original: this.configOriginal,
             schema: this.configService.config.config.schema
@@ -218,6 +226,8 @@ export class StartTask {
       target,
       outDir: nextOrDefault('--outDir', './dist'),
       minify,
+      hmr: nextOrDefault('--hmr', false, v => Boolean(v)),
+      publicUrl: nextOrDefault('--public-url', '/'),
       bundleNodeModules: includes('--bundle-modules')
     });
     const originalOnChange = bundler.onChange.bind(bundler);
@@ -259,6 +269,7 @@ export class StartTask {
       //       await this.notifyDaemon({ repoPath: process.cwd() });
       //     } catch (e) {}
       //   }
+
       if (start && bundle !== null) {
         if (child) {
           killChild();
@@ -277,6 +288,9 @@ export class StartTask {
           //   if (isDaemonInRunningcondition) {
           //     await this.execService.call('sleep 1');
           //   }
+        }
+        if (includes('--target=browser')) {
+          return;
         }
         const childArguments = [];
         if (this.argsService.args.toString().includes('--inspect-brk')) {
@@ -299,7 +313,11 @@ export class StartTask {
       }
       bundle = null;
     });
-    await bundler.bundle();
+    if (includes('--target=browser') && !buildOnly) {
+      await bundler.serve();
+    } else {
+      await bundler.bundle();
+    }
   }
 
   extendConfig(config) {

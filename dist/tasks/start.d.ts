@@ -9,7 +9,7 @@ export declare class StartTask {
     private quiet;
     run(stop?: {
         state?: boolean;
-    }): Promise<void | {}>;
+    }): Promise<unknown>;
     isDaemonRunning(): Promise<boolean>;
     private setFakeHapiServer;
     notifyDaemon(variables: {

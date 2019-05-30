@@ -4,5 +4,5 @@ export declare class ReadlineService {
     readline: ReadLine;
     private createReadlineInterface;
     clearScreenDown(): Promise<void>;
-    createQuestion<T>(question: string, task: Function): Promise<{}>;
+    createQuestion<T>(question: string, task: Function): Promise<unknown>;
 }

@@ -11,5 +11,5 @@ export declare class RootService {
     private daemonTask;
     private bootstrapTask;
     checkForCustomTasks(): Promise<any>;
-    runTask(): Promise<void | {}>;
+    runTask(): Promise<unknown>;
 }
