@@ -10,6 +10,6 @@ export class CloudCodeTask {
     await this.exec();
   }
   async exec() {
-    this.execService.call('docker run -p 127.0.0.1:8443:8443 -p 127.0.0.1:1234:1234 -p 127.0.0.1:9000:9000 -v "${PWD}:/home/coder/project" codercom/code-server --allow-http --no-auth');
+    this.execService.call('docker run -p 8443:8443 -p 1234:1234 -p 9000:9000 -v "${PWD}:/home/coder/project" codercom/code-server --allow-http --no-auth');
   }
 }
