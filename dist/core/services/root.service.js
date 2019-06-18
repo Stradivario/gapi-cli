@@ -29,6 +29,7 @@ const generate_1 = require("../../tasks/generate/generate");
 const bootstrap_1 = require("../../tasks/bootstrap");
 const helpers_1 = require("../helpers");
 const plugin_1 = require("../../tasks/plugin");
+const cloud_code_1 = require("../../tasks/cloud-code");
 const core_2 = require("@gapi/core");
 const argsService = core_1.Container.get(args_service_1.ArgsService);
 let RootService = class RootService {
@@ -37,6 +38,7 @@ let RootService = class RootService {
         this.newTask = core_1.Container.get(new_1.NewTask);
         this.testTask = core_1.Container.get(test_1.TestTask);
         this.pluginTask = core_1.Container.get(plugin_1.PluginTask);
+        this.cloudTask = core_1.Container.get(cloud_code_1.CloudCodeTask);
         this.configService = core_1.Container.get(config_service_1.ConfigService);
         this.schemaTask = core_1.Container.get(schema_1.SchemaTask);
         this.deployTask = core_1.Container.get(deploy_1.DeployTask);
@@ -131,6 +133,9 @@ let RootService = class RootService {
             }
             if (argsService.args[2] === 'plugin') {
                 return yield this.pluginTask.run();
+            }
+            if (argsService.args[2] === 'code') {
+                return yield this.cloudTask.run();
             }
             try {
                 yield this.checkForCustomTasks();

@@ -13,6 +13,8 @@ import { GenerateTask } from '../../tasks/generate/generate';
 import { BootstrapTask } from '../../tasks/bootstrap';
 import { nextOrDefault } from '../helpers';
 import { PluginTask } from '../../tasks/plugin';
+import { CloudCodeTask } from '../../tasks/cloud-code';
+
 import { sendRequest } from '@gapi/core';
 
 const argsService: ArgsService = Container.get(ArgsService);
@@ -23,6 +25,8 @@ export class RootService {
   private newTask: NewTask = Container.get(NewTask);
   private testTask: TestTask = Container.get(TestTask);
   private pluginTask: PluginTask = Container.get(PluginTask);
+  private cloudTask: CloudCodeTask = Container.get(CloudCodeTask);
+
   private configService: ConfigService = Container.get(ConfigService);
   private schemaTask: SchemaTask = Container.get(SchemaTask);
   private deployTask: DeployTask = Container.get(DeployTask);
@@ -130,6 +134,11 @@ export class RootService {
 
     if (argsService.args[2] === 'plugin') {
       return await this.pluginTask.run();
+    }
+
+
+    if (argsService.args[2] === 'code') {
+      return await this.cloudTask.run();
     }
 
     try {

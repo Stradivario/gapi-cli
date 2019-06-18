@@ -3,6 +3,7 @@ export declare class RootService {
     private newTask;
     private testTask;
     private pluginTask;
+    private cloudTask;
     private configService;
     private schemaTask;
     private deployTask;
