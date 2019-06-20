@@ -46,7 +46,7 @@ const run = (schemaInput, optionsInput) => {
     const wrapWithDescription = (declaration, description) => `  ${generateDescription(description)}
   ${declaration}`;
     const generateTypeDeclaration = (description, name, possibleTypes) => wrapWithDescription(addSemicolon(typeBuilder(name, possibleTypes)) + '\n\n', description);
-    const typeNameDeclaration = name => addSemicolon(`__typename?: "${name}"`);
+    const typeNameDeclaration = name => addSemicolon(`__typename: "${name}"`);
     const generateInterfaceDeclaration = ({ name, description }, declaration, fields, additionalInfo, isInput) => {
         if (!isInput && !optionsInput.ignoreTypeNameDeclaration) {
             fields = [typeNameDeclaration(name), ...fields];
@@ -166,7 +166,7 @@ const run = (schemaInput, optionsInput) => {
             .map(type => // convert to interface
          typeToInterface(type, ignoredTypes, supportsNullability, interfaceMap))
             .filter(type => type); // remove empty ones
-        typeInterfaces.forEach(type => typesWithExport.push(type.replace(/interface/g, "export interface")));
+        typeInterfaces.forEach(type => typesWithExport.push(type.replace(/interface/g, "export interface").replace(/:/g, "?:")));
         return interfaces
             .concat(typesWithExport) // add typeInterfaces to return object
             .join('\n\n'); // add newlines between interfaces
