@@ -14,7 +14,9 @@
     "postpublish": "git push -f ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git && git push --tags && git push ssh://git@gitlab.youvolio.com:522/gapi/gapi-cli.git --tags",
     "build": "gapi build",
     "start": "gapi start --local --path=./src/daemon-server/main.ts --inspect --parcel --minify=false --outDir ./daemon-server/server",
-    "test": "test"
+    "test": "test",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -57,7 +59,8 @@
     "rxjs": "6.5.2",
     "shell-quote": "^1.6.1",
     "shelljs": "0.8.3",
-    "yamljs": "0.3.0"
+    "yamljs": "0.3.0",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "@types/chokidar": "^2.1.3",
