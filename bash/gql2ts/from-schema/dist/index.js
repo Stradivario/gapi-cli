@@ -166,7 +166,10 @@ const run = (schemaInput, optionsInput) => {
             .map(type => // convert to interface
          typeToInterface(type, ignoredTypes, supportsNullability, interfaceMap))
             .filter(type => type); // remove empty ones
-        typeInterfaces.forEach(type => typesWithExport.push(type.replace(/interface/g, "export interface").replace(/:/g, "?:")));
+        typeInterfaces.forEach(type => {
+            const typeInterface = type.replace(/interface/g, "export interface");
+            typesWithExport.push(typeInterface.includes('?:') ? typeInterface : typeInterface.replace(/:/g, "?:"))
+        });
         return interfaces
             .concat(typesWithExport) // add typeInterfaces to return object
             .join('\n\n'); // add newlines between interfaces
