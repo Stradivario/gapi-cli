@@ -19,6 +19,7 @@ const config_service_1 = require("../core/services/config.service");
 const fs_1 = require("fs");
 const start_1 = require("./start");
 const util_1 = require("util");
+const helpers_1 = require("../core/helpers");
 let BuildTask = class BuildTask {
     constructor() {
         this.startTask = core_1.Container.get(start_1.StartTask);
@@ -31,6 +32,13 @@ let BuildTask = class BuildTask {
                 ? process.argv[4].split('--path=')[1]
                 : null;
             const customPathExists = yield util_1.promisify(fs_1.exists)(`${cwd}/${customPath}`);
+            const globPaths = helpers_1.nextOrDefault('--glob', '').split(',').filter((i) => !!i).map(f => `.${f}`);
+            if (globPaths.length) {
+                return yield this.startTask.prepareBundler(globPaths, {
+                    original: this.configService.config.config.app.local,
+                    schema: this.configService.config.config.schema
+                });
+            }
             yield this.startTask.prepareBundler(`${customPathExists
                 ? `${cwd}/${customPathExists ? customPath : 'index.ts'}`
                 : `${cwd}/src/main.ts`}`, {

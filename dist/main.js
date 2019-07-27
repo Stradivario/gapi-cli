@@ -15,9 +15,7 @@ let config = {};
 try {
     config = yamljs_1.load('gapi-cli.conf.yml');
 }
-catch (e) {
-    console.error('Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.');
-}
+catch (e) { }
 configService.setCustomConfig(config);
 argsService.setArguments(process.argv);
 rootService

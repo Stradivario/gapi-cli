@@ -13,11 +13,7 @@ const configService = Container.get(ConfigService);
 let config: GapiConfig = {} as any;
 try {
   config = load('gapi-cli.conf.yml');
-} catch (e) {
-  console.error(
-    'Missing gapi-cli.conf.yml gapi-cli will be with malfunctioning.'
-  );
-}
+} catch (e) {}
 configService.setCustomConfig(config);
 argsService.setArguments(process.argv);
 rootService

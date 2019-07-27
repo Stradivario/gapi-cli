@@ -3,6 +3,7 @@ import { ConfigService } from '../core/services/config.service';
 import { exists } from 'fs';
 import { StartTask } from './start';
 import { promisify } from 'util';
+import { nextOrDefault } from '../core/helpers';
 
 @Service()
 export class BuildTask {
@@ -15,6 +16,13 @@ export class BuildTask {
       ? process.argv[4].split('--path=')[1]
       : null;
     const customPathExists = await promisify(exists)(`${cwd}/${customPath}`);
+    const globPaths = nextOrDefault('--glob', '').split(',').filter((i: string) => !!i).map(f => `.${f}`);
+    if (globPaths.length) {
+      return await this.startTask.prepareBundler(globPaths, {
+          original: this.configService.config.config.app.local,
+          schema: this.configService.config.config.schema
+      });
+  }
     await this.startTask.prepareBundler(
       `${
         customPathExists
