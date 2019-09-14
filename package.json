@@ -34,7 +34,7 @@
     "@angular-devkit/core": "8.0.3",
     "@angular-devkit/schematics": "8.0.3",
     "@angular-devkit/schematics-cli": "0.800.3",
-    "@gapi/core": "^1.8.4",
+    "@gapi/core": "^1.8.6",
     "@rxdi/schematics": "0.7.17",
     "@types/node": "11.9.4",
     "@types/shelljs": "0.8.5",
