@@ -190,6 +190,9 @@ let StartTask = class StartTask {
                 target,
                 outDir: helpers_1.nextOrDefault('--outDir', './dist'),
                 minify,
+                outFile: helpers_1.nextOrDefault('--outFile', null),
+                contentHash: true,
+                detailedReport: true,
                 hmr: helpers_1.nextOrDefault('--hmr', false, v => Boolean(v)),
                 publicUrl: helpers_1.nextOrDefault('--public-url', '/'),
                 bundleNodeModules: helpers_1.includes('--bundle-modules')

@@ -226,6 +226,9 @@ export class StartTask {
       target,
       outDir: nextOrDefault('--outDir', './dist'),
       minify,
+      outFile: nextOrDefault('--outFile', null),
+      // contentHash: true,
+      // detailedReport: true,
       hmr: nextOrDefault('--hmr', false, v => Boolean(v)),
       publicUrl: nextOrDefault('--public-url', '/'),
       bundleNodeModules: includes('--bundle-modules')
