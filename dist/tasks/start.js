@@ -179,6 +179,7 @@ let StartTask = class StartTask {
         ? 'browser'
         : 'node', excludedFolders = []) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(file);
             if (schema.excludedFolders.length) {
                 excludedFolders = [...excludedFolders, ...schema.excludedFolders];
             }
@@ -191,8 +192,8 @@ let StartTask = class StartTask {
                 outDir: helpers_1.nextOrDefault('--outDir', './dist'),
                 minify,
                 outFile: helpers_1.nextOrDefault('--outFile', null),
-                contentHash: true,
-                detailedReport: true,
+                // contentHash: true,
+                // detailedReport: true,
                 hmr: helpers_1.nextOrDefault('--hmr', false, v => Boolean(v)),
                 publicUrl: helpers_1.nextOrDefault('--public-url', '/'),
                 bundleNodeModules: helpers_1.includes('--bundle-modules')

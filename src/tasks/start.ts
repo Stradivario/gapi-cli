@@ -213,6 +213,7 @@ export class StartTask {
       : 'node',
     excludedFolders: string[] = []
   ) {
+    console.log(file);
     if (schema.excludedFolders.length) {
       excludedFolders = [...excludedFolders, ...schema.excludedFolders];
     }
