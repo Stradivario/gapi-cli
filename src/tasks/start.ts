@@ -239,7 +239,7 @@ export class StartTask {
       if (
         excludedFolders.filter(d =>
           path.substring(0, path.lastIndexOf('/')).includes(d)
-        ).length
+        ).length && !includes('--disable-excluded-folders')
       ) {
         return;
       }
@@ -278,7 +278,7 @@ export class StartTask {
         if (child) {
           killChild();
         }
-        if (this.argsService.args.toString().includes('--lint')) {
+        if (includes('--lint')) {
           let hasError = false;
           try {
             await this.execService.call('npm run lint');
@@ -297,10 +297,14 @@ export class StartTask {
           return;
         }
         const childArguments = [];
-        if (this.argsService.args.toString().includes('--inspect-brk')) {
-          childArguments.push('--inspect-brk');
-        } else if (this.argsService.args.toString().includes('--inspect')) {
-          childArguments.push('--inspect');
+        function defaultInspectConfig(type: '--inspect-brk' | '--inspect') {
+          console.log(`${type}=${nextOrDefault('--ihost', '127.0.0.1')}:${nextOrDefault('--iport', '9229')}`);
+          return `${type}=${nextOrDefault('--ihost', '127.0.0.1')}:${nextOrDefault('--iport', '9229')}`;
+        }
+        if (includes('--inspect-brk')) {
+          childArguments.push(defaultInspectConfig('--inspect-brk'));
+        } else if (includes('--inspect')) {
+          childArguments.push(defaultInspectConfig('--inspect'));
         }
         process.env = Object.assign(process.env, original);
 

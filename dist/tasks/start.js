@@ -200,7 +200,7 @@ let StartTask = class StartTask {
             });
             const originalOnChange = bundler.onChange.bind(bundler);
             bundler.onChange = function (path) {
-                if (excludedFolders.filter(d => path.substring(0, path.lastIndexOf('/')).includes(d)).length) {
+                if (excludedFolders.filter(d => path.substring(0, path.lastIndexOf('/')).includes(d)).length && !helpers_1.includes('--disable-excluded-folders')) {
                     return;
                 }
                 return originalOnChange(path);
@@ -236,7 +236,7 @@ let StartTask = class StartTask {
                     if (child) {
                         killChild();
                     }
-                    if (this.argsService.args.toString().includes('--lint')) {
+                    if (helpers_1.includes('--lint')) {
                         let hasError = false;
                         try {
                             yield this.execService.call('npm run lint');
@@ -257,11 +257,15 @@ let StartTask = class StartTask {
                         return;
                     }
                     const childArguments = [];
-                    if (this.argsService.args.toString().includes('--inspect-brk')) {
-                        childArguments.push('--inspect-brk');
+                    function defaultInspectConfig(type) {
+                        console.log(`${type}=${helpers_1.nextOrDefault('--ihost', '127.0.0.1')}:${helpers_1.nextOrDefault('--iport', '9229')}`);
+                        return `${type}=${helpers_1.nextOrDefault('--ihost', '127.0.0.1')}:${helpers_1.nextOrDefault('--iport', '9229')}`;
                     }
-                    else if (this.argsService.args.toString().includes('--inspect')) {
-                        childArguments.push('--inspect');
+                    if (helpers_1.includes('--inspect-brk')) {
+                        childArguments.push(defaultInspectConfig('--inspect-brk'));
+                    }
+                    else if (helpers_1.includes('--inspect')) {
+                        childArguments.push(defaultInspectConfig('--inspect'));
                     }
                     process.env = Object.assign(process.env, original);
                     child = childProcess.spawn('node', [...childArguments, bundle.name]);

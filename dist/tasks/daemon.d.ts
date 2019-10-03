@@ -6,11 +6,11 @@ export declare const DaemonTasks: {
     restart: "restart";
     unlink: "unlink";
     clean: "clean";
-    kill: "kill";
-    bootstrap: "bootstrap";
-    link: "link";
     list: "list";
     status: "status";
+    link: "link";
+    bootstrap: "bootstrap";
+    kill: "kill";
 };
 export declare type DaemonTasks = keyof typeof DaemonTasks;
 export declare class DaemonTask {
