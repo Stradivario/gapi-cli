@@ -36,7 +36,7 @@
     "@angular-devkit/schematics-cli": "0.800.3",
     "@gapi/core": "^1.8.18",
     "graphql":"^14.5.8",
-    "@rxdi/schematics": "0.7.34",
+    "@rxdi/schematics": "0.7.37",
     "@types/node": "11.9.4",
     "@types/shelljs": "0.8.5",
     "apollo-codegen": "0.20.2",
