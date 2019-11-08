@@ -35,6 +35,7 @@
     "@angular-devkit/schematics": "8.0.3",
     "@angular-devkit/schematics-cli": "0.800.3",
     "@gapi/core": "^1.8.18",
+    "graphql":"^14.5.8",
     "@rxdi/schematics": "0.7.34",
     "@types/node": "11.9.4",
     "@types/shelljs": "0.8.5",
@@ -62,7 +63,7 @@
   "devDependencies": {
     "@types/chokidar": "^2.1.3",
     "@types/fs-extra": "^5.0.5",
-    "@types/graphql": "^14.2.0",
+    "@types/graphql": "^14.5.0",
     "@types/hapi": "^18.0.2",
     "@types/mkdirp": "^0.5.2",
     "@types/node-notifier": "^5.4.0",
