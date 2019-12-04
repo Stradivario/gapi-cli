@@ -1,6 +1,6 @@
 {
   "name": "@gapi/cli",
-  "version": "1.8.19",
+  "version": "1.8.20",
   "description": "Gapi command line interface",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
@@ -35,7 +35,7 @@
     "@angular-devkit/schematics": "8.0.3",
     "@angular-devkit/schematics-cli": "0.800.3",
     "@gapi/core": "^1.8.18",
-    "graphql":"^14.5.8",
+    "graphql": "^14.5.8",
     "@rxdi/schematics": "0.7.37",
     "@types/node": "11.9.4",
     "@types/shelljs": "0.8.5",
