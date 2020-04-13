@@ -8,11 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@rxdi/core");
 const graphql_1 = require("@rxdi/graphql");
+const core_2 = require("@gapi/core");
 let DaemonExecutorService = class DaemonExecutorService {
     constructor() {
         this.daemonLink = 'http://localhost:42000/graphql';
     }
     getLinkList() {
+        core_2.Container.set(core_2.GRAPHQL_PLUGIN_CONFIG, {});
         return graphql_1.sendRequest({
             query: `
               query {

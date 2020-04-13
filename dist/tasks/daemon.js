@@ -9,10 +9,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -105,7 +106,7 @@ let DaemonTask = class DaemonTask {
         this.link = (linkName = 'default') => __awaiter(this, void 0, void 0, function* () {
             const encoding = 'utf-8';
             let config = { config: { schema: {} } };
-            let processList = yield this.getProcessList();
+            const processList = yield this.getProcessList();
             config = yield this.readGapiConfig();
             config.config = config.config || {};
             config.config.schema = config.config.schema || {};
@@ -123,9 +124,9 @@ let DaemonTask = class DaemonTask {
             console.log(`Project linked ${process.cwd()} link name: ${currentRepoProcess.linkName}`);
         });
         this.unlink = () => __awaiter(this, void 0, void 0, function* () {
-            let processList = yield this.getProcessList();
+            const processList = yield this.getProcessList();
             const encoding = 'utf-8';
-            let linkName = helpers_1.nextOrDefault('unlink', null, t => t !== '--all' ? t : null);
+            const linkName = helpers_1.nextOrDefault('unlink', null, t => t !== '--all' ? t : null);
             if (yield this.isDirectoryAvailable(linkName)) {
                 return;
             }
@@ -210,7 +211,7 @@ let DaemonTask = class DaemonTask {
             }
             catch (e) { }
             if (isDirectoryAvailable) {
-                let processList = yield this.getProcessList();
+                const processList = yield this.getProcessList();
                 const [currentProcess] = processList.filter(p => p.repoPath === linkName);
                 yield util_1.promisify(fs_1.writeFile)(daemon_config_1.GAPI_DAEMON_PROCESS_LIST_FOLDER, JSON.stringify(processList.filter(p => p.repoPath !== linkName)), {
                     encoding

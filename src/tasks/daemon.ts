@@ -91,6 +91,7 @@ export class DaemonTask {
 
   private list = async () => {
     const linkList = await this.daemonExecutorService.getLinkList();
+
     const chalk = require('chalk');
     [...new Set(linkList.data.getLinkList.map(l => l.linkName))].forEach(l => {
       const list = linkList.data.getLinkList.filter(i => i.linkName === l);
@@ -120,7 +121,7 @@ export class DaemonTask {
   private link = async (linkName: string = 'default') => {
     const encoding = 'utf-8';
     let config: GapiConfig = { config: { schema: {} } } as any;
-    let processList: ILinkListType[] = await this.getProcessList();
+    const processList: ILinkListType[] = await this.getProcessList();
     config = await this.readGapiConfig();
     config.config = config.config || ({} as any);
     config.config.schema = config.config.schema || ({} as any);
@@ -156,7 +157,7 @@ export class DaemonTask {
     } catch (e) {}
     return file;
   }
- 
+
   private async isDirectoryAvailable(linkName: string) {
     const encoding = 'utf-8';
     let isDirectoryAvailable: boolean;
@@ -164,7 +165,7 @@ export class DaemonTask {
       isDirectoryAvailable = await promisify(exists)(linkName);
     } catch (e) {}
     if (isDirectoryAvailable) {
-      let processList: ILinkListType[] = await this.getProcessList();
+      const processList: ILinkListType[] = await this.getProcessList();
       const [currentProcess] = processList.filter(p => p.repoPath === linkName);
       await promisify(writeFile)(
         GAPI_DAEMON_PROCESS_LIST_FOLDER,
@@ -194,10 +195,10 @@ export class DaemonTask {
   }
 
   private unlink = async () => {
-    let processList: ILinkListType[] = await this.getProcessList();
+    const processList: ILinkListType[] = await this.getProcessList();
     const encoding = 'utf-8';
 
-    let linkName = nextOrDefault('unlink', null, t =>
+    const linkName = nextOrDefault('unlink', null, t =>
       t !== '--all' ? t : null
     );
     if (await this.isDirectoryAvailable(linkName)) {
@@ -318,6 +319,7 @@ export class DaemonTask {
     }
     if (includes(DaemonTasks.list)) {
       Container.reset(HAPI_SERVER);
+
       Container.set(HAPI_SERVER, { info: { port: '42000' } });
       return await this.tasks.get(DaemonTasks.list)();
     }

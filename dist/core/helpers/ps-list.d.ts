@@ -7,4 +7,6 @@ export interface Process {
     cpu?: number;
     memory?: number;
 }
-export declare const getProcessList: () => Promise<Process[]>;
+export declare const getProcessList: (options?: {
+    all: any;
+}) => Promise<Process[]>;

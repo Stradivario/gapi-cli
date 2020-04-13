@@ -1,9 +1,10 @@
 'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -12,7 +13,7 @@ const util_1 = require("util");
 const path_1 = require("path");
 const child_process_1 = require("child_process");
 const TEN_MEGABYTES = 1000 * 1000 * 10;
-const windows = () => __awaiter(this, void 0, void 0, function* () {
+const windows = () => __awaiter(void 0, void 0, void 0, function* () {
     // Source: https://github.com/MarkTiedemann/fastlist
     const bin = path_1.join(__dirname, 'fastlist.exe');
     const { stdout } = yield util_1.promisify(child_process_1.execFile)(bin, {
@@ -28,10 +29,10 @@ const windows = () => __awaiter(this, void 0, void 0, function* () {
         ppid: Number.parseInt(ppid, 10)
     }));
 });
-const main = (options = { all: null }) => __awaiter(this, void 0, void 0, function* () {
+const main = (options = { all: null }) => __awaiter(void 0, void 0, void 0, function* () {
     const flags = (options.all === false ? '' : 'a') + 'wwxo';
     const ret = {};
-    yield Promise.all(['comm', 'args', 'ppid', 'uid', '%cpu', '%mem'].map((cmd) => __awaiter(this, void 0, void 0, function* () {
+    yield Promise.all(['comm', 'args', 'ppid', 'uid', '%cpu', '%mem'].map((cmd) => __awaiter(void 0, void 0, void 0, function* () {
         const { stdout } = yield util_1.promisify(child_process_1.execFile)('ps', [flags, `pid,${cmd}`], { maxBuffer: TEN_MEGABYTES });
         for (let line of stdout
             .trim()
