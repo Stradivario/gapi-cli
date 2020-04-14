@@ -52,7 +52,7 @@
     "node-emoji": "1.10.0",
     "node-notifier": "^5.4.0",
     "node.extend": "^2.0.2",
-    "parcel-bundler": "1.12.3",
+    "parcel-bundler": "1.12.4",
     "parcel-plugin-shebang": "1.2.5",
     "rimraf": "2.6.3",
     "rxjs": "6.5.2",
