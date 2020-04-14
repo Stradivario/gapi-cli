@@ -33,7 +33,7 @@
   "dependencies": {
     "@angular-devkit/core": "8.0.3",
     "@angular-devkit/schematics": "8.0.3",
-    "@angular-devkit/schematics-cli": "0.800.3",
+    "@angular-devkit/schematics-cli": "0.901.0",
     "@gapi/core": "^1.8.22",
     "graphql": "^14.5.8",
     "@rxdi/schematics": "0.7.37",
