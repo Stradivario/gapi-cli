@@ -1,8 +1,117 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.13.3
+version: v1.14.1
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   'npm:minimatch:20160620':
     - '@gapi/core > @rxdi/graphql-pubsub > banyan > browserify > glob > minimatch':
         patched: '2019-04-29T08:01:47.572Z'
+  SNYK-JS-LODASH-567746:
+    - inquirer > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - '@angular-devkit/schematics-cli > inquirer > lodash':
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - '@rxdi/schematics > @angular-devkit/schematics-cli > inquirer > lodash':
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-block-scoping > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/core > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > babylon-walk > babel-types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > htmlnano > uncss > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - '@gapi/core > @rxdi/graphql-pubsub > @rxdi/graphql-rabbitmq-subscriptions > async > lodash':
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow-legacy > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-scala > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-swift > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript-legacy > apollo-codegen-core > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow-legacy > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-scala > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-swift > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript-legacy > apollo-codegen-core > graphql-config > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-classes > @babel/helper-define-map > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-block-scoping > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > babylon-walk > babel-types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > htmlnano > uncss > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow-legacy > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-scala > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-swift > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript-legacy > apollo-codegen-core > @babel/generator > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-flow-legacy > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-scala > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-swift > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - apollo-codegen > apollo-codegen-typescript-legacy > apollo-codegen-core > graphql-config > graphql-import > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-unicode-regex > @babel/helper-create-regexp-features-plugin > @babel/helper-regex > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-classes > @babel/helper-define-map > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-unicode-regex > @babel/helper-create-regexp-features-plugin > @babel/helper-regex > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > htmlnano > uncss > jsdom > request-promise-native > request-promise-core > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/preset-modules > @babel/plugin-transform-dotall-regex > @babel/helper-create-regexp-features-plugin > @babel/helper-regex > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > htmlnano > uncss > jsdom > request-promise-native > request-promise-core > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/helper-function-name > @babel/helper-get-function-arity > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
+    - parcel-plugin-shebang > parcel-bundler > @babel/preset-env > @babel/plugin-transform-exponentiation-operator > @babel/helper-builder-binary-assignment-operator-visitor > @babel/helper-explode-assignable-expression > @babel/traverse > @babel/helper-function-name > @babel/helper-get-function-arity > @babel/types > lodash:
+        patched: '2020-05-01T06:59:15.193Z'
