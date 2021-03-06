@@ -1,7 +1,0 @@
-query getLinkList {
-  getLinkList {
-    repoPath
-    introspectionPath
-    linkName
-  }
-}
